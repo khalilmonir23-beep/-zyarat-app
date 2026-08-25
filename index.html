@@ -3086,10 +3086,10 @@ function renderHourlyChart(){
   if(typeof Chart === 'undefined') return;
   const counts = new Array(24).fill(0);
   filtered.forEach(r=>{
-    const t = r['وقت الدخول'];
-    if(!t) return;
-    const h = parseInt(String(t).split(':')[0], 10);
-    if(!isNaN(h) && h>=0 && h<24) counts[h]++;
+    const mins = timeStringToMinutes(r['وقت الدخول']);
+    if(mins == null) return;
+    const h = Math.floor(mins/60) % 24;
+    counts[h]++;
   });
   const labels = counts.map((_,i)=>i+':00');
   const c = themeColors();
@@ -3163,10 +3163,9 @@ function renderTrendChart(){
   const canvas = document.getElementById('chart-trend');
   if(trendChartInstance) trendChartInstance.destroy();
   trendChartInstance = new Chart(canvas.getContext('2d'), {
-    type:'line',
     data:{ labels: dates, datasets:[
-      { label:'عدد الزيارات', data: totals, borderColor:'#1d4fa3', backgroundColor:'transparent', yAxisID:'y', tension:.3, pointRadius:0 },
-      { label:'نسبة الدقة %', data: accPct, borderColor:'#1e8e5a', backgroundColor:'transparent', yAxisID:'y1', tension:.3, pointRadius:0 }
+      { type:'bar', label:'عدد الزيارات', data: totals, backgroundColor:'#c9d6f0', borderRadius:3, yAxisID:'y', order:2 },
+      { type:'line', label:'نسبة الدقة %', data: accPct, borderColor:'#1e8e5a', backgroundColor:'transparent', yAxisID:'y1', tension:.3, pointRadius:0, borderWidth:2.5, order:1 }
     ]},
     options:{
       responsive:true, maintainAspectRatio:false,
