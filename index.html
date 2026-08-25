@@ -155,6 +155,10 @@ body.role-admin .qty-col{display:table-cell !important}
 .unvisited-list{max-height:50vh; overflow-y:auto; -webkit-overflow-scrolling:touch; margin-top:14px}
 .unvisited-item{padding:10px 12px; border-radius:8px; background:var(--bg-card2); margin-bottom:6px; font-size:13.5px; color:var(--text-primary); display:flex; align-items:center; gap:8px}
 .unvisited-item::before{content:"📍"; flex-shrink:0}
+.unvisited-item.two-col{justify-content:space-between}
+.unvisited-item .item-name{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.unvisited-item .item-badges{display:flex; gap:6px; flex-shrink:0}
+.unvisited-item .item-badge{background:var(--bg-card); border:1px solid var(--border-main); border-radius:6px; padding:2px 8px; font-size:11.5px; font-weight:700; color:var(--accent); white-space:nowrap}
 .share-kpi-btn{
   background:linear-gradient(135deg,#25d366,#1da851); color:#fff; border:none;
   border-radius:10px; padding:10px 20px; font-size:13px; font-weight:700; cursor:pointer;
@@ -639,13 +643,13 @@ body.role-admin .qty-col{display:table-cell !important}
 
 <!-- KPI CARDS -->
 <div class="kpi-row">
-  <div class="kpi blue"><div class="kpi-icon">📋</div><div class="kpi-val" id="k-total">0</div><div class="kpi-label">إجمالي الزيارات</div><div class="kpi-sub" id="k-total-clients">0 عميل</div></div>
+  <div class="kpi blue kpi-clickable" id="k-total-card" onclick="showTotalVisitsModal()"><div class="kpi-icon">📋</div><div class="kpi-val" id="k-total">0</div><div class="kpi-label">إجمالي الزيارات</div><div class="kpi-sub" id="k-total-clients">0 عميل</div><div class="kpi-tap-hint">اضغط لعرض الأسماء 👆</div></div>
   <div class="kpi green"><div class="kpi-icon">✅</div><div class="kpi-val" id="k-acc">0</div><div class="kpi-label">زيارات دقيقة</div><div class="kpi-sub" id="k-acc-pct">0%</div></div>
   <div class="kpi red"><div class="kpi-icon">❌</div><div class="kpi-val" id="k-inacc">0</div><div class="kpi-label">زيارات غير دقيقة</div><div class="kpi-sub" id="k-inacc-pct">0%</div></div>
-  <div class="kpi orange"><div class="kpi-icon">📦</div><div class="kpi-val" id="k-orders">0</div><div class="kpi-label">إجمالي الطلبيات</div><div class="kpi-sub" id="k-orders-val">0 د.ع</div></div>
+  <div class="kpi orange kpi-clickable" id="k-orders-card" onclick="showOrdersModal()"><div class="kpi-icon">📦</div><div class="kpi-val" id="k-orders">0</div><div class="kpi-label">إجمالي الطلبيات</div><div class="kpi-sub" id="k-orders-val">0 د.ع</div><div class="kpi-tap-hint">اضغط لعرض الأسماء 👆</div></div>
   <div class="kpi purple"><div class="kpi-icon">💰</div><div class="kpi-val" id="k-collect">0</div><div class="kpi-label">إجمالي التحصيل</div><div class="kpi-sub" id="k-collect-val">0 د.ع</div></div>
   <div class="kpi teal kpi-clickable" id="k-unvisited-card" onclick="showUnvisitedClientsModal()"><div class="kpi-icon">🚫</div><div class="kpi-val" id="k-unvisited">0</div><div class="kpi-label">عملاء لم تتم زيارتهم (الشهر)</div><div class="kpi-sub" id="k-unvisited-pct">من 0 عميل</div><div class="kpi-tap-hint">اضغط لعرض الأسماء 👆</div></div>
-  <div class="kpi red"><div class="kpi-icon">⏱️</div><div class="kpi-val" id="k-shortvisits">0</div><div class="kpi-label">زيارات أقل من 5 دقايق</div></div>
+  <div class="kpi red kpi-clickable" id="k-shortvisits-card" onclick="showShortVisitsModal()"><div class="kpi-icon">⏱️</div><div class="kpi-val" id="k-shortvisits">0</div><div class="kpi-label">زيارات أقل من 5 دقايق</div><div class="kpi-tap-hint">اضغط لعرض الأسماء 👆</div></div>
   <div class="kpi blue"><div class="kpi-icon">🕐</div><div class="kpi-val kpi-val-small" id="k-worktime">- ← -</div><div class="kpi-label">بداية وختام الحركة</div><div class="kpi-sub" id="k-worktime-span">-</div></div>
   <div class="kpi indigo"><div class="kpi-icon">⏳</div><div class="kpi-val" id="k-totalduration">0</div><div class="kpi-label">إجمالي وقت الزيارات عند العملاء</div></div>
 </div>
@@ -657,6 +661,36 @@ body.role-admin .qty-col{display:table-cell !important}
     <h3>🚫 عملاء لسه محتاجين زيارة</h3>
     <div class="sub" id="unvisited-modal-sub">قائمة العملاء اللي معندهمش أي زيارة مسجّلة في الفترة الحالية</div>
     <div class="unvisited-list" id="unvisited-list"></div>
+  </div>
+</div>
+
+<!-- مودال قائمة عملاء إجمالي الزيارات (عدد الزيارات + كمية المبيعات لكل عميل) -->
+<div class="admin-overlay" id="total-visits-overlay">
+  <div class="admin-panel">
+    <button class="admin-close" onclick="closeTotalVisitsModal()">✕</button>
+    <h3>📋 عملاء إجمالي الزيارات</h3>
+    <div class="sub" id="total-visits-modal-sub">عدد الزيارات وكمية المبيعات لكل عميل ضمن الفلتر الحالي</div>
+    <div class="unvisited-list" id="total-visits-list"></div>
+  </div>
+</div>
+
+<!-- مودال قائمة عملاء إجمالي الطلبيات (كمية لكل عميل) -->
+<div class="admin-overlay" id="orders-overlay">
+  <div class="admin-panel">
+    <button class="admin-close" onclick="closeOrdersModal()">✕</button>
+    <h3>📦 عملاء الطلبيات</h3>
+    <div class="sub" id="orders-modal-sub">العملاء اللي اتعملها طلبيات وكميتها ضمن الفلتر الحالي</div>
+    <div class="unvisited-list" id="orders-list"></div>
+  </div>
+</div>
+
+<!-- مودال قائمة عملاء الزيارات أقل من 5 دقايق -->
+<div class="admin-overlay" id="short-visits-overlay">
+  <div class="admin-panel">
+    <button class="admin-close" onclick="closeShortVisitsModal()">✕</button>
+    <h3>⏱️ عملاء الزيارات السريعة (أقل من 5 دقايق)</h3>
+    <div class="sub" id="short-visits-modal-sub">قائمة العملاء اللي زيارتهم استغرقت أقل من 5 دقايق ضمن الفلتر الحالي</div>
+    <div class="unvisited-list" id="short-visits-list"></div>
   </div>
 </div>
 
@@ -2439,6 +2473,95 @@ function showUnvisitedClientsModal(){
 
 function closeUnvisitedClientsModal(){
   document.getElementById('unvisited-overlay').style.display = 'none';
+}
+
+// ============ إجمالي الزيارات — عدد الزيارات + كمية المبيعات لكل عميل ============
+function showTotalVisitsModal(){
+  const listEl = document.getElementById('total-visits-list');
+  const subEl = document.getElementById('total-visits-modal-sub');
+
+  const byClient = {};
+  filtered.forEach(r=>{
+    if(!r.العميل) return;
+    if(!byClient[r.العميل]) byClient[r.العميل] = { visits:0, qty:0 };
+    byClient[r.العميل].visits++;
+    byClient[r.العميل].qty += (+r['الكميه'] || 0);
+  });
+  const rows = Object.keys(byClient).map(name => ({ name, ...byClient[name] })).sort((a,b)=>b.visits - a.visits);
+
+  if(!rows.length){
+    listEl.innerHTML = '<div class="no-data">مافي زيارات ضمن الفلتر الحالي</div>';
+  } else {
+    listEl.innerHTML = rows.map(row => `
+      <div class="unvisited-item two-col">
+        <span class="item-name">${esc(row.name)}</span>
+        <span class="item-badges">
+          <span class="item-badge">${row.visits.toLocaleString()} زيارة</span>
+          <span class="item-badge">${row.qty.toLocaleString('ar-IQ')} كمية</span>
+        </span>
+      </div>`).join('');
+  }
+  subEl.textContent = `${rows.length.toLocaleString()} عميل ضمن الفلتر الحالي`;
+  document.getElementById('total-visits-overlay').style.display = 'flex';
+}
+
+function closeTotalVisitsModal(){
+  document.getElementById('total-visits-overlay').style.display = 'none';
+}
+
+// ============ إجمالي الطلبيات — العملاء اللي اتعملها طلبيات + الكمية ============
+function showOrdersModal(){
+  const listEl = document.getElementById('orders-list');
+  const subEl = document.getElementById('orders-modal-sub');
+
+  const ordersArr = filtered.filter(r=>r['قيمة ف الطلبية'] !== '' && r['قيمة ف الطلبية'] !== null && r.العميل);
+  const byClient = {};
+  ordersArr.forEach(r=>{
+    if(!byClient[r.العميل]) byClient[r.العميل] = { orders:0, qty:0 };
+    byClient[r.العميل].orders++;
+    byClient[r.العميل].qty += (+r['الكميه'] || 0);
+  });
+  const rows = Object.keys(byClient).map(name => ({ name, ...byClient[name] })).sort((a,b)=>b.qty - a.qty);
+
+  if(!rows.length){
+    listEl.innerHTML = '<div class="no-data">مافي طلبيات ضمن الفلتر الحالي</div>';
+  } else {
+    listEl.innerHTML = rows.map(row => `
+      <div class="unvisited-item two-col">
+        <span class="item-name">${esc(row.name)}</span>
+        <span class="item-badges">
+          <span class="item-badge">${row.orders.toLocaleString()} طلبية</span>
+          <span class="item-badge">${row.qty.toLocaleString('ar-IQ')} كمية</span>
+        </span>
+      </div>`).join('');
+  }
+  subEl.textContent = `${rows.length.toLocaleString()} عميل ضمن الفلتر الحالي`;
+  document.getElementById('orders-overlay').style.display = 'flex';
+}
+
+function closeOrdersModal(){
+  document.getElementById('orders-overlay').style.display = 'none';
+}
+
+// ============ زيارات أقل من 5 دقايق — أسماء العملاء بس ============
+function showShortVisitsModal(){
+  const listEl = document.getElementById('short-visits-list');
+  const subEl = document.getElementById('short-visits-modal-sub');
+
+  const shortVisitsArr = filtered.filter(r => r['مدة الدقائق'] !== '' && r['مدة الدقائق'] != null && +r['مدة الدقائق'] < 5 && r.العميل);
+  const names = shortVisitsArr.map(r=>r.العميل).sort((a,b)=>a.localeCompare(b,'ar'));
+
+  if(!names.length){
+    listEl.innerHTML = '<div class="no-data">مافي زيارات أقل من 5 دقايق ضمن الفلتر الحالي</div>';
+  } else {
+    listEl.innerHTML = names.map(name => `<div class="unvisited-item">${esc(name)}</div>`).join('');
+  }
+  subEl.textContent = `${names.length.toLocaleString()} زيارة أقل من 5 دقايق ضمن الفلتر الحالي`;
+  document.getElementById('short-visits-overlay').style.display = 'flex';
+}
+
+function closeShortVisitsModal(){
+  document.getElementById('short-visits-overlay').style.display = 'none';
 }
 
 let shareCardFile = null;
