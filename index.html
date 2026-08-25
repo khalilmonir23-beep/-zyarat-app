@@ -14,8 +14,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 
@@ -2880,8 +2880,8 @@ function buildSingleMapHtml(r){
   const visitDate = r['تاريخ الزيارة']||'';
   const visitLabel = (title + (visitTime && visitTime!=='-'?(' — '+visitTime):'')).replace(/'/g,'').replace(/"/g,'');
   return `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>خريطة الزيارة</title>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"><\/script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"><\/script>
 <style>body{margin:0}#map{height:100vh}
 .pin-wrap{position:relative;width:0;height:0}
 .pin-label{position:absolute;top:-58px;right:-60px;width:140px;text-align:center;background:#fff;border-radius:6px;padding:2px 6px;font-family:Arial;font-size:11px;font-weight:700;box-shadow:0 2px 6px rgba(0,0,0,.3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -3190,8 +3190,8 @@ function openClusterMap(){
   if(points.length===0){ alert('لا توجد نقاط بإحداثيات صالحة ضمن الفلتر الحالي'); return; }
   const pointsJson = JSON.stringify(points);
   const html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>خريطة عنقودية</title>'
-    + '<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>'
-    + '<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"><\/script>'
+    + '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>'
+    + '<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"><\/script>'
     + '<style>body{margin:0}#map{height:100vh;background:#e8eaf0}.legend{position:absolute;bottom:20px;right:20px;background:#fff;padding:10px 14px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.25);font-family:Arial;font-size:13px;z-index:1000}.legend div{display:flex;align-items:center;gap:6px;margin:3px 0}.legend span{display:inline-block;width:16px;height:16px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.3)}</style>'
     + '</head><body><div id="map"></div>'
     + '<div class="legend"><div><span style="background:#1e8e5a"></span> زيارة دقيقة</div><div><span style="background:#e30b0b"></span> زيارة غير دقيقة</div><div><span style="background:#8e8e8e"></span> بدون إحداثيات</div></div>'
@@ -3225,9 +3225,9 @@ function openHeatmap(){
   if(points.length===0){ alert('لا توجد زيارات غير دقيقة ضمن الفلتر الحالي'); return; }
   const pointsJson = JSON.stringify(points);
   const html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>خريطة حرارية</title>'
-    + '<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>'
-    + '<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"><\/script>'
-    + '<script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"><\/script>'
+    + '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>'
+    + '<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"><\/script>'
+    + '<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.heat/0.2.0/leaflet-heat.js"><\/script>'
     + '<style>body{margin:0}#map{height:100vh}.badge2{position:absolute;top:16px;right:16px;background:#fff;padding:8px 14px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.25);font-family:Arial;font-size:13px;z-index:1000;font-weight:700;color:#c0392b}</style>'
     + '</head><body><div id="map"></div><div class="badge2">🔥 ' + points.length + ' زيارة غير دقيقة</div>'
     + '<script>'
@@ -3459,8 +3459,8 @@ function openClientCardFullscreen(){
 
   const pointsJson = JSON.stringify(points);
   const html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>كارت العميل — ' + personSafe + '</title>'
-    + '<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>'
-    + '<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"><\/script>'
+    + '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>'
+    + '<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"><\/script>'
     + '<style>body{margin:0}#map{height:100vh}'
     + '.info{position:absolute;top:16px;right:16px;background:#fff;padding:12px 16px;border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,.25);font-size:13px;z-index:1000;max-width:min(260px, calc(100vw - 32px));font-family:Arial}'
     + '.info b{display:block;font-size:15px;margin-bottom:4px;color:#1a1d2b}'
@@ -3690,8 +3690,8 @@ function openCoverageGapsMap(){
   const periodLabel = (year?year:'كل السنوات') + (month?(' - شهر '+month):'') + (branch?(' - '+branch):'');
 
   const html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>خريطة المناطق الفاضية</title>'
-    + '<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>'
-    + '<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"><\/script>'
+    + '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>'
+    + '<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"><\/script>'
     + '<style>body{margin:0;font-family:Arial}#map{height:100vh}'
     + '.info{position:absolute;top:16px;right:16px;background:#fff;padding:12px 16px;border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,.25);font-size:13px;z-index:1000;max-width:min(250px, calc(100vw - 32px))}'
     + '.info b{display:block;font-size:14px;margin-bottom:4px;color:#1a1d2b}'
@@ -4448,9 +4448,9 @@ function buildTrackingMapHtml(person, date, rows){
   const noteHtml = edgeExcluded ? '<div style="color:#c9720d;font-size:11px">⚠️ زيارة طرفية غير دقيقة مستبعدة من الحساب</div>' : '';
 
   return '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>خريطة تتبع الحركة</title>'
-    + '<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>'
-    + '<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"><\/script>'
-    + '<script src="https://unpkg.com/leaflet-polylinedecorator@1.6.0/dist/leaflet.polylineDecorator.js"><\/script>'
+    + '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>'
+    + '<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"><\/script>'
+    + '<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-polylinedecorator/1.1.0/leaflet.polylineDecorator.min.js"><\/script>'
     + '<style>body{margin:0;font-family:Arial}#map{height:100vh}'
     + '.info{position:absolute;top:16px;right:16px;background:#fff;padding:12px 16px;border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,.25);font-size:13px;z-index:1000;max-width:min(230px, calc(100vw - 32px))}'
     + '.info b{display:block;font-size:14px;margin-bottom:4px;color:#1a1d2b}'
@@ -4557,9 +4557,9 @@ function openCompareDaysMap(){
   const payloadJson = JSON.stringify(payload);
 
   const html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>مقارنة يومين</title>'
-    + '<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>'
-    + '<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"><\/script>'
-    + '<script src="https://unpkg.com/leaflet-polylinedecorator@1.6.0/dist/leaflet.polylineDecorator.js"><\/script>'
+    + '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>'
+    + '<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"><\/script>'
+    + '<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-polylinedecorator/1.1.0/leaflet.polylineDecorator.min.js"><\/script>'
     + '<style>body{margin:0;font-family:Arial}#map{height:100vh}'
     + '.info{position:absolute;top:16px;right:16px;background:#fff;padding:12px 16px;border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,.25);font-size:13px;z-index:1000;max-width:min(230px, calc(100vw - 32px))}'
     + '.info b{display:block;font-size:14px;margin-bottom:4px;color:#1a1d2b}'
@@ -4774,8 +4774,8 @@ function openGeoPerfMapFull(){
   const payloadJson = JSON.stringify(payload);
 
   const html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>أداء المندوب الجغرافي — ' + personSafe + '</title>'
-    + '<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>'
-    + '<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"><\/script>'
+    + '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>'
+    + '<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"><\/script>'
     + '<style>body{margin:0;font-family:Arial}#map{height:100vh}'
     + '.info{position:absolute;top:16px;right:16px;background:#fff;padding:12px 16px;border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,.25);font-size:13px;z-index:1000;max-width:min(250px, calc(100vw - 32px))}'
     + '.info b{display:block;font-size:14px;margin-bottom:4px;color:#1a1d2b}'
@@ -5012,9 +5012,9 @@ function openDailyAllRepsMap(){
   const payloadJson = JSON.stringify(repsPayload);
 
   const html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>خريطة يومية لكل المناديب</title>'
-    + '<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>'
-    + '<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"><\/script>'
-    + '<script src="https://unpkg.com/leaflet-polylinedecorator@1.6.0/dist/leaflet.polylineDecorator.js"><\/script>'
+    + '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>'
+    + '<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"><\/script>'
+    + '<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-polylinedecorator/1.1.0/leaflet.polylineDecorator.min.js"><\/script>'
     + '<style>body{margin:0;font-family:Arial}#map{height:100vh}'
     + '.info{position:absolute;top:16px;right:16px;background:#fff;padding:12px 16px;border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,.25);font-size:13px;z-index:1000;max-width:min(230px, calc(100vw - 32px))}'
     + '.info b{display:block;font-size:14px;margin-bottom:4px;color:#1a1d2b}'
