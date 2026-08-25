@@ -2863,14 +2863,11 @@ function renderPivots(){
 }
 
 function openMapWindow(html){
-  const iframe = document.getElementById('map-modal-iframe');
-  iframe.srcdoc = html;
-  document.getElementById('map-modal-overlay').style.display = 'flex';
-}
-
-function closeMapModal(){
-  document.getElementById('map-modal-overlay').style.display = 'none';
-  document.getElementById('map-modal-iframe').srcdoc = ''; // نفضّي المحتوى عشان نوقف تحميل الخريطة وهي مقفولة
+  const win = window.open('', '_blank');
+  if(!win){ alert('يرجى السماح بالنوافذ المنبثقة (popups) لعرض الخريطة'); return; }
+  win.document.open();
+  win.document.write(html);
+  win.document.close();
 }
 
 function buildSingleMapHtml(r){
