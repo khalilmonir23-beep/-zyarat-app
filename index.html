@@ -1149,12 +1149,29 @@ body.role-admin .qty-col{display:table-cell !important}
   <div class="report-card">
     <div class="report-header"><h4>جدول الأداء الكامل</h4><span class="badge" id="perf-badge">0</span><button class="mini-export-btn" style="margin-right:auto" onclick="exportReport('perf')">📤 تصدير</button></div>
     <div class="report-scroll"><table class="report-table" id="perf-table">
-      <thead><tr><th>الشخص</th><th>النوع</th><th style="text-align:center">إجمالي الزيارات</th>
+      <thead><tr><th>#</th><th>الشخص</th><th>النوع</th><th style="text-align:center">إجمالي الزيارات</th>
       <th style="text-align:center">درجة الثقة</th><th style="text-align:center">معدل التحويل</th>
       <th style="text-align:center" id="th-order-5">متوسط الطلبية</th><th style="text-align:center" class="qty-col">متوسط الكمية</th><th style="text-align:center">متوسط التحصيل</th>
-      <th style="text-align:center">نطاق الحركة (كم)</th></tr></thead>
+      <th style="text-align:center">نطاق الحركة (كم)</th><th style="text-align:center">الدرجة الإجمالية</th></tr></thead>
       <tbody id="perf-tbody"></tbody>
     </table></div>
+  </div>
+
+  <div class="section-title">📊 مقارنة المندوبين داخل نفس الفرع</div>
+  <div class="section-sub">اختر فرع ومؤشر — يقارن كل مندوبين هذا الفرع جنبًا إلى جنب على نفس المقياس.</div>
+  <div class="report-card">
+    <div class="report-header" style="gap:12px; flex-wrap:wrap">
+      <h4>مقارنة المندوبين</h4>
+      <select id="cmp-branch" onchange="renderCompareChart()" style="margin-right:8px"></select>
+      <select id="cmp-metric" onchange="renderCompareChart()">
+        <option value="trust">درجة الثقة %</option>
+        <option value="conversion">معدل التحويل %</option>
+        <option value="total">عدد الزيارات</option>
+        <option value="avgCollect">متوسط التحصيل</option>
+        <option value="score">الدرجة الإجمالية</option>
+      </select>
+    </div>
+    <div style="padding:16px 20px; height:320px"><canvas id="compare-chart"></canvas></div>
   </div>
 
   <div class="section-title">🧭 اقتراح ترتيب خط سير (Route Optimization)</div>
@@ -2077,7 +2094,23 @@ function applyRoleRestrictions(){
     switchTab(allowed[0] || 'dashboard');
   }
 
-  if(role === 'إدارة') return false; // بدون قيود على الفترة أو الشخص — applyFilters لسه ما اتنداهاش
+  if(role === 'إدارة'){
+    // الإدارة ما تنقفلش على شهر معيّن (تقدر تشوف كل الفترات وقت ما تريد)، بس افتراضيًا نعرض أحدث شهر بس
+    // بدل كل السنة دفعة وحدة، عشان أول تحميل للصفحة يكون أسرع — وتقدر ترجع لـ"الكل" بضغطة وحدة من الفلتر
+    const withMonthAdmin = DATA.filter(r=>r.month);
+    if(withMonthAdmin.length){
+      const yearsPresentAdmin = withMonthAdmin.map(r=>+r.year).filter(Boolean);
+      const maxYearAdmin = yearsPresentAdmin.length ? Math.max(...yearsPresentAdmin) : null;
+      const monthsPoolAdmin = maxYearAdmin ? withMonthAdmin.filter(r=>+r.year===maxYearAdmin).map(r=>+r.month) : withMonthAdmin.map(r=>+r.month);
+      const maxMonthAdmin = Math.max(...(monthsPoolAdmin.length ? monthsPoolAdmin : withMonthAdmin.map(r=>+r.month)));
+      const yfA = document.getElementById('f-year'), mfA = document.getElementById('f-month');
+      if(maxYearAdmin) yfA.value = String(maxYearAdmin);
+      mfA.value = String(maxMonthAdmin);
+      onMonthChange();
+      return true;
+    }
+    return false;
+  }
 
   // قفل فلتر الفرع والشخص على المندوب نفسه بس — لازم يحصل الأول قبل أي استدعاء لـ applyFilters()،
   // وإلا أول عرض للكروت (زي "عملاء لم تتم زيارتهم") بيتحسب لحظة ما فلتر الشخص لسه فاضي "الكل"
@@ -4237,12 +4270,13 @@ function renderPerfTable(){
   filtered.forEach(r=>{
     const p = r['الشخص اللي قام بالزياره'];
     if(!p) return;
-    if(!byPerson[p]) byPerson[p] = {type:r.نوع_الشخص, total:0, acc:0, ordersCount:0, ordersVal:0, ordersQty:0, collectCount:0, collectVal:0, points:[]};
+    if(!byPerson[p]) byPerson[p] = {type:r.نوع_الشخص, total:0, acc:0, ordersCount:0, ordersVal:0, ordersQty:0, collectCount:0, collectVal:0, cancel:0, points:[]};
     const g = byPerson[p];
     g.total++;
     if(r.accuracy==='دقيقة') g.acc++;
     if(r['قيمة ف الطلبية']!=='' && r['قيمة ف الطلبية']!=null){ g.ordersCount++; g.ordersVal += orderRawValue(r); g.ordersQty += (+r['الكميه']||0); }
     if(r['قيمة المقبوضات']!=='' && r['قيمة المقبوضات']!=null){ g.collectCount++; g.collectVal += (+r['قيمة المقبوضات']||0); }
+    if(r['سبب الغاء الزيارة']!=='') g.cancel++;
     if(r.lat_visit!=null && r.lat_visit!=='') g.points.push([r.lat_visit, r.lng_visit]);
   });
 
@@ -4258,35 +4292,87 @@ function renderPerfTable(){
     person:p, type:g.type, total:g.total,
     trust: g.total ? Math.round(g.acc/g.total*100) : 0,
     conversion: g.total ? Math.round(g.ordersCount/g.total*100) : 0,
+    cancelPct: g.total ? Math.round(g.cancel/g.total*100) : 0,
     avgOrder: g.ordersCount ? Math.round(g.ordersVal/g.ordersCount) : 0,
     avgOrderQty: g.ordersCount ? Math.round(g.ordersQty/g.ordersCount) : 0,
     avgCollect: g.collectCount ? Math.round(g.collectVal/g.collectCount) : 0,
     spread: spreadKm(g.points)
-  })).sort((a,b)=>b.total-a.total);
+  }));
+
+  // الدرجة الإجمالية (0-100): درجة الثقة 45% + معدل التحويل 35% + (100 - نسبة الإلغاء) 20%
+  rows.forEach(r=>{
+    r.score = Math.round(r.trust*0.45 + r.conversion*0.35 + (100-r.cancelPct)*0.20);
+  });
+  rows.sort((a,b)=>b.score-a.score);
 
   document.getElementById('perf-badge').textContent = rows.length.toLocaleString();
   let html = '';
-  rows.forEach(r=>{
+  rows.forEach((r,idx)=>{
+    const rank = idx+1;
+    const medal = rank===1?'🥇':rank===2?'🥈':rank===3?'🥉':rank;
     const trustClass = r.trust>=80 ? 'pill-green' : r.trust>=50 ? 'pill-orange' : 'pill-red';
+    const scoreClass = r.score>=80 ? 'pill-green' : r.score>=50 ? 'pill-orange' : 'pill-red';
     const spreadText = r.spread==null ? '-' : r.spread.toFixed(1);
     const spreadClass = r.spread==null ? '' : r.spread>15 ? 'dist-no' : r.spread>8 ? '' : 'dist-ok';
-    html += `<tr><td>${esc(r.person)}</td><td><span class="type-badge tb-${r.type}">${esc(r.type)||'-'}</span></td>
+    html += `<tr><td style="text-align:center;font-weight:700">${medal}</td><td>${esc(r.person)}</td><td><span class="type-badge tb-${r.type}">${esc(r.type)||'-'}</span></td>
     <td style="text-align:center">${r.total}</td>
     <td style="text-align:center"><span class="pill ${trustClass}">${r.trust}%</span></td>
     <td style="text-align:center">${r.conversion}%</td>
     <td style="text-align:center" class="money">${r.avgOrder ? r.avgOrder.toLocaleString('ar-IQ') : '-'}</td>
     <td style="text-align:center" class="money qty-col">${r.avgOrderQty ? r.avgOrderQty.toLocaleString('ar-IQ') : '-'}</td>
     <td style="text-align:center" class="money">${r.avgCollect ? r.avgCollect.toLocaleString('ar-IQ') : '-'}</td>
-    <td style="text-align:center" class="${spreadClass}">${spreadText}</td></tr>`;
+    <td style="text-align:center" class="${spreadClass}">${spreadText}</td>
+    <td style="text-align:center"><span class="pill ${scoreClass}">${r.score}</span></td></tr>`;
   });
-  document.getElementById('perf-tbody').innerHTML = html || '<tr><td colspan="9" class="no-data">لا توجد بيانات</td></tr>';
-  EXPORT_DATA.perf = rows.map(r=>({
-    'الشخص':r.person,'النوع':r.type||'','إجمالي الزيارات':r.total,'درجة الثقة %':r.trust,
+  document.getElementById('perf-tbody').innerHTML = html || '<tr><td colspan="11" class="no-data">لا توجد بيانات</td></tr>';
+  EXPORT_DATA.perf = rows.map((r,idx)=>({
+    'الترتيب':idx+1,'الشخص':r.person,'النوع':r.type||'','إجمالي الزيارات':r.total,'درجة الثقة %':r.trust,
     'معدل التحويل %':r.conversion,[isValueHiddenRole()?'متوسط الكمية':'متوسط الطلبية']:r.avgOrder,
     ...(isValueHiddenRole() ? {} : {'متوسط الكمية': r.avgOrderQty}),
     'متوسط التحصيل':r.avgCollect,
-    'نطاق الحركة (كم)': r.spread==null ? '' : r.spread.toFixed(1)
+    'نطاق الحركة (كم)': r.spread==null ? '' : r.spread.toFixed(1),
+    'الدرجة الإجمالية': r.score
   }));
+
+  PERF_ROWS_CACHE = rows;
+  populateCompareBranchSelect();
+  renderCompareChart();
+}
+
+let PERF_ROWS_CACHE = [];
+let compareChartInstance = null;
+
+function populateCompareBranchSelect(){
+  const sel = document.getElementById('cmp-branch');
+  const branches = [...new Set(filtered.map(r=>r.الفرع).filter(Boolean))].sort();
+  const prevVal = sel.value;
+  sel.innerHTML = branches.map(b=>`<option value="${esc(b)}">${esc(b)}</option>`).join('');
+  sel.value = branches.includes(prevVal) ? prevVal : (branches[0] || '');
+}
+
+function renderCompareChart(){
+  const canvas = document.getElementById('compare-chart');
+  if(!canvas) return;
+  const branch = document.getElementById('cmp-branch').value;
+  const metric = document.getElementById('cmp-metric').value;
+
+  const personsInBranch = new Set(filtered.filter(r=>r.الفرع===branch).map(r=>r['الشخص اللي قام بالزياره']).filter(Boolean));
+  const rows = PERF_ROWS_CACHE.filter(r=>personsInBranch.has(r.person));
+
+  const labels = rows.map(r=>r.person);
+  const data = rows.map(r=>r[metric] || 0);
+  const metricLabel = document.getElementById('cmp-metric').selectedOptions[0]?.textContent || '';
+
+  if(compareChartInstance) compareChartInstance.destroy();
+  compareChartInstance = new Chart(canvas.getContext('2d'), {
+    type: 'bar',
+    data: { labels, datasets: [{ label: metricLabel, data, backgroundColor: '#3a6df0' }] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true } }
+    }
+  });
 }
 
 function populateRouteSelectors(){
