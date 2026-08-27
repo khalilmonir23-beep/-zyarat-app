@@ -2872,8 +2872,8 @@ function buildSingleMapHtml(r){
 .pin-label{position:absolute;top:-58px;right:-60px;width:140px;text-align:center;background:#fff;border-radius:6px;padding:2px 6px;font-family:Arial;font-size:11px;font-weight:700;box-shadow:0 2px 6px rgba(0,0,0,.3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 </style></head><body><div id="map"></div><script>
 var map=L.map('map');
-var _clean=L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{attribution:'&copy; OpenStreetMap &copy; CARTO',subdomains:'abcd',maxZoom:20});
-var _detailed=L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{attribution:'&copy; OpenStreetMap &copy; CARTO',subdomains:'abcd',maxZoom:20});
+var _clean=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',{attribution:'Tiles &copy; Esri',maxZoom:19,maxNativeZoom:16});
+var _detailed=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'&copy; OpenStreetMap contributors',subdomains:'abc',maxZoom:19});
 var _satellite=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{attribution:'Tiles &copy; Esri',maxZoom:19,maxNativeZoom:17});
 _clean.addTo(map);
 L.control.layers({'خريطة واضحة':_clean,'خريطة تفصيلية':_detailed,'قمر صناعي':_satellite}, null, {position:'topleft'}).addTo(map);
@@ -3181,8 +3181,8 @@ function openClusterMap(){
     + '<script>'
     + 'var pts = ' + pointsJson + ';'
     + 'var map = L.map("map", {preferCanvas:true});'
-    + 'var _clean=L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",{attribution:"&copy; OpenStreetMap &copy; CARTO",subdomains:"abcd",maxZoom:20});'
-    + 'var _detailed=L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",{attribution:"&copy; OpenStreetMap &copy; CARTO",subdomains:"abcd",maxZoom:20});'
+    + 'var _clean=L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}",{attribution:"Tiles &copy; Esri",maxZoom:19,maxNativeZoom:16});'
+    + 'var _detailed=L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"&copy; OpenStreetMap contributors",subdomains:"abc",maxZoom:19});'
     + 'var _satellite=L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{attribution:"Tiles &copy; Esri",maxZoom:19,maxNativeZoom:17});'
     + '_clean.addTo(map);'
     + 'L.control.layers({"خريطة واضحة":_clean,"خريطة تفصيلية":_detailed,"قمر صناعي":_satellite}, null, {position:"topleft"}).addTo(map);'
@@ -3216,8 +3216,8 @@ function openHeatmap(){
     + '<script>'
     + 'var pts = ' + pointsJson + ';'
     + 'var map = L.map("map");'
-    + 'var _clean=L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",{attribution:"&copy; OpenStreetMap &copy; CARTO",subdomains:"abcd",maxZoom:20});'
-    + 'var _detailed=L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",{attribution:"&copy; OpenStreetMap &copy; CARTO",subdomains:"abcd",maxZoom:20});'
+    + 'var _clean=L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}",{attribution:"Tiles &copy; Esri",maxZoom:19,maxNativeZoom:16});'
+    + 'var _detailed=L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"&copy; OpenStreetMap contributors",subdomains:"abc",maxZoom:19});'
     + 'var _satellite=L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{attribution:"Tiles &copy; Esri",maxZoom:19,maxNativeZoom:17});'
     + '_clean.addTo(map);'
     + 'L.control.layers({"خريطة واضحة":_clean,"خريطة تفصيلية":_detailed,"قمر صناعي":_satellite}, null, {position:"topleft"}).addTo(map);'
@@ -3235,8 +3235,8 @@ let currentClientCardData = null;
 function ensureClientCardMap(){
   if(!clientCardMap){
     clientCardMap = L.map('client-card-map');
-    const clean = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{attribution:'&copy; OpenStreetMap &copy; CARTO',subdomains:'abcd',maxZoom:20});
-    const detailed = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{attribution:'&copy; OpenStreetMap &copy; CARTO',subdomains:'abcd',maxZoom:20});
+    const clean = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',{attribution:'Tiles &copy; Esri',maxZoom:19,maxNativeZoom:16});
+    const detailed = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'&copy; OpenStreetMap contributors',subdomains:'abc',maxZoom:19});
     const satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{attribution:'Tiles &copy; Esri',maxZoom:19,maxNativeZoom:17});
     clean.addTo(clientCardMap);
     L.control.layers({'خريطة واضحة':clean,'خريطة تفصيلية':detailed,'قمر صناعي':satellite}, null, {position:'topleft'}).addTo(clientCardMap);
@@ -3456,8 +3456,8 @@ function openClientCardFullscreen(){
     + '<script>'
     + 'var pts = ' + pointsJson + ';'
     + 'var map = L.map("map");'
-    + 'var _clean=L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",{attribution:"&copy; OpenStreetMap &copy; CARTO",subdomains:"abcd",maxZoom:20});'
-    + 'var _detailed=L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",{attribution:"&copy; OpenStreetMap &copy; CARTO",subdomains:"abcd",maxZoom:20});'
+    + 'var _clean=L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}",{attribution:"Tiles &copy; Esri",maxZoom:19,maxNativeZoom:16});'
+    + 'var _detailed=L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"&copy; OpenStreetMap contributors",subdomains:"abc",maxZoom:19});'
     + 'var _satellite=L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{attribution:"Tiles &copy; Esri",maxZoom:19,maxNativeZoom:17});'
     + '_clean.addTo(map);'
     + 'L.control.layers({"خريطة واضحة":_clean,"خريطة تفصيلية":_detailed,"قمر صناعي":_satellite}, null, {position:"topleft"}).addTo(map);'
@@ -3688,7 +3688,7 @@ function openCoverageGapsMap(){
     + '<script>'
     + 'var pts = ' + payloadJson + ';'
     + 'var map = L.map("map");'
-    + 'var _clean=L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",{attribution:"&copy; OpenStreetMap &copy; CARTO",subdomains:"abcd",maxZoom:20});'
+    + 'var _clean=L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}",{attribution:"Tiles &copy; Esri",maxZoom:19,maxNativeZoom:16});'
     + 'var _satellite=L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{attribution:"Tiles &copy; Esri",maxZoom:19,maxNativeZoom:17});'
     + '_clean.addTo(map);'
     + 'L.control.layers({"خريطة واضحة":_clean,"قمر صناعي":_satellite}, null, {position:"topleft"}).addTo(map);'
@@ -4298,8 +4298,8 @@ function buildTrackingMapHtml(person, date, rows){
     + '<script>'
     + 'var stops = ' + stopsJson + ';'
     + 'var map = L.map("map");'
-    + 'var _clean=L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",{attribution:"&copy; OpenStreetMap &copy; CARTO",subdomains:"abcd",maxZoom:20});'
-    + 'var _detailed=L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",{attribution:"&copy; OpenStreetMap &copy; CARTO",subdomains:"abcd",maxZoom:20});'
+    + 'var _clean=L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}",{attribution:"Tiles &copy; Esri",maxZoom:19,maxNativeZoom:16});'
+    + 'var _detailed=L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"&copy; OpenStreetMap contributors",subdomains:"abc",maxZoom:19});'
     + 'var _satellite=L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{attribution:"Tiles &copy; Esri",maxZoom:19,maxNativeZoom:17});'
     + '_clean.addTo(map);'
     + 'L.control.layers({"خريطة واضحة":_clean,"خريطة تفصيلية":_detailed,"قمر صناعي":_satellite}, null, {position:"topleft"}).addTo(map);'
@@ -4401,7 +4401,7 @@ function openCompareDaysMap(){
     + '<script>'
     + 'var payload = ' + payloadJson + ';'
     + 'var map = L.map("map");'
-    + 'var _clean=L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",{attribution:"&copy; OpenStreetMap &copy; CARTO",subdomains:"abcd",maxZoom:20});'
+    + 'var _clean=L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}",{attribution:"Tiles &copy; Esri",maxZoom:19,maxNativeZoom:16});'
     + '_clean.addTo(map);'
     + 'var bounds = [];'
     + 'var stopMarkers = [];'
@@ -4442,7 +4442,7 @@ let geoPerfMap = null;
 function ensureGeoPerfMap(){
   if(!geoPerfMap){
     geoPerfMap = L.map('geo-perf-map');
-    const clean = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{attribution:'&copy; OpenStreetMap &copy; CARTO',subdomains:'abcd',maxZoom:20});
+    const clean = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',{attribution:'Tiles &copy; Esri',maxZoom:19,maxNativeZoom:16});
     const satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{attribution:'Tiles &copy; Esri',maxZoom:19,maxNativeZoom:17});
     clean.addTo(geoPerfMap);
     L.control.layers({'خريطة واضحة':clean,'قمر صناعي':satellite}, null, {position:'topleft'}).addTo(geoPerfMap);
@@ -4634,7 +4634,7 @@ function openGeoPerfMapFull(){
     + '  return lower.concat(upper);'
     + '}'
     + 'var map = L.map("map");'
-    + 'var _clean=L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",{attribution:"&copy; OpenStreetMap &copy; CARTO",subdomains:"abcd",maxZoom:20});'
+    + 'var _clean=L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}",{attribution:"Tiles &copy; Esri",maxZoom:19,maxNativeZoom:16});'
     + 'var _satellite=L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{attribution:"Tiles &copy; Esri",maxZoom:19,maxNativeZoom:17});'
     + '_clean.addTo(map);'
     + 'L.control.layers({"خريطة واضحة":_clean,"قمر صناعي":_satellite}, null, {position:"topleft"}).addTo(map);'
@@ -4873,8 +4873,8 @@ function openDailyAllRepsMap(){
     + '<script>'
     + 'var reps = ' + payloadJson + ';'
     + 'var map = L.map("map");'
-    + 'var _clean=L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",{attribution:"&copy; OpenStreetMap &copy; CARTO",subdomains:"abcd",maxZoom:20});'
-    + 'var _detailed=L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",{attribution:"&copy; OpenStreetMap &copy; CARTO",subdomains:"abcd",maxZoom:20});'
+    + 'var _clean=L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}",{attribution:"Tiles &copy; Esri",maxZoom:19,maxNativeZoom:16});'
+    + 'var _detailed=L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"&copy; OpenStreetMap contributors",subdomains:"abc",maxZoom:19});'
     + 'var _satellite=L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{attribution:"Tiles &copy; Esri",maxZoom:19,maxNativeZoom:17});'
     + '_clean.addTo(map);'
     + 'L.control.layers({"خريطة واضحة":_clean,"خريطة تفصيلية":_detailed,"قمر صناعي":_satellite}, null, {position:"topleft"}).addTo(map);'
