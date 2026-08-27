@@ -149,6 +149,9 @@ select:focus,input:focus{outline:none;border-color:var(--accent)}
 /* عمود "الكمية" الإضافي بيبان بس للإدارة (اللي شايفة قيمة الطلبية والكمية مع بعض)؛ المندوب/المشرف أصلًا شايفين الكمية بدل القيمة في نفس العمود */
 .qty-col{display:none !important}
 body.role-admin .qty-col{display:table-cell !important}
+/* سطر الكمية الإضافي في كارت KPI الطلبيات (وكارت المشاركة) بيبان بس للإدارة، زي عمود الكمية بالظبط */
+.qty-kpi-line{display:none !important}
+body.role-admin .qty-kpi-line{display:block !important}
 .kpi-clickable:hover{box-shadow:0 4px 14px rgba(0,0,0,.12)}
 .kpi-tap-hint{font-size:10px; color:var(--accent); margin-top:6px; font-weight:600}
 
@@ -637,7 +640,6 @@ body.role-admin .qty-col{display:table-cell !important}
   <button class="tab-btn" id="tabbtn-charts" onclick="switchTab('charts')">📈 الرسوم البيانية</button>
   <button class="tab-btn" id="tabbtn-quality" onclick="switchTab('quality')">🔍 تقارير الجودة</button>
   <button class="tab-btn" id="tabbtn-performance" onclick="switchTab('performance')">🏆 الأداء وخط السير</button>
-  <button class="tab-btn" id="tabbtn-alerts" onclick="switchTab('alerts')">🔔 مركز التنبيهات</button>
   <button class="tab-btn" id="tabbtn-similar" onclick="switchTab('similar')">📍 أماكن متشابهة (كل العملاء)</button>
 </div>
 
@@ -653,7 +655,7 @@ body.role-admin .qty-col{display:table-cell !important}
   <div class="kpi blue kpi-clickable" id="k-total-card" onclick="showTotalVisitsModal()"><div class="kpi-icon">📋</div><div class="kpi-val" id="k-total">0</div><div class="kpi-label">إجمالي الزيارات</div><div class="kpi-sub" id="k-total-clients">0 عميل</div><div class="kpi-tap-hint">اضغط لعرض الأسماء 👆</div></div>
   <div class="kpi green"><div class="kpi-icon">✅</div><div class="kpi-val" id="k-acc">0</div><div class="kpi-label">زيارات دقيقة</div><div class="kpi-sub" id="k-acc-pct">0%</div></div>
   <div class="kpi red"><div class="kpi-icon">❌</div><div class="kpi-val" id="k-inacc">0</div><div class="kpi-label">زيارات غير دقيقة</div><div class="kpi-sub" id="k-inacc-pct">0%</div></div>
-  <div class="kpi orange kpi-clickable" id="k-orders-card" onclick="showOrdersModal()"><div class="kpi-icon">📦</div><div class="kpi-val" id="k-orders">0</div><div class="kpi-label">إجمالي الطلبيات</div><div class="kpi-sub" id="k-orders-val">0 د.ع</div><div class="kpi-tap-hint">اضغط لعرض الأسماء 👆</div></div>
+  <div class="kpi orange kpi-clickable" id="k-orders-card" onclick="showOrdersModal()"><div class="kpi-icon">📦</div><div class="kpi-val" id="k-orders">0</div><div class="kpi-label">إجمالي الطلبيات</div><div class="kpi-sub" id="k-orders-val">0 د.ع</div><div class="kpi-sub qty-kpi-line" id="k-orders-qty">0 كمية</div><div class="kpi-tap-hint">اضغط لعرض الأسماء 👆</div></div>
   <div class="kpi purple"><div class="kpi-icon">💰</div><div class="kpi-val" id="k-collect">0</div><div class="kpi-label">إجمالي التحصيل</div><div class="kpi-sub" id="k-collect-val">0 د.ع</div></div>
   <div class="kpi teal kpi-clickable" id="k-unvisited-card" onclick="showUnvisitedClientsModal()"><div class="kpi-icon">🚫</div><div class="kpi-val" id="k-unvisited">0</div><div class="kpi-label">عملاء لم تتم زيارتهم (الشهر)</div><div class="kpi-sub" id="k-unvisited-pct">من 0 عميل</div><div class="kpi-tap-hint">اضغط لعرض الأسماء 👆</div></div>
   <div class="kpi red kpi-clickable" id="k-shortvisits-card" onclick="showShortVisitsModal()"><div class="kpi-icon">⏱️</div><div class="kpi-val" id="k-shortvisits">0</div><div class="kpi-label">زيارات أقل من 5 دقايق</div><div class="kpi-tap-hint">اضغط لعرض الأسماء 👆</div></div>
@@ -743,6 +745,7 @@ body.role-admin .qty-col{display:table-cell !important}
       <div style="font-size:22px; font-weight:800; color:#c9770a; margin-top:4px;" id="sc-orders">0</div>
       <div style="font-size:11px; color:#70758f; margin-top:2px;">إجمالي الطلبيات</div>
       <div style="font-size:11px; color:#c9770a; margin-top:2px; font-weight:700;" id="sc-orders-val">0</div>
+      <div class="qty-kpi-line" style="font-size:11px; color:#c9770a; margin-top:2px; font-weight:700;" id="sc-orders-qty">0</div>
     </div>
     <div style="grid-column:1/-1; background:#fff; border-radius:12px; padding:14px; text-align:center; box-shadow:0 1px 4px rgba(0,0,0,.08);">
       <div style="font-size:22px;">💰</div>
@@ -1097,16 +1100,6 @@ body.role-admin .qty-col{display:table-cell !important}
     </table></div>
   </div>
 
-  <div class="section-title">🚨 تنبيه: زيارات بمسافة كبيرة جدًا (أكثر من 5 كم)</div>
-  <div class="section-sub">مؤشر مباشر على تلاعب محتمل، وليس مجرد خطأ GPS عادي.</div>
-  <div class="report-card">
-    <div class="report-header"><h4>الزيارات المشبوهة</h4><span class="badge" id="farvisits-badge">0</span><button class="mini-export-btn" style="margin-right:auto" onclick="exportReport('farvisits')">📤 تصدير</button></div>
-    <div class="report-scroll"><table class="report-table" id="farvisits-table">
-      <thead><tr><th>العميل</th><th>الشخص</th><th>التاريخ</th><th style="text-align:center">المسافة (كم)</th></tr></thead>
-      <tbody id="farvisits-tbody"></tbody>
-    </table></div>
-  </div>
-
   <div class="section-title">📉 تنبيه: انخفاض مفاجئ في النشاط</div>
   <div class="section-sub">مقارنة آخر 7 أيام من بيانات الفلتر الحالي مقابل الأسبوع اللي قبله لكل شخص.</div>
   <div class="report-card">
@@ -1209,27 +1202,6 @@ body.role-admin .qty-col{display:table-cell !important}
   </div>
 
 </div><!-- end tab-performance -->
-
-<!-- TAB: ALERTS CENTER -->
-<div class="tab-content" id="tab-alerts">
-  <div class="section-title">🔔 مركز التنبيهات — كل حالات الخطر في مكان واحد</div>
-  <div class="section-sub">القفزة المستحيلة، الزيارات بمسافة كبيرة، الزيارات القصيرة بمعاملة مالية، وانخفاض النشاط — مرتبة حسب الخطورة، أول حاجة تفتحها الصبح.</div>
-
-  <div class="kpi-mini-row">
-    <div class="kpi-mini"><div class="v" id="alert-total">0</div><div class="l">إجمالي التنبيهات</div></div>
-    <div class="kpi-mini"><div class="v" style="color:var(--red)" id="alert-critical">0</div><div class="l">🔴 حرج</div></div>
-    <div class="kpi-mini"><div class="v" style="color:var(--orange)" id="alert-high">0</div><div class="l">🟠 عالي</div></div>
-    <div class="kpi-mini"><div class="v" style="color:var(--green)" id="alert-medium">0</div><div class="l">🟡 متوسط</div></div>
-  </div>
-
-  <div class="report-card">
-    <div class="report-header"><h4>كل التنبيهات (مرتبة حسب الخطورة)</h4><span class="badge" id="alerts-badge">0</span><button class="mini-export-btn" style="margin-right:auto" onclick="exportReport('alerts')">📤 تصدير</button></div>
-    <div class="report-scroll"><table class="report-table" id="alerts-table">
-      <thead><tr><th>الخطورة</th><th>النوع</th><th>الشخص</th><th>التفاصيل</th><th style="text-align:center">القيمة</th><th>التاريخ</th></tr></thead>
-      <tbody id="alerts-tbody"></tbody>
-    </table></div>
-  </div>
-</div><!-- end tab-alerts -->
 
 <!-- TAB: SIMILAR LOCATIONS ACROSS ALL CLIENTS -->
 <div class="tab-content" id="tab-similar">
@@ -1351,7 +1323,6 @@ const TAB_DEFS = [
   {id:'charts', label:'الرسوم البيانية'},
   {id:'quality', label:'تقارير الجودة'},
   {id:'performance', label:'الأداء وخط السير'},
-  {id:'alerts', label:'مركز التنبيهات'},
   {id:'similar', label:'أماكن متشابهة'}
 ];
 
@@ -1710,6 +1681,14 @@ function startAutoSyncInterval(){
 }
 
 /* ---------- الجزء المشترك بين الرفع اليدوي والتحديث التلقائي من Google Sheets ---------- */
+// قيم خاصة بتتحط في عمود "المندوب" (شيت العملاء) للعملاء اللي فيهم مشكلة على السيستم (طلبيات الخبير / عملاء متعثرة / مسحوبات المناديب)
+// أي عميل قيمة عمود المندوب بتاعه واحدة من دول بيتستبعد تمامًا من كل حسابات وتقارير الداشبورد (زي إنه مش موجود في الملف أصلًا).
+// عايز تضيف تصنيف جديد يتستبعد بنفس الطريقة؟ زوّد القيمة هنا بالظبط زي ما هي مكتوبة في عمود المندوب بشيت العملاء.
+const EXCLUDED_REP_TAGS = ['طلبيات الخبير', 'عملاء متعثرة', 'مسحوبات المناديب', 'حذف'];
+function isExcludedRepTag(v){
+  return v != null && EXCLUDED_REP_TAGS.includes(String(v).trim());
+}
+
 function applyWorkbookData(wb, opts){
     const skipUsers = opts && opts.skipUsers;
     const wsClientsName = wb.SheetNames.find(n => n.indexOf('العملاء') !== -1);
@@ -1753,11 +1732,13 @@ function applyWorkbookData(wb, opts){
 
     // clients map (احداثيات 1 = lng, احداثيات 2 = lat, matching original file convention)
     const clientsMap = {};
+    const excludedClientNames = new Set(); // أسماء العملاء اللي المندوب بتاعهم واحد من EXCLUDED_REP_TAGS
     let newData = DATA, monthDaysObj = MONTH_DAYS; // لو الملف "صلاحيات بس" نسيب بيانات الزيارات الحالية زي ما هي
     if(hasClientsVisits){
     clientsRaw.forEach(r=>{
       const name = r['اسم العميل'];
       if(!name) return;
+      if(isExcludedRepTag(r['المندوب'])){ excludedClientNames.add(String(name)); return; }
       clientsMap[String(name)] = {
         lng_client: r['احداثيات 1']!=null ? parseFloat(r['احداثيات 1']) : null,
         lat_client: r['احداثيات 2']!=null ? parseFloat(r['احداثيات 2']) : null,
@@ -1780,6 +1761,7 @@ function applyWorkbookData(wb, opts){
     newData = [];
     visitsRaw.forEach(r=>{
       const clientName = r['العميل'] != null ? String(r['العميل']) : '';
+      if(excludedClientNames.has(clientName)) return; // العميل ده مصنّف كمستبعد — نتجاهل كل زياراته
       const c = clientsMap[clientName] || {};
       const branch = stripBranchPrefix(r['الفرع']);
       const [latV, lngV] = parseCoordsFromUrl(r['موقع الزيارة']);
@@ -1840,7 +1822,7 @@ function applyWorkbookData(wb, opts){
     document.getElementById('visits-data').textContent = safeVisitsJson;
     document.getElementById('month-days-data').textContent = safeMonthJson;
 
-    const clientsMaster = clientsRaw.filter(r=>r['اسم العميل']).map(r=>({
+    const clientsMaster = clientsRaw.filter(r=>r['اسم العميل'] && !isExcludedRepTag(r['المندوب'])).map(r=>({
       'رقم البطاقة': r['رقم البطاقة'] != null ? r['رقم البطاقة'] : '',
       'اسم العميل': String(r['اسم العميل']),
       'المندوب': r['المندوب'] || '',
@@ -2343,7 +2325,6 @@ function applyFilters(){
   else if(currentTab === 'quality') renderQualityReports();
   else if(currentTab === 'performance') renderPerformance();
   else if(currentTab === 'tracking') populateTrackSelectors();
-  else if(currentTab === 'alerts') renderAlertsCenter();
   else if(currentTab === 'coverage') renderCoverageReport2();
   else if(currentTab === 'geomap') populateGeoMapSelectors();
 
@@ -2357,6 +2338,7 @@ function updateKPIs(){
   const ordersArr = filtered.filter(r=>r['قيمة ف الطلبية'] !== '' && r['قيمة ف الطلبية'] !== null);
   const collectArr = filtered.filter(r=>r['قيمة المقبوضات'] !== '' && r['قيمة المقبوضات'] !== null);
   const ordersVal = ordersArr.reduce((s,r)=>s+orderRawValue(r),0);
+  const ordersQty = ordersArr.reduce((s,r)=>s+(+r['الكميه']||0),0);
   const collectVal = collectArr.reduce((s,r)=>s+(+r['قيمة المقبوضات']||0),0);
 
   document.getElementById('k-total').textContent = total.toLocaleString();
@@ -2370,6 +2352,7 @@ function updateKPIs(){
   document.getElementById('k-orders-val').textContent = isValueHiddenRole()
     ? ordersVal.toLocaleString('ar-IQ') + ' باله'
     : ordersVal.toLocaleString('ar-IQ') + ' د.ع';
+  document.getElementById('k-orders-qty').textContent = ordersQty.toLocaleString('ar-IQ') + ' كمية';
   document.getElementById('k-collect').textContent = collectArr.length.toLocaleString();
   document.getElementById('k-collect-val').textContent = collectVal.toLocaleString('ar-IQ') + ' د.ع';
 
@@ -2668,6 +2651,7 @@ function fillShareCardFields(){
   document.getElementById('sc-inacc-pct').textContent = document.getElementById('k-inacc-pct').textContent;
   document.getElementById('sc-orders').textContent = document.getElementById('k-orders').textContent;
   document.getElementById('sc-orders-val').textContent = document.getElementById('k-orders-val').textContent;
+  document.getElementById('sc-orders-qty').textContent = document.getElementById('k-orders-qty').textContent;
   document.getElementById('sc-collect').textContent = document.getElementById('k-collect-val').textContent;
   document.getElementById('sc-unvisited').textContent = document.getElementById('k-unvisited').textContent;
   document.getElementById('sc-unvisited-pct').textContent = document.getElementById('k-unvisited-pct').textContent;
@@ -3028,7 +3012,6 @@ function switchTab(name){
   else if(name==='performance') renderPerformance();
   else if(name==='tracking') populateTrackSelectors();
   else if(name==='geomap'){ populateGeoMapSelectors(); if(geoPerfMap) setTimeout(()=>geoPerfMap.invalidateSize(), 60); }
-  else if(name==='alerts') renderAlertsCenter();
   else if(name==='coverage') renderCoverageReport2();
   else if(name==='clientcard'){ if(clientCardMap) setTimeout(()=>clientCardMap.invalidateSize(), 60); }
   else if(name==='similar') renderSimilarLocationsReport();
@@ -3726,164 +3709,6 @@ function openCoverageGapsMap(){
   openMapWindow(html);
 }
 
-/* ---------- ALERTS CENTER (يجمع كل حالات الخطر مرتبة حسب الخطورة) ---------- */
-function computeAlerts(){
-  const alerts = [];
-
-  // 1) القفزة المستحيلة بين زيارتين متتاليتين لنفس الشخص
-  const byPerson = {};
-  filtered.forEach(r=>{
-    const p = r['الشخص اللي قام بالزياره'];
-    if(!p || r.lat_visit==null || r.lat_visit==='' || !r['تاريخ الزيارة']) return;
-    const dt = toDateTime(r['تاريخ الزيارة'], r['وقت الدخول']);
-    if(!dt) return;
-    if(!byPerson[p]) byPerson[p] = [];
-    byPerson[p].push({r, dt});
-  });
-  Object.entries(byPerson).forEach(([p, arr])=>{
-    arr.sort((a,b)=>a.dt-b.dt);
-    for(let i=1;i<arr.length;i++){
-      const a = arr[i-1], b = arr[i];
-      const minutesDiff = (b.dt - a.dt)/60000;
-      if(minutesDiff <= 0 || minutesDiff > 180) continue;
-      const distKm = haversine(a.r.lat_visit, a.r.lng_visit, b.r.lat_visit, b.r.lng_visit)/1000;
-      const speed = distKm / (minutesDiff/60);
-      if(speed > 60 && distKm > 1){
-        alerts.push({
-          severity:3, severityLabel:'حرج', type:'🚀 قفزة مستحيلة', person:p,
-          detail:`من "${a.r.العميل}" إلى "${b.r.العميل}"`,
-          value:`${Math.round(speed)} كم/س`, date:b.r['تاريخ الزيارة']||''
-        });
-      }
-    }
-  });
-
-  // 2) زيارات بمسافة كبيرة جدًا
-  filtered.forEach(r=>{
-    if(r.distance_m!=='' && r.distance_m!=null && r.distance_m>5000){
-      alerts.push({
-        severity:3, severityLabel:'حرج', type:'🚨 مسافة كبيرة', person:r['الشخص اللي قام بالزياره']||'-',
-        detail:r.العميل||'', value:(r.distance_m/1000).toFixed(1)+' كم', date:r['تاريخ الزيارة']||''
-      });
-    }
-  });
-
-  // 3) زيارات قصيرة جدًا بمعاملة مالية
-  filtered.forEach(r=>{
-    const dur = r['مدة الدقائق'];
-    if(dur==='' || dur==null) return;
-    const hasTxn = (r['قيمة ف الطلبية']!=='' && r['قيمة ف الطلبية']!=null && (+r['قيمة ف الطلبية']>0)) ||
-                   (r['قيمة المقبوضات']!=='' && r['قيمة المقبوضات']!=null && (+r['قيمة المقبوضات']>0));
-    if((+dur<=1) && hasTxn){
-      alerts.push({
-        severity:2, severityLabel:'عالي', type:'⏱️ زيارة قصيرة بمعاملة', person:r['الشخص اللي قام بالزياره']||'-',
-        detail:r.العميل||'', value:Math.round((+dur)*60)+' ثانية', date:r['تاريخ الزيارة']||''
-      });
-    }
-  });
-
-  // 4) انخفاض مفاجئ في النشاط
-  const dates = filtered.map(r=>r['تاريخ الزيارة']).filter(Boolean).sort();
-  if(dates.length){
-    const maxDate = parseDateOnly(dates[dates.length-1]);
-    const cut1 = new Date(maxDate); cut1.setDate(cut1.getDate()-7);
-    const cut2 = new Date(maxDate); cut2.setDate(cut2.getDate()-14);
-    const last7={}, prior7={};
-    filtered.forEach(r=>{
-      if(!r['تاريخ الزيارة'] || !r['الشخص اللي قام بالزياره']) return;
-      const d = parseDateOnly(r['تاريخ الزيارة']);
-      if(!d) return;
-      const p = r['الشخص اللي قام بالزياره'];
-      if(d>cut1 && d<=maxDate) last7[p]=(last7[p]||0)+1;
-      else if(d>cut2 && d<=cut1) prior7[p]=(prior7[p]||0)+1;
-    });
-    Object.keys(prior7).filter(p=>prior7[p]>=3).forEach(p=>{
-      const l7=last7[p]||0, p7=prior7[p];
-      const dropPct = Math.round((1-l7/p7)*100);
-      if(dropPct>=50){
-        alerts.push({
-          severity:1, severityLabel:'متوسط', type:'📉 انخفاض نشاط', person:p,
-          detail:`من ${p7} زيارة لـ ${l7}`, value:'-'+dropPct+'%', date:dates[dates.length-1]
-        });
-      }
-    });
-  }
-
-  // 5) نمط مسار مشبوه: مندوبين مختلفين زاروا نفس مجموعة العملاء بنفس الترتيب تقريبًا في يومين مختلفين
-  const byPersonDay = {};
-  filtered.forEach(r=>{
-    const p = r['الشخص اللي قام بالزياره'], d = r['تاريخ الزيارة'];
-    if(!p || !d || !r.العميل) return;
-    const key = p+'|'+d;
-    if(!byPersonDay[key]) byPersonDay[key] = {person:p, date:d, rows:[]};
-    byPersonDay[key].rows.push(r);
-  });
-  const sequences = Object.values(byPersonDay).map(g=>{
-    const rows = g.rows.slice().sort((a,b)=>(timeStringToMinutes(a['وقت الدخول'])||0)-(timeStringToMinutes(b['وقت الدخول'])||0));
-    return {person:g.person, date:g.date, seq:rows.map(r=>r.العميل)};
-  }).filter(s=>s.seq.length>=3);
-
-  function lcsLength(a,b){
-    const m=a.length, n=b.length;
-    let prev = new Array(n+1).fill(0);
-    for(let i=1;i<=m;i++){
-      const cur = new Array(n+1).fill(0);
-      for(let j=1;j<=n;j++) cur[j] = a[i-1]===b[j-1] ? prev[j-1]+1 : Math.max(prev[j], cur[j-1]);
-      prev = cur;
-    }
-    return prev[n];
-  }
-  const seenPairs = new Set();
-  const maxPairs = 20000; // سقف أمان للأداء
-  let pairCount = 0;
-  outer:
-  for(let i=0;i<sequences.length;i++){
-    for(let j=i+1;j<sequences.length;j++){
-      if(pairCount++ > maxPairs) break outer;
-      const A = sequences[i], B = sequences[j];
-      if(A.person===B.person) continue;
-      const maxLen = Math.max(A.seq.length, B.seq.length);
-      const shared = A.seq.filter(c=>B.seq.includes(c)).length;
-      if(shared/maxLen < 0.6) continue;
-      const orderRatio = lcsLength(A.seq, B.seq)/maxLen;
-      if(orderRatio < 0.6) continue;
-      const pairKey = [A.person+'|'+A.date, B.person+'|'+B.date].sort().join('~~');
-      if(seenPairs.has(pairKey)) continue;
-      seenPairs.add(pairKey);
-      alerts.push({
-        severity:2, severityLabel:'عالي', type:'🔁 نمط مسار مشبوه', person:A.person+' ↔ '+B.person,
-        detail:`مسار ${A.person} في ${A.date} يطابق مسار ${B.person} في ${B.date}`,
-        value:Math.round(orderRatio*100)+'% تطابق', date:A.date
-      });
-    }
-  }
-
-  alerts.sort((a,b)=>b.severity-a.severity);
-  return alerts;
-}
-
-function renderAlertsCenter(){
-  const alerts = computeAlerts();
-  const critical = alerts.filter(a=>a.severity===3).length;
-  const high = alerts.filter(a=>a.severity===2).length;
-  const medium = alerts.filter(a=>a.severity===1).length;
-
-  document.getElementById('alert-total').textContent = alerts.length.toLocaleString();
-  document.getElementById('alert-critical').textContent = critical.toLocaleString();
-  document.getElementById('alert-high').textContent = high.toLocaleString();
-  document.getElementById('alert-medium').textContent = medium.toLocaleString();
-  document.getElementById('alerts-badge').textContent = alerts.length.toLocaleString();
-
-  let html = '';
-  alerts.slice(0,500).forEach(a=>{
-    const cls = a.severity===3 ? 'pill-red' : a.severity===2 ? 'pill-orange' : 'pill-green';
-    html += `<tr><td><span class="pill ${cls}">${a.severityLabel}</span></td><td>${a.type}</td><td>${esc(a.person)}</td><td>${esc(a.detail)}</td><td style="text-align:center;font-weight:700">${a.value}</td><td>${a.date}</td></tr>`;
-  });
-  document.getElementById('alerts-tbody').innerHTML = html || '<tr><td colspan="6" class="no-data">لا توجد تنبيهات ضمن الفلتر الحالي 🎉</td></tr>';
-
-  EXPORT_DATA.alerts = alerts.map(a=>({'الخطورة':a.severityLabel,'النوع':a.type,'الشخص':a.person,'التفاصيل':a.detail,'القيمة':a.value,'التاريخ':a.date}));
-}
-
 /* ---------- QUALITY REPORTS ---------- */
 function renderQualityReports(){
   renderJumpReport();
@@ -3891,7 +3716,6 @@ function renderQualityReports(){
   renderRepeatInaccuracy();
   renderRegionAccuracy();
   renderCoverage();
-  renderFarVisits();
   renderDropAlerts();
   renderGapDays();
   renderChurnRisk();
@@ -4066,19 +3890,6 @@ function renderCoverage(){
   }));
 }
 
-function renderFarVisits(){
-  let rows = filtered.filter(r=>r.distance_m!=='' && r.distance_m!=null && r.distance_m>5000)
-    .sort((a,b)=>b.distance_m-a.distance_m);
-  document.getElementById('farvisits-badge').textContent = rows.length.toLocaleString();
-  let html = '';
-  rows.slice(0,300).forEach(r=>{
-    html += `<tr><td>${esc(r.العميل)}</td><td>${esc(r['الشخص اللي قام بالزياره'])||'-'}</td><td>${r['تاريخ الزيارة']||'-'}</td>
-    <td style="text-align:center"><span class="pill pill-red">${(r.distance_m/1000).toFixed(1)} كم</span></td></tr>`;
-  });
-  document.getElementById('farvisits-tbody').innerHTML = html || '<tr><td colspan="4" class="no-data">لا توجد زيارات بمسافة كبيرة ضمن الفلتر الحالي</td></tr>';
-  EXPORT_DATA.farvisits = rows.map(r=>({'العميل':r.العميل,'الشخص':r['الشخص اللي قام بالزياره']||'','التاريخ':r['تاريخ الزيارة']||'','المسافة (كم)':(r.distance_m/1000).toFixed(1)}));
-}
-
 function renderDropAlerts(){
   const dates = filtered.map(r=>r['تاريخ الزيارة']).filter(Boolean).sort();
   if(dates.length===0){
@@ -4165,7 +3976,23 @@ function renderGapDays(){
 }
 
 function renderChurnRisk(){
-  const dates = filtered.map(r=>r['تاريخ الزيارة']).filter(Boolean).sort();
+  // مؤشر خطر فقدان العميل محتاج نطاق 60 يوم كامل عشان يقدر يقارن الفترتين (30-60 يوم مقابل آخر 30 يوم).
+  // لو استخدمنا "filtered" العادي، وهو مقيّد بفلتر الشهر/اليوم المختار فوق، هيبقى غالبًا شهر واحد بس (30 يوم أو أقل)
+  // وبالتالي مفيش أي عميل هيحقق شرط "زيارتين على الأقل في فترة 30-60 يوم قبل النهاية" وهيفضل التقرير طالع صفر دايمًا.
+  // الحل: نطبّق فلاتر الفرع/النوع/الشخص/الدقة زي العادي، بس نتجاهل فلتري السنة/الشهر/اليوم عشان يفضل عندنا نطاق زمني كافي للمقارنة.
+  const branchF = document.getElementById('f-branch').value;
+  const typeF = document.getElementById('f-type').value;
+  const personF = document.getElementById('f-person').value;
+  const accF = document.getElementById('f-acc').value;
+  const churnScope = DATA.filter(r=>{
+    if(branchF && r.الفرع !== branchF) return false;
+    if(typeF && r.نوع_الشخص !== typeF) return false;
+    if(personF && r['الشخص اللي قام بالزياره'] !== personF) return false;
+    if(accF && r.accuracy !== accF) return false;
+    return true;
+  });
+
+  const dates = churnScope.map(r=>r['تاريخ الزيارة']).filter(Boolean).sort();
   if(dates.length===0){
     document.getElementById('churn-badge').textContent = '0';
     document.getElementById('churn-tbody').innerHTML = '<tr><td colspan="7" class="no-data">لا توجد بيانات كافية</td></tr>';
@@ -4180,7 +4007,7 @@ function renderChurnRisk(){
   const cut60 = new Date(maxDate); cut60.setDate(cut60.getDate()-60);
 
   const byClient = {};
-  filtered.forEach(r=>{
+  churnScope.forEach(r=>{
     if(!r.العميل || !r['تاريخ الزيارة']) return;
     const d = parseDateOnly(r['تاريخ الزيارة']);
     if(!d) return;
@@ -5201,14 +5028,12 @@ const EXPORT_CONFIG = {
   repeat:       {file:'عملاء_متكررة_عدم_الدقة', sheet:'تكرار عدم الدقة'},
   region:       {file:'الدقة_حسب_المنطقة', sheet:'الدقة حسب المنطقة'},
   coverage:     {file:'تغطية_العملاء', sheet:'التغطية'},
-  farvisits:    {file:'زيارات_مسافة_كبيرة', sheet:'مسافة كبيرة'},
   drop:         {file:'انخفاض_النشاط', sheet:'انخفاض النشاط'},
   gap:          {file:'أيام_بدون_نشاط', sheet:'أيام بدون نشاط'},
   churn:        {file:'خطر_فقدان_العملاء', sheet:'خطر الفقدان'},
   scorecard:    {file:'بطاقة_مقارنة_الفروع', sheet:'مقارنة الفروع'},
   perf:         {file:'تقرير_الأداء', sheet:'الأداء'},
   tracking:     {file:'تتبع_الحركة_اليومية', sheet:'تتبع الحركة'},
-  alerts:       {file:'مركز_التنبيهات', sheet:'التنبيهات'},
   coverage2:    {file:'تغطية_العملاء_الشهرية', sheet:'تغطية العملاء'},
   clientcard:   {file:'كارت_العميل', sheet:'زيارات العميل'},
   similar:      {file:'أماكن_متشابهة_كل_العملاء', sheet:'أماكن متشابهة'}
