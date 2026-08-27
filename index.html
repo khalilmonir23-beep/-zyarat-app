@@ -6,12 +6,11 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="مساعد المندوب">
 <meta name="theme-color" content="#f8f9fc">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" href="icon-192.png">
-<title>مساعد المندوب</title>
+<title>ملخص الزيارات الميدانية</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -156,10 +155,6 @@ body.role-admin .qty-col{display:table-cell !important}
 .unvisited-list{max-height:50vh; overflow-y:auto; -webkit-overflow-scrolling:touch; margin-top:14px}
 .unvisited-item{padding:10px 12px; border-radius:8px; background:var(--bg-card2); margin-bottom:6px; font-size:13.5px; color:var(--text-primary); display:flex; align-items:center; gap:8px}
 .unvisited-item::before{content:"📍"; flex-shrink:0}
-.unvisited-item.two-col{justify-content:space-between}
-.unvisited-item .item-name{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
-.unvisited-item .item-badges{display:flex; gap:6px; flex-shrink:0}
-.unvisited-item .item-badge{background:var(--bg-card); border:1px solid var(--border-main); border-radius:6px; padding:2px 8px; font-size:11.5px; font-weight:700; color:var(--accent); white-space:nowrap}
 .share-kpi-btn{
   background:linear-gradient(135deg,#25d366,#1da851); color:#fff; border:none;
   border-radius:10px; padding:10px 20px; font-size:13px; font-weight:700; cursor:pointer;
@@ -311,12 +306,6 @@ body.role-admin .qty-col{display:table-cell !important}
 .admin-panel h3{font-size:16px;color:var(--text-heading);margin-bottom:6px}
 .admin-panel .sub{font-size:12px;color:var(--text-dim);margin-bottom:18px}
 .admin-close{position:absolute;top:14px;left:14px;background:none;border:none;color:var(--text-dim);font-size:18px;cursor:pointer;padding:2px 6px}
-
-/* مودال الخريطة — يفتح داخل نفس الصفحة (iframe) بدل تبويب متصفح جديد، عشان يشتغل صح على آيفون (خصوصًا لو الموقع مضاف كتطبيق للشاشة الرئيسية) */
-.map-modal-overlay{display:none;position:fixed;inset:0;background:rgba(10,12,20,.7);z-index:2500;align-items:center;justify-content:center}
-.map-modal-panel{background:var(--bg-card);border-radius:14px;width:96vw;height:92vh;max-width:900px;box-shadow:0 10px 40px rgba(0,0,0,.4);position:relative;overflow:hidden;display:flex;flex-direction:column}
-.map-modal-close{position:absolute;top:10px;left:10px;z-index:10;background:var(--bg-card);border:1px solid var(--border-main);color:var(--text-primary);font-size:16px;cursor:pointer;padding:6px 12px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.2)}
-.map-modal-panel iframe{flex:1;width:100%;border:none}
 .admin-step{margin-bottom:16px}
 .admin-step label{display:block;font-size:12px;color:var(--text-dim);margin-bottom:6px;font-weight:600}
 .file-input-wrap{border:2px dashed var(--border-input);border-radius:10px;padding:16px;text-align:center;cursor:pointer;transition:.2s;background:var(--bg-card2)}
@@ -637,7 +626,6 @@ body.role-admin .qty-col{display:table-cell !important}
   <button class="tab-btn" id="tabbtn-charts" onclick="switchTab('charts')">📈 الرسوم البيانية</button>
   <button class="tab-btn" id="tabbtn-quality" onclick="switchTab('quality')">🔍 تقارير الجودة</button>
   <button class="tab-btn" id="tabbtn-performance" onclick="switchTab('performance')">🏆 الأداء وخط السير</button>
-  <button class="tab-btn" id="tabbtn-alerts" onclick="switchTab('alerts')">🔔 مركز التنبيهات</button>
   <button class="tab-btn" id="tabbtn-similar" onclick="switchTab('similar')">📍 أماكن متشابهة (كل العملاء)</button>
 </div>
 
@@ -650,13 +638,13 @@ body.role-admin .qty-col{display:table-cell !important}
 
 <!-- KPI CARDS -->
 <div class="kpi-row">
-  <div class="kpi blue kpi-clickable" id="k-total-card" onclick="showTotalVisitsModal()"><div class="kpi-icon">📋</div><div class="kpi-val" id="k-total">0</div><div class="kpi-label">إجمالي الزيارات</div><div class="kpi-sub" id="k-total-clients">0 عميل</div><div class="kpi-tap-hint">اضغط لعرض الأسماء 👆</div></div>
+  <div class="kpi blue"><div class="kpi-icon">📋</div><div class="kpi-val" id="k-total">0</div><div class="kpi-label">إجمالي الزيارات</div><div class="kpi-sub" id="k-total-clients">0 عميل</div></div>
   <div class="kpi green"><div class="kpi-icon">✅</div><div class="kpi-val" id="k-acc">0</div><div class="kpi-label">زيارات دقيقة</div><div class="kpi-sub" id="k-acc-pct">0%</div></div>
   <div class="kpi red"><div class="kpi-icon">❌</div><div class="kpi-val" id="k-inacc">0</div><div class="kpi-label">زيارات غير دقيقة</div><div class="kpi-sub" id="k-inacc-pct">0%</div></div>
-  <div class="kpi orange kpi-clickable" id="k-orders-card" onclick="showOrdersModal()"><div class="kpi-icon">📦</div><div class="kpi-val" id="k-orders">0</div><div class="kpi-label">إجمالي الطلبيات</div><div class="kpi-sub" id="k-orders-val">0 د.ع</div><div class="kpi-tap-hint">اضغط لعرض الأسماء 👆</div></div>
+  <div class="kpi orange"><div class="kpi-icon">📦</div><div class="kpi-val" id="k-orders">0</div><div class="kpi-label">إجمالي الطلبيات</div><div class="kpi-sub" id="k-orders-val">0 د.ع</div></div>
   <div class="kpi purple"><div class="kpi-icon">💰</div><div class="kpi-val" id="k-collect">0</div><div class="kpi-label">إجمالي التحصيل</div><div class="kpi-sub" id="k-collect-val">0 د.ع</div></div>
   <div class="kpi teal kpi-clickable" id="k-unvisited-card" onclick="showUnvisitedClientsModal()"><div class="kpi-icon">🚫</div><div class="kpi-val" id="k-unvisited">0</div><div class="kpi-label">عملاء لم تتم زيارتهم (الشهر)</div><div class="kpi-sub" id="k-unvisited-pct">من 0 عميل</div><div class="kpi-tap-hint">اضغط لعرض الأسماء 👆</div></div>
-  <div class="kpi red kpi-clickable" id="k-shortvisits-card" onclick="showShortVisitsModal()"><div class="kpi-icon">⏱️</div><div class="kpi-val" id="k-shortvisits">0</div><div class="kpi-label">زيارات أقل من 5 دقايق</div><div class="kpi-tap-hint">اضغط لعرض الأسماء 👆</div></div>
+  <div class="kpi red"><div class="kpi-icon">⏱️</div><div class="kpi-val" id="k-shortvisits">0</div><div class="kpi-label">زيارات أقل من 5 دقايق</div></div>
   <div class="kpi blue"><div class="kpi-icon">🕐</div><div class="kpi-val kpi-val-small" id="k-worktime">- ← -</div><div class="kpi-label">بداية وختام الحركة</div><div class="kpi-sub" id="k-worktime-span">-</div></div>
   <div class="kpi indigo"><div class="kpi-icon">⏳</div><div class="kpi-val" id="k-totalduration">0</div><div class="kpi-label">إجمالي وقت الزيارات عند العملاء</div></div>
 </div>
@@ -668,44 +656,6 @@ body.role-admin .qty-col{display:table-cell !important}
     <h3>🚫 عملاء لسه محتاجين زيارة</h3>
     <div class="sub" id="unvisited-modal-sub">قائمة العملاء اللي معندهمش أي زيارة مسجّلة في الفترة الحالية</div>
     <div class="unvisited-list" id="unvisited-list"></div>
-  </div>
-</div>
-
-<!-- مودال الخريطة (يفتح داخل نفس الصفحة بدل تبويب جديد) -->
-<div class="map-modal-overlay" id="map-modal-overlay">
-  <div class="map-modal-panel">
-    <button class="map-modal-close" onclick="closeMapModal()">✕ إغلاق</button>
-    <iframe id="map-modal-iframe"></iframe>
-  </div>
-</div>
-
-<!-- مودال قائمة عملاء إجمالي الزيارات (عدد الزيارات + كمية المبيعات لكل عميل) -->
-<div class="admin-overlay" id="total-visits-overlay">
-  <div class="admin-panel">
-    <button class="admin-close" onclick="closeTotalVisitsModal()">✕</button>
-    <h3>📋 عملاء إجمالي الزيارات</h3>
-    <div class="sub" id="total-visits-modal-sub">عدد الزيارات وكمية المبيعات لكل عميل ضمن الفلتر الحالي</div>
-    <div class="unvisited-list" id="total-visits-list"></div>
-  </div>
-</div>
-
-<!-- مودال قائمة عملاء إجمالي الطلبيات (كمية لكل عميل) -->
-<div class="admin-overlay" id="orders-overlay">
-  <div class="admin-panel">
-    <button class="admin-close" onclick="closeOrdersModal()">✕</button>
-    <h3>📦 عملاء الطلبيات</h3>
-    <div class="sub" id="orders-modal-sub">العملاء اللي اتعملها طلبيات وكميتها ضمن الفلتر الحالي</div>
-    <div class="unvisited-list" id="orders-list"></div>
-  </div>
-</div>
-
-<!-- مودال قائمة عملاء الزيارات أقل من 5 دقايق -->
-<div class="admin-overlay" id="short-visits-overlay">
-  <div class="admin-panel">
-    <button class="admin-close" onclick="closeShortVisitsModal()">✕</button>
-    <h3>⏱️ عملاء الزيارات السريعة (أقل من 5 دقايق)</h3>
-    <div class="sub" id="short-visits-modal-sub">قائمة العملاء اللي زيارتهم استغرقت أقل من 5 دقايق ضمن الفلتر الحالي</div>
-    <div class="unvisited-list" id="short-visits-list"></div>
   </div>
 </div>
 
@@ -1097,16 +1047,6 @@ body.role-admin .qty-col{display:table-cell !important}
     </table></div>
   </div>
 
-  <div class="section-title">🚨 تنبيه: زيارات بمسافة كبيرة جدًا (أكثر من 5 كم)</div>
-  <div class="section-sub">مؤشر مباشر على تلاعب محتمل، وليس مجرد خطأ GPS عادي.</div>
-  <div class="report-card">
-    <div class="report-header"><h4>الزيارات المشبوهة</h4><span class="badge" id="farvisits-badge">0</span><button class="mini-export-btn" style="margin-right:auto" onclick="exportReport('farvisits')">📤 تصدير</button></div>
-    <div class="report-scroll"><table class="report-table" id="farvisits-table">
-      <thead><tr><th>العميل</th><th>الشخص</th><th>التاريخ</th><th style="text-align:center">المسافة (كم)</th></tr></thead>
-      <tbody id="farvisits-tbody"></tbody>
-    </table></div>
-  </div>
-
   <div class="section-title">📉 تنبيه: انخفاض مفاجئ في النشاط</div>
   <div class="section-sub">مقارنة آخر 7 أيام من بيانات الفلتر الحالي مقابل الأسبوع اللي قبله لكل شخص.</div>
   <div class="report-card">
@@ -1128,7 +1068,7 @@ body.role-admin .qty-col{display:table-cell !important}
   </div>
 
   <div class="section-title">⚠️ مؤشر خطر فقدان العميل (Churn Risk)</div>
-  <div class="section-sub">عملاء كانوا بيتزاروا بانتظام (زيارتين على الأقل في فترة 30-60 يوم قبل النهاية) وبعدين نشاطهم قلّ بشكل حاد أو توقف تمامًا في آخر 30 يوم — إنذار مبكر قبل ما تخسرهم فعليًا.</div>
+  <div class="section-sub">عملاء كانوا بيتزاروا بانتظام (زيارتين على الأقل في فترة 30-60 يوم قبل النهاية) وبعدين نشاطهم قلّ بشكل حاد أو توقف تمامًا في آخر 30 يوم — إنذار مبكر قبل ما تخسرهم فعليًا. ملحوظة: التحليل ده بيشوف كل التاريخ المتاح (بيتجاهل فلتر الشهر/اليوم عمدًا) عشان يقدر يقارن الفترتين صح.</div>
   <div class="kpi-mini-row">
     <div class="kpi-mini"><div class="v" id="churn-total">0</div><div class="l">عملاء في خطر</div></div>
     <div class="kpi-mini"><div class="v" style="color:var(--red)" id="churn-stopped">0</div><div class="l">توقفوا تمامًا</div></div>
@@ -1164,29 +1104,12 @@ body.role-admin .qty-col{display:table-cell !important}
   <div class="report-card">
     <div class="report-header"><h4>جدول الأداء الكامل</h4><span class="badge" id="perf-badge">0</span><button class="mini-export-btn" style="margin-right:auto" onclick="exportReport('perf')">📤 تصدير</button></div>
     <div class="report-scroll"><table class="report-table" id="perf-table">
-      <thead><tr><th>#</th><th>الشخص</th><th>النوع</th><th style="text-align:center">إجمالي الزيارات</th>
+      <thead><tr><th>الشخص</th><th>النوع</th><th style="text-align:center">إجمالي الزيارات</th>
       <th style="text-align:center">درجة الثقة</th><th style="text-align:center">معدل التحويل</th>
       <th style="text-align:center" id="th-order-5">متوسط الطلبية</th><th style="text-align:center" class="qty-col">متوسط الكمية</th><th style="text-align:center">متوسط التحصيل</th>
-      <th style="text-align:center">نطاق الحركة (كم)</th><th style="text-align:center">الدرجة الإجمالية</th></tr></thead>
+      <th style="text-align:center">نطاق الحركة (كم)</th></tr></thead>
       <tbody id="perf-tbody"></tbody>
     </table></div>
-  </div>
-
-  <div class="section-title">📊 مقارنة المندوبين داخل نفس الفرع</div>
-  <div class="section-sub">اختر فرع ومؤشر — يقارن كل مندوبين هذا الفرع جنبًا إلى جنب على نفس المقياس.</div>
-  <div class="report-card">
-    <div class="report-header" style="gap:12px; flex-wrap:wrap">
-      <h4>مقارنة المندوبين</h4>
-      <select id="cmp-branch" onchange="renderCompareChart()" style="margin-right:8px"></select>
-      <select id="cmp-metric" onchange="renderCompareChart()">
-        <option value="trust">درجة الثقة %</option>
-        <option value="conversion">معدل التحويل %</option>
-        <option value="total">عدد الزيارات</option>
-        <option value="avgCollect">متوسط التحصيل</option>
-        <option value="score">الدرجة الإجمالية</option>
-      </select>
-    </div>
-    <div style="padding:16px 20px; height:320px"><canvas id="compare-chart"></canvas></div>
   </div>
 
   <div class="section-title">🧭 اقتراح ترتيب خط سير (Route Optimization)</div>
@@ -1209,27 +1132,6 @@ body.role-admin .qty-col{display:table-cell !important}
   </div>
 
 </div><!-- end tab-performance -->
-
-<!-- TAB: ALERTS CENTER -->
-<div class="tab-content" id="tab-alerts">
-  <div class="section-title">🔔 مركز التنبيهات — كل حالات الخطر في مكان واحد</div>
-  <div class="section-sub">القفزة المستحيلة، الزيارات بمسافة كبيرة، الزيارات القصيرة بمعاملة مالية، وانخفاض النشاط — مرتبة حسب الخطورة، أول حاجة تفتحها الصبح.</div>
-
-  <div class="kpi-mini-row">
-    <div class="kpi-mini"><div class="v" id="alert-total">0</div><div class="l">إجمالي التنبيهات</div></div>
-    <div class="kpi-mini"><div class="v" style="color:var(--red)" id="alert-critical">0</div><div class="l">🔴 حرج</div></div>
-    <div class="kpi-mini"><div class="v" style="color:var(--orange)" id="alert-high">0</div><div class="l">🟠 عالي</div></div>
-    <div class="kpi-mini"><div class="v" style="color:var(--green)" id="alert-medium">0</div><div class="l">🟡 متوسط</div></div>
-  </div>
-
-  <div class="report-card">
-    <div class="report-header"><h4>كل التنبيهات (مرتبة حسب الخطورة)</h4><span class="badge" id="alerts-badge">0</span><button class="mini-export-btn" style="margin-right:auto" onclick="exportReport('alerts')">📤 تصدير</button></div>
-    <div class="report-scroll"><table class="report-table" id="alerts-table">
-      <thead><tr><th>الخطورة</th><th>النوع</th><th>الشخص</th><th>التفاصيل</th><th style="text-align:center">القيمة</th><th>التاريخ</th></tr></thead>
-      <tbody id="alerts-tbody"></tbody>
-    </table></div>
-  </div>
-</div><!-- end tab-alerts -->
 
 <!-- TAB: SIMILAR LOCATIONS ACROSS ALL CLIENTS -->
 <div class="tab-content" id="tab-similar">
@@ -1299,7 +1201,7 @@ body.role-admin .qty-col{display:table-cell !important}
 <script type="application/json" id="visits-data">[]</script>
 <script type="application/json" id="month-days-data">{}</script>
 <script type="application/json" id="clients-data">[]</script>
-<script type="application/json" id="users-data">[]</script>
+<script type="application/json" id="users-data">[{"username": "خليل", "password": "123", "branch": "كل الفروع", "role": "إدارة", "person": "", "tabs": null}, {"username": "هيبتك", "password": "123", "branch": "كل الفروع", "role": "إدارة", "person": "", "tabs": null}, {"username": "الناصريه", "password": "123", "branch": "فرع الناصرية", "role": "مشرف", "person": "", "tabs": ["charts", "quality", "performance", "dashboard", "tracking", "coverage", "geomap"]}, {"username": "البصره", "password": "123", "branch": "فرع البصرة", "role": "مشرف", "person": "", "tabs": ["charts", "quality", "performance", "dashboard", "tracking", "coverage", "geomap"]}, {"username": "بغداد", "password": "123", "branch": "فرع بغداد", "role": "مشرف", "person": "", "tabs": ["charts", "quality", "performance", "dashboard", "tracking", "coverage", "geomap"]}, {"username": "النجف", "password": "123", "branch": "فرع النجف", "role": "مشرف", "person": "", "tabs": ["charts", "quality", "performance", "dashboard", "tracking", "coverage", "geomap"]}, {"username": "المثني", "password": "123", "branch": "فرع المثنى", "role": "مشرف", "person": "", "tabs": ["charts", "quality", "performance", "dashboard", "tracking", "coverage", "geomap"]}, {"username": "العماره", "password": "123", "branch": "فرع العماره", "role": "مشرف", "person": "", "tabs": ["charts", "quality", "performance", "dashboard", "tracking", "coverage", "geomap"]}, {"username": "مندوب 1", "password": "666724", "branch": "فرع الناصرية", "role": "مندوب", "person": "المندوب علي محمد احمد", "tabs": ["dashboard", "tracking", "geomap"]}, {"username": "مندوب 2", "password": "199244", "branch": "فرع الناصرية", "role": "مندوب", "person": "المندوب سيف محمد عبد الله", "tabs": ["dashboard", "tracking", "geomap"]}, {"username": "مندوب 3", "password": "2515", "branch": "فرع الناصرية", "role": "مندوب", "person": "المندوب عقيل كاظم خضير", "tabs": ["dashboard", "tracking", "geomap"]}, {"username": "مندوب 4", "password": "12123456", "branch": "فرع الناصرية", "role": "مندوب", "person": "المندوب سيف الدين احمد", "tabs": ["dashboard", "tracking", "geomap"]}, {"username": "مندوب 5", "password": "1992", "branch": "فرع الناصرية", "role": "مندوب", "person": "المندوب حسين علي حسين", "tabs": ["dashboard", "tracking", "geomap"]}, {"username": "مندوب 6", "password": "1212", "branch": "فرع البصرة", "role": "مندوب", "person": "المندوب انمار كامل فرعون", "tabs": ["dashboard", "tracking", "geomap"]}, {"username": "مندوب 7", "password": "123", "branch": "فرع البصرة", "role": "مندوب", "person": "المندوب سجاد ميثم زيدان", "tabs": ["dashboard", "tracking", "geomap"]}, {"username": "مندوب 8", "password": "123", "branch": "فرع البصرة", "role": "مندوب", "person": "المندوب مجتبى اسعد فالح", "tabs": ["dashboard", "tracking", "geomap"]}, {"username": "مندوب 9", "password": "7200", "branch": "فرع البصرة", "role": "مندوب", "person": "المندوب محمد قاسم رمضان", "tabs": ["dashboard", "tracking", "geomap"]}, {"username": "مندوب 10", "password": "5551", "branch": "فرع المثنى", "role": "مندوب", "person": "المندوب احمد حسن محمود", "tabs": ["dashboard", "tracking", "geomap"]}, {"username": "مندوب 11", "password": "1212", "branch": "فرع النجف", "role": "مندوب", "person": "المندوب فاضل عصري فاضل", "tabs": ["dashboard", "tracking", "geomap"]}, {"username": "مندوب 12", "password": "1100", "branch": "فرع النجف", "role": "مندوب", "person": "المندوب محمد قاسم صالح", "tabs": ["dashboard", "tracking", "geomap"]}, {"username": "مندوب 13", "password": "123", "branch": "فرع النجف", "role": "مندوب", "person": "المندوب مصطفى فاضل اسود", "tabs": ["dashboard", "tracking", "geomap"]}, {"username": "مندوب 14", "password": "456", "branch": "فرع العماره", "role": "مندوب", "person": "المندوب محمد كريم صفر", "tabs": ["dashboard", "tracking", "geomap"]}, {"username": "مندوب 15", "password": "1992", "branch": "فرع بغداد", "role": "مندوب", "person": "المندوب سلام جبار -بغداد", "tabs": ["dashboard", "tracking", "geomap"]}, {"username": "مندوب 16", "password": "123", "branch": "فرع بغداد", "role": "مندوب", "person": "المندوب حسين علي عواد - بغداد", "tabs": ["dashboard", "tracking", "geomap"]}, {"username": "مندوب 17", "password": "123", "branch": "فرع بغداد", "role": "مندوب", "person": "المندوب فراس احمد سعدون - بغداد", "tabs": ["dashboard", "tracking", "geomap"]}, {"username": "مندوب 18", "password": "123", "branch": "فرع بغداد", "role": "مندوب", "person": "المندوب - كرار جاسم لعيبي - بغداد", "tabs": ["dashboard", "tracking", "geomap"]}, {"username": "مندوب 19", "password": "123", "branch": "فرع البصرة", "role": "مندوب", "person": "المندوب محمد كمال ناجي", "tabs": ["dashboard", "tracking", "geomap"]}, {"username": "مندوب 20", "password": "123", "branch": "فرع بغداد", "role": "مندوب", "person": "المندوب -علي عبدالحسين عرنوص - بغداد", "tabs": ["dashboard", "tracking", "geomap"]}]</script>
 
 <script>
 const MONTH_NAMES = {"1":"يناير","2":"فبراير","3":"مارس","4":"أبريل","5":"مايو","6":"يونيو","7":"يوليو","8":"أغسطس","9":"سبتمبر","10":"أكتوبر","11":"نوفمبر","12":"ديسمبر"};
@@ -1309,6 +1211,12 @@ let MONTH_DAYS = JSON.parse(document.getElementById('month-days-data').textConte
 let CLIENTS = JSON.parse(document.getElementById('clients-data').textContent);
 let USERS = JSON.parse(document.getElementById('users-data').textContent);
 let currentUser = null;
+
+// قيم خاصة بتتحط في عمود "المندوب" بشيت العملاء مش كأسماء مناديب حقيقية، وبتُستخدم لتصنيف عملاء
+// فيهم مشكلة (بدل ما تتمسح الصفوف). التقارير والحسابات (خصوصًا تقارير الجودة والتغطية) لازم تستبعدها كلها
+// من أي حساب لأداء مندوب حقيقي، مش بس "حذف".
+const EXCLUDED_CLIENT_TAGS = ['حذف', 'طلبيات الخبير', 'عملاء متعثرة', 'مسحوبات المناديب'];
+function isExcludedClientTag(v){ return EXCLUDED_CLIENT_TAGS.includes(v); }
 
 // المندوب والمشرف يشوفوا "الكمية" بدل "قيمة الطلبية" في كل مكان — الإدارة بس اللي تشوف القيمة المالية الحقيقية
 function isValueHiddenRole(){
@@ -1351,7 +1259,6 @@ const TAB_DEFS = [
   {id:'charts', label:'الرسوم البيانية'},
   {id:'quality', label:'تقارير الجودة'},
   {id:'performance', label:'الأداء وخط السير'},
-  {id:'alerts', label:'مركز التنبيهات'},
   {id:'similar', label:'أماكن متشابهة'}
 ];
 
@@ -1366,9 +1273,7 @@ let currentLeaderboardMetric = 'visits';
 let EXPORT_DATA = {};
 
 /* ---------- LOGIN / ACCESS CONTROL ---------- */
-const LOGIN_API_URL = 'https://script.google.com/macros/s/AKfycbx1Uj3J_bG3lZzH1YPCwMb7JTT4TorczaeAaa_frLzUF3OPCno4cFD4ZpIF9wxWDnZ3-g/exec';
-
-async function doLogin(){
+function doLogin(){
   const uname = document.getElementById('login-username').value.trim();
   const pwd = document.getElementById('login-password').value;
   const errEl = document.getElementById('login-error');
@@ -1379,30 +1284,14 @@ async function doLogin(){
     errEl.style.display = 'block';
     return;
   }
-
-  const loginBtn = document.querySelector('.login-btn');
-  if(loginBtn){ loginBtn.disabled = true; loginBtn.textContent = 'جارٍ التحقق...'; }
-
-  try{
-    const url = `${LOGIN_API_URL}?username=${encodeURIComponent(uname)}&password=${encodeURIComponent(pwd)}`;
-    const res = await fetch(url);
-    const result = await res.json();
-
-    if(!result.success){
-      errEl.textContent = 'اسم المستخدم أو كلمة السر غير صحيحة';
-      errEl.style.display = 'block';
-      return;
-    }
-
-    const match = result.user;
-    try{ sessionStorage.setItem('visits_dashboard_user', JSON.stringify(match)); }catch(e){}
-    startSession(match);
-  }catch(err){
-    errEl.textContent = 'تعذر الاتصال بالسيرفر، حاول مرة ثانية';
+  const match = USERS.find(u => u.username === uname && String(u.password) === String(pwd));
+  if(!match){
+    errEl.textContent = 'اسم المستخدم أو كلمة السر غير صحيحة';
     errEl.style.display = 'block';
-  }finally{
-    if(loginBtn){ loginBtn.disabled = false; loginBtn.textContent = 'دخول'; }
+    return;
   }
+  try{ sessionStorage.setItem('visits_dashboard_user', JSON.stringify(match)); }catch(e){}
+  startSession(match);
 }
 
 function doLogout(){
@@ -1444,7 +1333,8 @@ function startSession(user){
   if(!saved) return;
   try{
     const user = JSON.parse(saved);
-    if(user && user.username) startSession(user);
+    const stillValid = USERS.find(u => u.username===user.username && String(u.password)===String(user.password) && u.branch===user.branch);
+    if(stillValid) startSession(stillValid);
   }catch(e){}
 })();
 
@@ -2109,23 +1999,7 @@ function applyRoleRestrictions(){
     switchTab(allowed[0] || 'dashboard');
   }
 
-  if(role === 'إدارة'){
-    // الإدارة ما تنقفلش على شهر معيّن (تقدر تشوف كل الفترات وقت ما تريد)، بس افتراضيًا نعرض أحدث شهر بس
-    // بدل كل السنة دفعة وحدة، عشان أول تحميل للصفحة يكون أسرع — وتقدر ترجع لـ"الكل" بضغطة وحدة من الفلتر
-    const withMonthAdmin = DATA.filter(r=>r.month);
-    if(withMonthAdmin.length){
-      const yearsPresentAdmin = withMonthAdmin.map(r=>+r.year).filter(Boolean);
-      const maxYearAdmin = yearsPresentAdmin.length ? Math.max(...yearsPresentAdmin) : null;
-      const monthsPoolAdmin = maxYearAdmin ? withMonthAdmin.filter(r=>+r.year===maxYearAdmin).map(r=>+r.month) : withMonthAdmin.map(r=>+r.month);
-      const maxMonthAdmin = Math.max(...(monthsPoolAdmin.length ? monthsPoolAdmin : withMonthAdmin.map(r=>+r.month)));
-      const yfA = document.getElementById('f-year'), mfA = document.getElementById('f-month');
-      if(maxYearAdmin) yfA.value = String(maxYearAdmin);
-      mfA.value = String(maxMonthAdmin);
-      onMonthChange();
-      return true;
-    }
-    return false;
-  }
+  if(role === 'إدارة') return false; // بدون قيود على الفترة أو الشخص — applyFilters لسه ما اتنداهاش
 
   // قفل فلتر الفرع والشخص على المندوب نفسه بس — لازم يحصل الأول قبل أي استدعاء لـ applyFilters()،
   // وإلا أول عرض للكروت (زي "عملاء لم تتم زيارتهم") بيتحسب لحظة ما فلتر الشخص لسه فاضي "الكل"
@@ -2343,7 +2217,6 @@ function applyFilters(){
   else if(currentTab === 'quality') renderQualityReports();
   else if(currentTab === 'performance') renderPerformance();
   else if(currentTab === 'tracking') populateTrackSelectors();
-  else if(currentTab === 'alerts') renderAlertsCenter();
   else if(currentTab === 'coverage') renderCoverageReport2();
   else if(currentTab === 'geomap') populateGeoMapSelectors();
 
@@ -2357,6 +2230,7 @@ function updateKPIs(){
   const ordersArr = filtered.filter(r=>r['قيمة ف الطلبية'] !== '' && r['قيمة ف الطلبية'] !== null);
   const collectArr = filtered.filter(r=>r['قيمة المقبوضات'] !== '' && r['قيمة المقبوضات'] !== null);
   const ordersVal = ordersArr.reduce((s,r)=>s+orderRawValue(r),0);
+  const ordersQty = ordersArr.reduce((s,r)=>s+(+r['الكميه']||0),0);
   const collectVal = collectArr.reduce((s,r)=>s+(+r['قيمة المقبوضات']||0),0);
 
   document.getElementById('k-total').textContent = total.toLocaleString();
@@ -2369,7 +2243,7 @@ function updateKPIs(){
   document.getElementById('k-orders').textContent = ordersArr.length.toLocaleString();
   document.getElementById('k-orders-val').textContent = isValueHiddenRole()
     ? ordersVal.toLocaleString('ar-IQ') + ' باله'
-    : ordersVal.toLocaleString('ar-IQ') + ' د.ع';
+    : ordersVal.toLocaleString('ar-IQ') + ' د.ع (' + ordersQty.toLocaleString('ar-IQ') + ' باله)';
   document.getElementById('k-collect').textContent = collectArr.length.toLocaleString();
   document.getElementById('k-collect-val').textContent = collectVal.toLocaleString('ar-IQ') + ' د.ع';
 
@@ -2424,7 +2298,7 @@ function updateExtraKPIs(){
 
   // 1) عملاء لم تتم زيارتهم خلال الفترة المحددة (أو خلال كل البيانات لو مفيش شهر محدد)
   //    النطاق: عملاء خط سير المندوب المحدد (أو كل عملاء الفرع لو مفيش شخص محدد)، من شيت العملاء الأساسي
-  let clientsScope = CLIENTS.filter(c => c.المندوب && c.المندوب !== 'حذف');
+  let clientsScope = CLIENTS.filter(c => c.المندوب && !isExcludedClientTag(c.المندوب));
   if(branch) clientsScope = clientsScope.filter(c => c.الفرع === branch);
   if(person) clientsScope = clientsScope.filter(c => c.المندوب === person);
 
@@ -2521,95 +2395,6 @@ function showUnvisitedClientsModal(){
 
 function closeUnvisitedClientsModal(){
   document.getElementById('unvisited-overlay').style.display = 'none';
-}
-
-// ============ إجمالي الزيارات — عدد الزيارات + كمية المبيعات لكل عميل ============
-function showTotalVisitsModal(){
-  const listEl = document.getElementById('total-visits-list');
-  const subEl = document.getElementById('total-visits-modal-sub');
-
-  const byClient = {};
-  filtered.forEach(r=>{
-    if(!r.العميل) return;
-    if(!byClient[r.العميل]) byClient[r.العميل] = { visits:0, qty:0 };
-    byClient[r.العميل].visits++;
-    byClient[r.العميل].qty += (+r['الكميه'] || 0);
-  });
-  const rows = Object.keys(byClient).map(name => ({ name, ...byClient[name] })).sort((a,b)=>b.visits - a.visits);
-
-  if(!rows.length){
-    listEl.innerHTML = '<div class="no-data">مافي زيارات ضمن الفلتر الحالي</div>';
-  } else {
-    listEl.innerHTML = rows.map(row => `
-      <div class="unvisited-item two-col">
-        <span class="item-name">${esc(row.name)}</span>
-        <span class="item-badges">
-          <span class="item-badge">${row.visits.toLocaleString()} زيارة</span>
-          <span class="item-badge">${row.qty.toLocaleString('ar-IQ')} كمية</span>
-        </span>
-      </div>`).join('');
-  }
-  subEl.textContent = `${rows.length.toLocaleString()} عميل ضمن الفلتر الحالي`;
-  document.getElementById('total-visits-overlay').style.display = 'flex';
-}
-
-function closeTotalVisitsModal(){
-  document.getElementById('total-visits-overlay').style.display = 'none';
-}
-
-// ============ إجمالي الطلبيات — العملاء اللي اتعملها طلبيات + الكمية ============
-function showOrdersModal(){
-  const listEl = document.getElementById('orders-list');
-  const subEl = document.getElementById('orders-modal-sub');
-
-  const ordersArr = filtered.filter(r=>r['قيمة ف الطلبية'] !== '' && r['قيمة ف الطلبية'] !== null && r.العميل);
-  const byClient = {};
-  ordersArr.forEach(r=>{
-    if(!byClient[r.العميل]) byClient[r.العميل] = { orders:0, qty:0 };
-    byClient[r.العميل].orders++;
-    byClient[r.العميل].qty += (+r['الكميه'] || 0);
-  });
-  const rows = Object.keys(byClient).map(name => ({ name, ...byClient[name] })).sort((a,b)=>b.qty - a.qty);
-
-  if(!rows.length){
-    listEl.innerHTML = '<div class="no-data">مافي طلبيات ضمن الفلتر الحالي</div>';
-  } else {
-    listEl.innerHTML = rows.map(row => `
-      <div class="unvisited-item two-col">
-        <span class="item-name">${esc(row.name)}</span>
-        <span class="item-badges">
-          <span class="item-badge">${row.orders.toLocaleString()} طلبية</span>
-          <span class="item-badge">${row.qty.toLocaleString('ar-IQ')} كمية</span>
-        </span>
-      </div>`).join('');
-  }
-  subEl.textContent = `${rows.length.toLocaleString()} عميل ضمن الفلتر الحالي`;
-  document.getElementById('orders-overlay').style.display = 'flex';
-}
-
-function closeOrdersModal(){
-  document.getElementById('orders-overlay').style.display = 'none';
-}
-
-// ============ زيارات أقل من 5 دقايق — أسماء العملاء بس ============
-function showShortVisitsModal(){
-  const listEl = document.getElementById('short-visits-list');
-  const subEl = document.getElementById('short-visits-modal-sub');
-
-  const shortVisitsArr = filtered.filter(r => r['مدة الدقائق'] !== '' && r['مدة الدقائق'] != null && +r['مدة الدقائق'] < 5 && r.العميل);
-  const names = shortVisitsArr.map(r=>r.العميل).sort((a,b)=>a.localeCompare(b,'ar'));
-
-  if(!names.length){
-    listEl.innerHTML = '<div class="no-data">مافي زيارات أقل من 5 دقايق ضمن الفلتر الحالي</div>';
-  } else {
-    listEl.innerHTML = names.map(name => `<div class="unvisited-item">${esc(name)}</div>`).join('');
-  }
-  subEl.textContent = `${names.length.toLocaleString()} زيارة أقل من 5 دقايق ضمن الفلتر الحالي`;
-  document.getElementById('short-visits-overlay').style.display = 'flex';
-}
-
-function closeShortVisitsModal(){
-  document.getElementById('short-visits-overlay').style.display = 'none';
 }
 
 let shareCardFile = null;
@@ -3028,7 +2813,6 @@ function switchTab(name){
   else if(name==='performance') renderPerformance();
   else if(name==='tracking') populateTrackSelectors();
   else if(name==='geomap'){ populateGeoMapSelectors(); if(geoPerfMap) setTimeout(()=>geoPerfMap.invalidateSize(), 60); }
-  else if(name==='alerts') renderAlertsCenter();
   else if(name==='coverage') renderCoverageReport2();
   else if(name==='clientcard'){ if(clientCardMap) setTimeout(()=>clientCardMap.invalidateSize(), 60); }
   else if(name==='similar') renderSimilarLocationsReport();
@@ -3087,10 +2871,10 @@ function renderHourlyChart(){
   if(typeof Chart === 'undefined') return;
   const counts = new Array(24).fill(0);
   filtered.forEach(r=>{
-    const mins = timeStringToMinutes(r['وقت الدخول']);
-    if(mins == null) return;
-    const h = Math.floor(mins/60) % 24;
-    counts[h]++;
+    const t = r['وقت الدخول'];
+    if(!t) return;
+    const h = parseInt(String(t).split(':')[0], 10);
+    if(!isNaN(h) && h>=0 && h<24) counts[h]++;
   });
   const labels = counts.map((_,i)=>i+':00');
   const c = themeColors();
@@ -3164,9 +2948,10 @@ function renderTrendChart(){
   const canvas = document.getElementById('chart-trend');
   if(trendChartInstance) trendChartInstance.destroy();
   trendChartInstance = new Chart(canvas.getContext('2d'), {
+    type:'line',
     data:{ labels: dates, datasets:[
-      { type:'bar', label:'عدد الزيارات', data: totals, backgroundColor:'#c9d6f0', borderRadius:3, yAxisID:'y', order:2 },
-      { type:'line', label:'نسبة الدقة %', data: accPct, borderColor:'#1e8e5a', backgroundColor:'transparent', yAxisID:'y1', tension:.3, pointRadius:0, borderWidth:2.5, order:1 }
+      { label:'عدد الزيارات', data: totals, borderColor:'#1d4fa3', backgroundColor:'transparent', yAxisID:'y', tension:.3, pointRadius:0 },
+      { label:'نسبة الدقة %', data: accPct, borderColor:'#1e8e5a', backgroundColor:'transparent', yAxisID:'y1', tension:.3, pointRadius:0 }
     ]},
     options:{
       responsive:true, maintainAspectRatio:false,
@@ -3589,7 +3374,7 @@ function renderCoverageReport2(){
   // عدد عملاء خط سير كل مندوب (من شيت العملاء الأساسي)
   const routeCountByRep = {};
   clientsScope.forEach(c=>{
-    if(!c.المندوب || c.المندوب==='حذف') return;
+    if(!c.المندوب || isExcludedClientTag(c.المندوب)) return;
     routeCountByRep[c.المندوب] = (routeCountByRep[c.المندوب]||0) + 1;
   });
 
@@ -3665,7 +3450,7 @@ function openCoverageGapsMap(){
 
   const clientsScope = CLIENTS.filter(c=>{
     if(branch && c.الفرع!==branch) return false;
-    if(c.المندوب==='حذف') return false;
+    if(isExcludedClientTag(c.المندوب)) return false;
     if(c.lat_client==='' || c.lat_client==null) return false;
     return true;
   });
@@ -3726,163 +3511,6 @@ function openCoverageGapsMap(){
   openMapWindow(html);
 }
 
-/* ---------- ALERTS CENTER (يجمع كل حالات الخطر مرتبة حسب الخطورة) ---------- */
-function computeAlerts(){
-  const alerts = [];
-
-  // 1) القفزة المستحيلة بين زيارتين متتاليتين لنفس الشخص
-  const byPerson = {};
-  filtered.forEach(r=>{
-    const p = r['الشخص اللي قام بالزياره'];
-    if(!p || r.lat_visit==null || r.lat_visit==='' || !r['تاريخ الزيارة']) return;
-    const dt = toDateTime(r['تاريخ الزيارة'], r['وقت الدخول']);
-    if(!dt) return;
-    if(!byPerson[p]) byPerson[p] = [];
-    byPerson[p].push({r, dt});
-  });
-  Object.entries(byPerson).forEach(([p, arr])=>{
-    arr.sort((a,b)=>a.dt-b.dt);
-    for(let i=1;i<arr.length;i++){
-      const a = arr[i-1], b = arr[i];
-      const minutesDiff = (b.dt - a.dt)/60000;
-      if(minutesDiff <= 0 || minutesDiff > 180) continue;
-      const distKm = haversine(a.r.lat_visit, a.r.lng_visit, b.r.lat_visit, b.r.lng_visit)/1000;
-      const speed = distKm / (minutesDiff/60);
-      if(speed > 60 && distKm > 1){
-        alerts.push({
-          severity:3, severityLabel:'حرج', type:'🚀 قفزة مستحيلة', person:p,
-          detail:`من "${a.r.العميل}" إلى "${b.r.العميل}"`,
-          value:`${Math.round(speed)} كم/س`, date:b.r['تاريخ الزيارة']||''
-        });
-      }
-    }
-  });
-
-  // 2) زيارات بمسافة كبيرة جدًا
-  filtered.forEach(r=>{
-    if(r.distance_m!=='' && r.distance_m!=null && r.distance_m>5000){
-      alerts.push({
-        severity:3, severityLabel:'حرج', type:'🚨 مسافة كبيرة', person:r['الشخص اللي قام بالزياره']||'-',
-        detail:r.العميل||'', value:(r.distance_m/1000).toFixed(1)+' كم', date:r['تاريخ الزيارة']||''
-      });
-    }
-  });
-
-  // 3) زيارات قصيرة جدًا بمعاملة مالية
-  filtered.forEach(r=>{
-    const dur = r['مدة الدقائق'];
-    if(dur==='' || dur==null) return;
-    const hasTxn = (r['قيمة ف الطلبية']!=='' && r['قيمة ف الطلبية']!=null && (+r['قيمة ف الطلبية']>0)) ||
-                   (r['قيمة المقبوضات']!=='' && r['قيمة المقبوضات']!=null && (+r['قيمة المقبوضات']>0));
-    if((+dur<=1) && hasTxn){
-      alerts.push({
-        severity:2, severityLabel:'عالي', type:'⏱️ زيارة قصيرة بمعاملة', person:r['الشخص اللي قام بالزياره']||'-',
-        detail:r.العميل||'', value:Math.round((+dur)*60)+' ثانية', date:r['تاريخ الزيارة']||''
-      });
-    }
-  });
-
-  // 4) انخفاض مفاجئ في النشاط
-  const dates = filtered.map(r=>r['تاريخ الزيارة']).filter(Boolean).sort();
-  if(dates.length){
-    const maxDate = parseDateOnly(dates[dates.length-1]);
-    const cut1 = new Date(maxDate); cut1.setDate(cut1.getDate()-7);
-    const cut2 = new Date(maxDate); cut2.setDate(cut2.getDate()-14);
-    const last7={}, prior7={};
-    filtered.forEach(r=>{
-      if(!r['تاريخ الزيارة'] || !r['الشخص اللي قام بالزياره']) return;
-      const d = parseDateOnly(r['تاريخ الزيارة']);
-      if(!d) return;
-      const p = r['الشخص اللي قام بالزياره'];
-      if(d>cut1 && d<=maxDate) last7[p]=(last7[p]||0)+1;
-      else if(d>cut2 && d<=cut1) prior7[p]=(prior7[p]||0)+1;
-    });
-    Object.keys(prior7).filter(p=>prior7[p]>=3).forEach(p=>{
-      const l7=last7[p]||0, p7=prior7[p];
-      const dropPct = Math.round((1-l7/p7)*100);
-      if(dropPct>=50){
-        alerts.push({
-          severity:1, severityLabel:'متوسط', type:'📉 انخفاض نشاط', person:p,
-          detail:`من ${p7} زيارة لـ ${l7}`, value:'-'+dropPct+'%', date:dates[dates.length-1]
-        });
-      }
-    });
-  }
-
-  // 5) نمط مسار مشبوه: مندوبين مختلفين زاروا نفس مجموعة العملاء بنفس الترتيب تقريبًا في يومين مختلفين
-  const byPersonDay = {};
-  filtered.forEach(r=>{
-    const p = r['الشخص اللي قام بالزياره'], d = r['تاريخ الزيارة'];
-    if(!p || !d || !r.العميل) return;
-    const key = p+'|'+d;
-    if(!byPersonDay[key]) byPersonDay[key] = {person:p, date:d, rows:[]};
-    byPersonDay[key].rows.push(r);
-  });
-  const sequences = Object.values(byPersonDay).map(g=>{
-    const rows = g.rows.slice().sort((a,b)=>(timeStringToMinutes(a['وقت الدخول'])||0)-(timeStringToMinutes(b['وقت الدخول'])||0));
-    return {person:g.person, date:g.date, seq:rows.map(r=>r.العميل)};
-  }).filter(s=>s.seq.length>=3);
-
-  function lcsLength(a,b){
-    const m=a.length, n=b.length;
-    let prev = new Array(n+1).fill(0);
-    for(let i=1;i<=m;i++){
-      const cur = new Array(n+1).fill(0);
-      for(let j=1;j<=n;j++) cur[j] = a[i-1]===b[j-1] ? prev[j-1]+1 : Math.max(prev[j], cur[j-1]);
-      prev = cur;
-    }
-    return prev[n];
-  }
-  const seenPairs = new Set();
-  const maxPairs = 20000; // سقف أمان للأداء
-  let pairCount = 0;
-  outer:
-  for(let i=0;i<sequences.length;i++){
-    for(let j=i+1;j<sequences.length;j++){
-      if(pairCount++ > maxPairs) break outer;
-      const A = sequences[i], B = sequences[j];
-      if(A.person===B.person) continue;
-      const maxLen = Math.max(A.seq.length, B.seq.length);
-      const shared = A.seq.filter(c=>B.seq.includes(c)).length;
-      if(shared/maxLen < 0.6) continue;
-      const orderRatio = lcsLength(A.seq, B.seq)/maxLen;
-      if(orderRatio < 0.6) continue;
-      const pairKey = [A.person+'|'+A.date, B.person+'|'+B.date].sort().join('~~');
-      if(seenPairs.has(pairKey)) continue;
-      seenPairs.add(pairKey);
-      alerts.push({
-        severity:2, severityLabel:'عالي', type:'🔁 نمط مسار مشبوه', person:A.person+' ↔ '+B.person,
-        detail:`مسار ${A.person} في ${A.date} يطابق مسار ${B.person} في ${B.date}`,
-        value:Math.round(orderRatio*100)+'% تطابق', date:A.date
-      });
-    }
-  }
-
-  alerts.sort((a,b)=>b.severity-a.severity);
-  return alerts;
-}
-
-function renderAlertsCenter(){
-  const alerts = computeAlerts();
-  const critical = alerts.filter(a=>a.severity===3).length;
-  const high = alerts.filter(a=>a.severity===2).length;
-  const medium = alerts.filter(a=>a.severity===1).length;
-
-  document.getElementById('alert-total').textContent = alerts.length.toLocaleString();
-  document.getElementById('alert-critical').textContent = critical.toLocaleString();
-  document.getElementById('alert-high').textContent = high.toLocaleString();
-  document.getElementById('alert-medium').textContent = medium.toLocaleString();
-  document.getElementById('alerts-badge').textContent = alerts.length.toLocaleString();
-
-  let html = '';
-  alerts.slice(0,500).forEach(a=>{
-    const cls = a.severity===3 ? 'pill-red' : a.severity===2 ? 'pill-orange' : 'pill-green';
-    html += `<tr><td><span class="pill ${cls}">${a.severityLabel}</span></td><td>${a.type}</td><td>${esc(a.person)}</td><td>${esc(a.detail)}</td><td style="text-align:center;font-weight:700">${a.value}</td><td>${a.date}</td></tr>`;
-  });
-  document.getElementById('alerts-tbody').innerHTML = html || '<tr><td colspan="6" class="no-data">لا توجد تنبيهات ضمن الفلتر الحالي 🎉</td></tr>';
-
-  EXPORT_DATA.alerts = alerts.map(a=>({'الخطورة':a.severityLabel,'النوع':a.type,'الشخص':a.person,'التفاصيل':a.detail,'القيمة':a.value,'التاريخ':a.date}));
-}
 
 /* ---------- QUALITY REPORTS ---------- */
 function renderQualityReports(){
@@ -3891,7 +3519,6 @@ function renderQualityReports(){
   renderRepeatInaccuracy();
   renderRegionAccuracy();
   renderCoverage();
-  renderFarVisits();
   renderDropAlerts();
   renderGapDays();
   renderChurnRisk();
@@ -4043,7 +3670,7 @@ function renderRepeatInaccuracy(){
 
 function renderCoverage(){
   const branch = document.getElementById('f-branch').value;
-  const clientsInScope = CLIENTS.filter(c=> !branch || c.الفرع===branch);
+  const clientsInScope = CLIENTS.filter(c=> (!branch || c.الفرع===branch) && !isExcludedClientTag(c.المندوب));
   const visitedNames = new Set(filtered.map(r=>r.العميل).filter(Boolean));
   const visited = clientsInScope.filter(c=>visitedNames.has(c['اسم العميل']));
   const unvisited = clientsInScope.filter(c=>!visitedNames.has(c['اسم العميل']));
@@ -4064,19 +3691,6 @@ function renderCoverage(){
     'اسم العميل':c['اسم العميل'],'الفرع':c.الفرع||'','المندوب':c.المندوب||'',
     'الحالة': visitedNames.has(c['اسم العميل']) ? 'تمت الزيارة' : 'لم تتم الزيارة'
   }));
-}
-
-function renderFarVisits(){
-  let rows = filtered.filter(r=>r.distance_m!=='' && r.distance_m!=null && r.distance_m>5000)
-    .sort((a,b)=>b.distance_m-a.distance_m);
-  document.getElementById('farvisits-badge').textContent = rows.length.toLocaleString();
-  let html = '';
-  rows.slice(0,300).forEach(r=>{
-    html += `<tr><td>${esc(r.العميل)}</td><td>${esc(r['الشخص اللي قام بالزياره'])||'-'}</td><td>${r['تاريخ الزيارة']||'-'}</td>
-    <td style="text-align:center"><span class="pill pill-red">${(r.distance_m/1000).toFixed(1)} كم</span></td></tr>`;
-  });
-  document.getElementById('farvisits-tbody').innerHTML = html || '<tr><td colspan="4" class="no-data">لا توجد زيارات بمسافة كبيرة ضمن الفلتر الحالي</td></tr>';
-  EXPORT_DATA.farvisits = rows.map(r=>({'العميل':r.العميل,'الشخص':r['الشخص اللي قام بالزياره']||'','التاريخ':r['تاريخ الزيارة']||'','المسافة (كم)':(r.distance_m/1000).toFixed(1)}));
 }
 
 function renderDropAlerts(){
@@ -4165,7 +3779,21 @@ function renderGapDays(){
 }
 
 function renderChurnRisk(){
-  const dates = filtered.map(r=>r['تاريخ الزيارة']).filter(Boolean).sort();
+  // مؤشر خطر فقدان العميل لازم يشوف مدى زمني واسع عشان يقارن آخر 30 يوم بالـ30 يوم اللي قبلها بشكل حقيقي.
+  // لو اعتمدنا على "filtered" العادي، أي فلترة على شهر أو يوم محدد (وده شبه دايم مع المندوب والمشرف)
+  // كانت بتخلي التقرير يطلع فاضي دايمًا لأن الفترة المقارنة أصلًا مش موجودة جوه الفلتر الضيق ده.
+  // فبنستخدم هنا نفس فلاتر الفرع/النوع/الشخص بس من غير قيد الشهر/اليوم/السنة.
+  const branch = document.getElementById('f-branch').value;
+  const type = document.getElementById('f-type').value;
+  const person = document.getElementById('f-person').value;
+  const churnScope = DATA.filter(r=>{
+    if(branch && r.الفرع !== branch) return false;
+    if(type && r.نوع_الشخص !== type) return false;
+    if(person && r['الشخص اللي قام بالزياره'] !== person) return false;
+    return true;
+  });
+
+  const dates = churnScope.map(r=>r['تاريخ الزيارة']).filter(Boolean).sort();
   if(dates.length===0){
     document.getElementById('churn-badge').textContent = '0';
     document.getElementById('churn-tbody').innerHTML = '<tr><td colspan="7" class="no-data">لا توجد بيانات كافية</td></tr>';
@@ -4180,7 +3808,7 @@ function renderChurnRisk(){
   const cut60 = new Date(maxDate); cut60.setDate(cut60.getDate()-60);
 
   const byClient = {};
-  filtered.forEach(r=>{
+  churnScope.forEach(r=>{
     if(!r.العميل || !r['تاريخ الزيارة']) return;
     const d = parseDateOnly(r['تاريخ الزيارة']);
     if(!d) return;
@@ -4284,13 +3912,12 @@ function renderPerfTable(){
   filtered.forEach(r=>{
     const p = r['الشخص اللي قام بالزياره'];
     if(!p) return;
-    if(!byPerson[p]) byPerson[p] = {type:r.نوع_الشخص, total:0, acc:0, ordersCount:0, ordersVal:0, ordersQty:0, collectCount:0, collectVal:0, cancel:0, points:[]};
+    if(!byPerson[p]) byPerson[p] = {type:r.نوع_الشخص, total:0, acc:0, ordersCount:0, ordersVal:0, ordersQty:0, collectCount:0, collectVal:0, points:[]};
     const g = byPerson[p];
     g.total++;
     if(r.accuracy==='دقيقة') g.acc++;
     if(r['قيمة ف الطلبية']!=='' && r['قيمة ف الطلبية']!=null){ g.ordersCount++; g.ordersVal += orderRawValue(r); g.ordersQty += (+r['الكميه']||0); }
     if(r['قيمة المقبوضات']!=='' && r['قيمة المقبوضات']!=null){ g.collectCount++; g.collectVal += (+r['قيمة المقبوضات']||0); }
-    if(r['سبب الغاء الزيارة']!=='') g.cancel++;
     if(r.lat_visit!=null && r.lat_visit!=='') g.points.push([r.lat_visit, r.lng_visit]);
   });
 
@@ -4306,87 +3933,35 @@ function renderPerfTable(){
     person:p, type:g.type, total:g.total,
     trust: g.total ? Math.round(g.acc/g.total*100) : 0,
     conversion: g.total ? Math.round(g.ordersCount/g.total*100) : 0,
-    cancelPct: g.total ? Math.round(g.cancel/g.total*100) : 0,
     avgOrder: g.ordersCount ? Math.round(g.ordersVal/g.ordersCount) : 0,
     avgOrderQty: g.ordersCount ? Math.round(g.ordersQty/g.ordersCount) : 0,
     avgCollect: g.collectCount ? Math.round(g.collectVal/g.collectCount) : 0,
     spread: spreadKm(g.points)
-  }));
-
-  // الدرجة الإجمالية (0-100): درجة الثقة 45% + معدل التحويل 35% + (100 - نسبة الإلغاء) 20%
-  rows.forEach(r=>{
-    r.score = Math.round(r.trust*0.45 + r.conversion*0.35 + (100-r.cancelPct)*0.20);
-  });
-  rows.sort((a,b)=>b.score-a.score);
+  })).sort((a,b)=>b.total-a.total);
 
   document.getElementById('perf-badge').textContent = rows.length.toLocaleString();
   let html = '';
-  rows.forEach((r,idx)=>{
-    const rank = idx+1;
-    const medal = rank===1?'🥇':rank===2?'🥈':rank===3?'🥉':rank;
+  rows.forEach(r=>{
     const trustClass = r.trust>=80 ? 'pill-green' : r.trust>=50 ? 'pill-orange' : 'pill-red';
-    const scoreClass = r.score>=80 ? 'pill-green' : r.score>=50 ? 'pill-orange' : 'pill-red';
     const spreadText = r.spread==null ? '-' : r.spread.toFixed(1);
     const spreadClass = r.spread==null ? '' : r.spread>15 ? 'dist-no' : r.spread>8 ? '' : 'dist-ok';
-    html += `<tr><td style="text-align:center;font-weight:700">${medal}</td><td>${esc(r.person)}</td><td><span class="type-badge tb-${r.type}">${esc(r.type)||'-'}</span></td>
+    html += `<tr><td>${esc(r.person)}</td><td><span class="type-badge tb-${r.type}">${esc(r.type)||'-'}</span></td>
     <td style="text-align:center">${r.total}</td>
     <td style="text-align:center"><span class="pill ${trustClass}">${r.trust}%</span></td>
     <td style="text-align:center">${r.conversion}%</td>
     <td style="text-align:center" class="money">${r.avgOrder ? r.avgOrder.toLocaleString('ar-IQ') : '-'}</td>
     <td style="text-align:center" class="money qty-col">${r.avgOrderQty ? r.avgOrderQty.toLocaleString('ar-IQ') : '-'}</td>
     <td style="text-align:center" class="money">${r.avgCollect ? r.avgCollect.toLocaleString('ar-IQ') : '-'}</td>
-    <td style="text-align:center" class="${spreadClass}">${spreadText}</td>
-    <td style="text-align:center"><span class="pill ${scoreClass}">${r.score}</span></td></tr>`;
+    <td style="text-align:center" class="${spreadClass}">${spreadText}</td></tr>`;
   });
-  document.getElementById('perf-tbody').innerHTML = html || '<tr><td colspan="11" class="no-data">لا توجد بيانات</td></tr>';
-  EXPORT_DATA.perf = rows.map((r,idx)=>({
-    'الترتيب':idx+1,'الشخص':r.person,'النوع':r.type||'','إجمالي الزيارات':r.total,'درجة الثقة %':r.trust,
+  document.getElementById('perf-tbody').innerHTML = html || '<tr><td colspan="9" class="no-data">لا توجد بيانات</td></tr>';
+  EXPORT_DATA.perf = rows.map(r=>({
+    'الشخص':r.person,'النوع':r.type||'','إجمالي الزيارات':r.total,'درجة الثقة %':r.trust,
     'معدل التحويل %':r.conversion,[isValueHiddenRole()?'متوسط الكمية':'متوسط الطلبية']:r.avgOrder,
     ...(isValueHiddenRole() ? {} : {'متوسط الكمية': r.avgOrderQty}),
     'متوسط التحصيل':r.avgCollect,
-    'نطاق الحركة (كم)': r.spread==null ? '' : r.spread.toFixed(1),
-    'الدرجة الإجمالية': r.score
+    'نطاق الحركة (كم)': r.spread==null ? '' : r.spread.toFixed(1)
   }));
-
-  PERF_ROWS_CACHE = rows;
-  populateCompareBranchSelect();
-  renderCompareChart();
-}
-
-let PERF_ROWS_CACHE = [];
-let compareChartInstance = null;
-
-function populateCompareBranchSelect(){
-  const sel = document.getElementById('cmp-branch');
-  const branches = [...new Set(filtered.map(r=>r.الفرع).filter(Boolean))].sort();
-  const prevVal = sel.value;
-  sel.innerHTML = branches.map(b=>`<option value="${esc(b)}">${esc(b)}</option>`).join('');
-  sel.value = branches.includes(prevVal) ? prevVal : (branches[0] || '');
-}
-
-function renderCompareChart(){
-  const canvas = document.getElementById('compare-chart');
-  if(!canvas) return;
-  const branch = document.getElementById('cmp-branch').value;
-  const metric = document.getElementById('cmp-metric').value;
-
-  const personsInBranch = new Set(filtered.filter(r=>r.الفرع===branch).map(r=>r['الشخص اللي قام بالزياره']).filter(Boolean));
-  const rows = PERF_ROWS_CACHE.filter(r=>personsInBranch.has(r.person));
-
-  const labels = rows.map(r=>r.person);
-  const data = rows.map(r=>r[metric] || 0);
-  const metricLabel = document.getElementById('cmp-metric').selectedOptions[0]?.textContent || '';
-
-  if(compareChartInstance) compareChartInstance.destroy();
-  compareChartInstance = new Chart(canvas.getContext('2d'), {
-    type: 'bar',
-    data: { labels, datasets: [{ label: metricLabel, data, backgroundColor: '#3a6df0' }] },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: { y: { beginAtZero: true } }
-    }
-  });
 }
 
 function populateRouteSelectors(){
@@ -4657,7 +4232,7 @@ function populateGeoMapSelectors(){
   const regionSel = document.getElementById('geo-region');
   const prevRegion = regionSel.value;
   const regions = person
-    ? [...new Set(CLIENTS.filter(c=>c.المندوب===person && c.المندوب!=='حذف').map(c=>c['المنطقه سيستم']).filter(Boolean))].sort()
+    ? [...new Set(CLIENTS.filter(c=>c.المندوب===person && !isExcludedClientTag(c.المندوب)).map(c=>c['المنطقه سيستم']).filter(Boolean))].sort()
     : [];
   regionSel.innerHTML = '<option value="">كل المناطق</option>' + regions.map(r=>`<option value="${r}">${r}</option>`).join('');
   regionSel.value = regions.includes(prevRegion) ? prevRegion : '';
@@ -4680,7 +4255,7 @@ function computeGeoPerfPayload(){
   });
   const periodLabel = (year?year:'كل السنوات') + (month?(' - شهر '+month):' - كل الشهور') + (region?(' - منطقة '+region):'');
 
-  let clientsScope = CLIENTS.filter(c=> c.المندوب===person && c.المندوب!=='حذف' && c.lat_client!=='' && c.lat_client!=null);
+  let clientsScope = CLIENTS.filter(c=> c.المندوب===person && !isExcludedClientTag(c.المندوب) && c.lat_client!=='' && c.lat_client!=null);
   if(region) clientsScope = clientsScope.filter(c=>c['المنطقه سيستم']===region);
   if(clientsScope.length===0) return {error:'معندناش عملاء مسجلين تحت اسم "' + person + '"' + (region?(' في منطقة "'+region+'"'):'') + ' في بيانات العملاء'};
 
@@ -5201,14 +4776,12 @@ const EXPORT_CONFIG = {
   repeat:       {file:'عملاء_متكررة_عدم_الدقة', sheet:'تكرار عدم الدقة'},
   region:       {file:'الدقة_حسب_المنطقة', sheet:'الدقة حسب المنطقة'},
   coverage:     {file:'تغطية_العملاء', sheet:'التغطية'},
-  farvisits:    {file:'زيارات_مسافة_كبيرة', sheet:'مسافة كبيرة'},
   drop:         {file:'انخفاض_النشاط', sheet:'انخفاض النشاط'},
   gap:          {file:'أيام_بدون_نشاط', sheet:'أيام بدون نشاط'},
   churn:        {file:'خطر_فقدان_العملاء', sheet:'خطر الفقدان'},
   scorecard:    {file:'بطاقة_مقارنة_الفروع', sheet:'مقارنة الفروع'},
   perf:         {file:'تقرير_الأداء', sheet:'الأداء'},
   tracking:     {file:'تتبع_الحركة_اليومية', sheet:'تتبع الحركة'},
-  alerts:       {file:'مركز_التنبيهات', sheet:'التنبيهات'},
   coverage2:    {file:'تغطية_العملاء_الشهرية', sheet:'تغطية العملاء'},
   clientcard:   {file:'كارت_العميل', sheet:'زيارات العميل'},
   similar:      {file:'أماكن_متشابهة_كل_العملاء', sheet:'أماكن متشابهة'}
