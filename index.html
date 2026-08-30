@@ -246,6 +246,9 @@ body.role-admin .qty-kpi-line{display:block !important}
 /* REPORT SECTIONS */
 .section-title{padding:18px 30px 6px;font-size:15px;font-weight:700;color:var(--text-heading);display:flex;align-items:center;gap:8px}
 .section-sub{padding:0 30px 12px;font-size:12px;color:var(--text-dim);margin-top:-8px}
+/* الشروحات التقنية (زي منطق كشف الزيارات الوهمية، أو ملاحظات مطابقة البيانات) غير مقصودة لغير الإدارة —
+   ظهورها لغير الإدارة ممكن يكشف تفاصيل رقابية حساسة أو يلخبط مستخدم مش محتاجها أصلًا */
+body:not(.role-admin) .section-sub, body:not(.role-admin) #overdue-modal-sub{display:none}
 .chart-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:0 30px 20px}
 .chart-card{background:var(--bg-card);border:1px solid var(--border-main);border-radius:12px;padding:16px;box-shadow:var(--shadow)}
 .chart-card h4{font-size:13px;color:var(--text-heading);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}
@@ -773,6 +776,12 @@ body.role-admin .qty-kpi-line{display:block !important}
       <div style="font-size:22px; font-weight:800; color:#6b3fa0; margin-top:4px;" id="sc-collect">0</div>
       <div style="font-size:11px; color:#70758f; margin-top:2px;">إجمالي التحصيل</div>
     </div>
+    <div style="grid-column:1/-1; background:#fff; border-radius:12px; padding:14px; text-align:center; box-shadow:0 1px 4px rgba(0,0,0,.08);">
+      <div style="font-size:22px;">💰</div>
+      <div style="font-size:20px; font-weight:800; color:#1d2333; margin-top:4px;" id="sc-debt-total">0</div>
+      <div style="font-size:11px; color:#70758f; margin-top:2px;">إجمالي المديونية</div>
+      <div style="font-size:11px; color:#c0392b; margin-top:2px; font-weight:700;" id="sc-debt-overdue">متجاوز: 0 د.ع</div>
+    </div>
     <div style="background:#fff; border-radius:12px; padding:14px; text-align:center; box-shadow:0 1px 4px rgba(0,0,0,.08);">
       <div style="font-size:22px;">🚫</div>
       <div style="font-size:20px; font-weight:800; color:#00897b; margin-top:4px;" id="sc-unvisited">0</div>
@@ -1281,6 +1290,12 @@ body.role-admin .qty-kpi-line{display:block !important}
       <label>بحث (اسم/كود عميل)</label>
       <input type="text" id="debt-search" placeholder="اكتب اسم العميل أو الكود..." oninput="renderDebtReport()" style="width:100%">
     </div>
+    <div class="filter-group">
+      <label>اسم العميل (اختيار دقيق)</label>
+      <select id="debt-f-client" onchange="renderDebtReport()">
+        <option value="">الكل</option>
+      </select>
+    </div>
     <button class="btn-reset" onclick="resetDebtFilters()">↺ إعادة ضبط فلاتر المديونية</button>
   </div>
 
@@ -1296,20 +1311,27 @@ body.role-admin .qty-kpi-line{display:block !important}
     <div class="kpi-mini"><div class="v" id="debt-k-avgage">0</div><div class="l">متوسط عمر الفاتورة (يوم)</div></div>
   </div>
 
-  <!-- أكبر عميل مديونية -->
+  <!-- أكبر 3 عملاء مديونية -->
   <div class="report-card" id="debt-top-client-card" style="padding:14px 16px">
-    <div style="font-size:12px;color:var(--text-dim);margin-bottom:4px">⚠️ أكبر عميل مديونية ضمن الفلتر الحالي</div>
-    <div style="font-size:16px;font-weight:700" id="debt-top-client-name">-</div>
-    <div style="font-size:13px;color:var(--text-dim)" id="debt-top-client-detail">-</div>
+    <div style="font-size:12px;color:var(--text-dim);margin-bottom:8px">⚠️ أكبر 3 عملاء مديونية ضمن الفلتر الحالي</div>
+    <div id="debt-top-clients-list"></div>
   </div>
 
-  <!-- رسم بياني: المديونية حسب الفرع -->
-  <div class="section-title">📊 توزيع المديونية حسب الفرع</div>
-  <div class="report-card" style="padding:16px">
+  <!-- توزيع المديونية: رسم بياني (إدارة/مشرف) أو أكبر 5 عملاء (مندوب) -->
+  <div class="section-title" id="debt-dist-title">📊 توزيع المديونية حسب الفرع</div>
+  <div class="report-card" style="padding:16px" id="debt-dist-chart-card">
     <canvas id="debt-branch-chart" height="90"></canvas>
   </div>
+  <div class="report-card" id="debt-dist-table-card" style="display:none">
+    <div class="report-header"><h4>أكبر 5 عملاء مديونية</h4><span class="badge" id="debt-top5-badge">0</span></div>
+    <div class="report-scroll"><table class="report-table" id="debt-top5-table">
+      <thead><tr><th>العميل</th><th style="text-align:center">كود العميل</th><th style="text-align:center">عدد الفواتير</th><th style="text-align:center">الحالة</th><th style="text-align:center">المديونية</th></tr></thead>
+      <tbody id="debt-top5-tbody"></tbody>
+    </table></div>
+  </div>
 
-  <!-- ملخص حسب الفرع -->
+  <!-- ملخص حسب الفرع (إدارة فقط) -->
+  <div id="debt-branch-section">
   <div class="section-title">🏢 ملخص المديونية حسب الفرع</div>
   <div class="report-card">
     <div class="report-header"><h4>الفروع</h4><span class="badge" id="debt-branch-badge">0</span><button class="mini-export-btn" style="margin-right:auto" onclick="exportReport('debtByBranch')">📤 تصدير</button></div>
@@ -1318,8 +1340,10 @@ body.role-admin .qty-kpi-line{display:block !important}
       <tbody id="debt-branch-tbody"></tbody>
     </table></div>
   </div>
+  </div>
 
-  <!-- ملخص حسب المندوب -->
+  <!-- ملخص حسب المندوب (إدارة ومشرف) -->
+  <div id="debt-rep-section">
   <div class="section-title">🧑‍💼 ملخص المديونية حسب المندوب (Sales rep)</div>
   <div class="report-card">
     <div class="report-header"><h4>المناديب</h4><span class="badge" id="debt-rep-badge">0</span><button class="mini-export-btn" style="margin-right:auto" onclick="exportReport('debtByRep')">📤 تصدير</button></div>
@@ -1327,6 +1351,7 @@ body.role-admin .qty-kpi-line{display:block !important}
       <thead><tr><th>المندوب</th><th>الفرع</th><th style="text-align:center">عدد الفواتير</th><th style="text-align:center">متجاوز</th><th style="text-align:center">قيمة المتجاوز</th><th style="text-align:center">إجمالي المديونية</th></tr></thead>
       <tbody id="debt-rep-tbody"></tbody>
     </table></div>
+  </div>
   </div>
 
   <!-- جدول تفصيلي -->
@@ -2861,6 +2886,9 @@ function fillShareCardFields(){
   document.getElementById('sc-worktime-span').textContent = document.getElementById('k-worktime-span').textContent;
   document.getElementById('sc-totalduration').textContent = document.getElementById('k-totalduration').textContent;
   document.getElementById('sc-dupclients').textContent = computeDuplicateClientsCount();
+  // أي KPI جديدة تتضاف في لوحة القيادة لازم تتحط هنا كمان عشان تبان في صورة المشاركة على واتساب
+  document.getElementById('sc-debt-total').textContent = document.getElementById('k-debt-total').textContent;
+  document.getElementById('sc-debt-overdue').textContent = document.getElementById('k-debt-overdue-val').textContent;
 
   return personName;
 }
@@ -2975,6 +3003,9 @@ function renderPivots(){
     brGroups[g.br].push(g);
   });
   Object.values(brGroups).forEach(gs=>gs.sort((a,b)=>a.tp.localeCompare(b.tp)||b.total-a.total));
+  // لو مفيش غير فرع واحد ضمن البيانات الحالية (زي حالة مندوب/محصل/مشرف المقفولين على فرعهم، أو إدارة فلترت
+  // على فرع واحد بالتحديد)، صف "إجمالي الفرع" بيبقى مطابق تمامًا لصف "Grand Total" وياخد مساحة من غير فايدة
+  const singleBranchScope = Object.keys(brGroups).length <= 1;
 
   let vhtml=''; let grandTotal=0,grandAcc=0,grandInacc=0;
   Object.keys(brGroups).sort().forEach(br=>{
@@ -2990,10 +3021,12 @@ function renderPivots(){
       <td class="num" style="color:var(--red)">${g.inacc}</td>
       <td class="num" style="color:var(--orange);font-weight:700">${g.total}</td></tr>`;
     });
-    vhtml += `<tr class="group-row"><td colspan="3">إجمالي ${esc(br)}</td>
-    <td class="num" style="color:var(--green)">${brA}</td>
-    <td class="num" style="color:var(--red)">${brI}</td>
-    <td class="num" style="color:var(--orange);font-weight:700">${brT}</td></tr>`;
+    if(!singleBranchScope){
+      vhtml += `<tr class="group-row"><td colspan="3">إجمالي ${esc(br)}</td>
+      <td class="num" style="color:var(--green)">${brA}</td>
+      <td class="num" style="color:var(--red)">${brI}</td>
+      <td class="num" style="color:var(--orange);font-weight:700">${brT}</td></tr>`;
+    }
     grandTotal += brT; grandAcc += brA; grandInacc += brI;
   });
   vhtml += `<tr class="total-row"><td colspan="3">Grand Total</td>
@@ -3023,7 +3056,7 @@ function renderPivots(){
       <td class="num">${g.collects||'-'}</td>
       <td class="money">${g.collectVal ? g.collectVal.toLocaleString('ar-IQ') : '-'}</td></tr>`;
     });
-    if(brOrd || brCol){
+    if((brOrd || brCol) && !singleBranchScope){
       fhtml += `<tr class="group-row"><td colspan="3">إجمالي ${esc(br)}</td>
       <td class="num">${brOrd||'-'}</td>
       <td class="money">${brOrdV ? brOrdV.toLocaleString('ar-IQ') : '-'}</td>
@@ -3054,6 +3087,15 @@ function openMapWindow(html){
   win.document.open();
   win.document.write(html);
   win.document.close();
+  // زرار إغلاق ثابت فوق كل خرائط popup — النافذة دي بتتفتح من غير أي شريط تنقل (خصوصًا عالموبايل)
+  // فمفيش طريقة واضحة للرجوع غير زرار صريح زي ده. بيغطي كل الخرائط تلقائي لأنها كلها بتعدي من هنا.
+  try{
+    const closeBtn = win.document.createElement('button');
+    closeBtn.textContent = '✕ إغلاق';
+    closeBtn.setAttribute('style', 'position:fixed;top:12px;left:12px;z-index:999999;background:#1d2333;color:#fff;border:none;border-radius:8px;padding:10px 18px;font-size:14px;font-weight:700;font-family:Arial,sans-serif;cursor:pointer;box-shadow:0 3px 12px rgba(0,0,0,.4)');
+    closeBtn.onclick = function(){ win.close(); };
+    win.document.body.appendChild(closeBtn);
+  }catch(e){}
 }
 
 function buildSingleMapHtml(r){
@@ -5279,6 +5321,8 @@ function resetDebtFilters(){
   document.getElementById('debt-f-grade').value = '';
   document.getElementById('debt-f-collector').value = '';
   document.getElementById('debt-search').value = '';
+  const clientSel = document.getElementById('debt-f-client');
+  if(clientSel) clientSel.value = '';
   renderDebtReport();
 }
 
@@ -5301,8 +5345,8 @@ function getDebtScope(){
   return rows;
 }
 
-// بناء خيارات فلاتر "تصنيف العميل" و"المحصل" الخاصة بالتاب، بناءً على نطاق الفرع/الشخص الحالي فقط
-// (قبل تطبيق فلاتر الحالة/التصنيف/المحصل نفسها، عشان القوائم متتصفّرش لنفسها)
+// بناء خيارات فلاتر "تصنيف العميل" و"المحصل" و"اسم العميل" الخاصة بالتاب، بناءً على نطاق الفرع/الشخص الحالي فقط
+// (قبل تطبيق فلاتر الحالة/التصنيف/المحصل/العميل نفسها، عشان القوائم متتصفّرش لنفسها)
 function populateDebtLocalFilterOptions(){
   const scope = getDebtScope();
 
@@ -5324,6 +5368,15 @@ function populateDebtLocalFilterOptions(){
     if(collectors.includes(prevCollector)) collectorSel.value = prevCollector;
     collectorSel.disabled = false;
   }
+
+  // فلتر اسم العميل (قائمة منسدلة لاختيار عميل بعينه بدقة)
+  const clientSel = document.getElementById('debt-f-client');
+  if(clientSel){
+    const prevClient = clientSel.value;
+    const clientNames = [...new Set(scope.map(r=>r['اسم العميل']).filter(Boolean))].sort();
+    clientSel.innerHTML = '<option value="">الكل</option>' + clientNames.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');
+    if(clientNames.includes(prevClient)) clientSel.value = prevClient;
+  }
 }
 
 function renderDebtReport(){
@@ -5333,11 +5386,13 @@ function renderDebtReport(){
   const status = document.getElementById('debt-f-status').value;
   const grade = document.getElementById('debt-f-grade').value;
   const collector = document.getElementById('debt-f-collector').value;
+  const client = document.getElementById('debt-f-client').value;
   const search = (document.getElementById('debt-search').value || '').trim().toLowerCase();
 
   if(status) rows = rows.filter(r => r.نوع === status);
   if(grade) rows = rows.filter(r => r['تصنيق العميل'] === grade);
   if(collector) rows = rows.filter(r => r.المحصل === collector);
+  if(client) rows = rows.filter(r => r['اسم العميل'] === client);
   if(search){
     rows = rows.filter(r =>
       (r['اسم العميل']||'').toLowerCase().includes(search) ||
@@ -5365,27 +5420,37 @@ function renderDebtReport(){
   document.getElementById('debt-k-overduepct').textContent = overduePct + '%';
   document.getElementById('debt-k-avgage').textContent = avgAge;
 
-  const topClientNameEl = document.getElementById('debt-top-client-name');
-  const topClientDetailEl = document.getElementById('debt-top-client-detail');
-  if(rows.length){
-    const top = rows.reduce((a,b) => (+b.المديونيه||0) > (+a.المديونيه||0) ? b : a);
-    topClientNameEl.textContent = top['اسم العميل'] || '-';
-    topClientDetailEl.textContent = `${top.الفرع||'-'} — ${top['Sales rep']||'-'} — ${(+top.المديونيه||0).toLocaleString('ar-IQ')} د.ع`;
-  } else {
-    topClientNameEl.textContent = '-';
-    topClientDetailEl.textContent = '-';
-  }
+  // تجميع مديونية كل عميل (لاستخدامه في: أكبر 3 عملاء + قسم أكبر 5 عملاء بديل الرسم للمندوب)
+  const byClientMap = {};
+  rows.forEach(r=>{
+    const key = (r['كود العميل']||'') + '|' + (r['اسم العميل']||'');
+    if(!byClientMap[key]) byClientMap[key] = {name:r['اسم العميل'], code:r['كود العميل'], count:0, sum:0, hasOverdue:false};
+    byClientMap[key].count++;
+    byClientMap[key].sum += (+r.المديونيه||0);
+    if(r.نوع==='متجاوز') byClientMap[key].hasOverdue = true;
+  });
+  const clientRowsSorted = Object.values(byClientMap).sort((a,b)=>b.sum-a.sum);
 
-  // ملخص حسب الفرع
+  // أكبر 3 عملاء مديونية
+  const top3 = clientRowsSorted.slice(0,3);
+  document.getElementById('debt-top-clients-list').innerHTML = top3.length ? top3.map((c,i)=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;${i>0?'border-top:1px solid var(--border-main)':''}">
+      <div><span style="font-weight:800;color:var(--accent);margin-left:6px">#${i+1}</span>${esc(c.name)}</div>
+      <div style="color:var(--red);font-weight:700">${c.sum.toLocaleString('ar-IQ')} د.ع</div>
+    </div>`
+  ).join('') : '<div style="color:var(--text-dim);text-align:center;padding:6px 0">لا توجد بيانات ضمن الفلتر الحالي</div>';
+
+  // ملخص حسب الفرع (لكل فرع: مجموعة عملاء فريدة كمان لأجل الرسم البياني)
   const byBranch = {};
   rows.forEach(r=>{
     const b = r.الفرع || 'غير محدد';
-    if(!byBranch[b]) byBranch[b] = {count:0, overdue:0, overdueVal:0, sum:0};
+    if(!byBranch[b]) byBranch[b] = {count:0, overdue:0, overdueVal:0, sum:0, clients:new Set()};
     byBranch[b].count++;
     if(r.نوع==='متجاوز'){ byBranch[b].overdue++; byBranch[b].overdueVal += (+r.المديونيه||0); }
     byBranch[b].sum += (+r.المديونيه||0);
+    byBranch[b].clients.add((r['كود العميل']||'')+'|'+(r['اسم العميل']||''));
   });
-  const branchRows = Object.keys(byBranch).map(b=>({branch:b, ...byBranch[b]})).sort((a,b)=>b.sum-a.sum);
+  const branchRows = Object.keys(byBranch).map(b=>({branch:b, ...byBranch[b], clientsCount:byBranch[b].clients.size})).sort((a,b)=>b.sum-a.sum);
 
   document.getElementById('debt-branch-badge').textContent = branchRows.length;
   document.getElementById('debt-branch-tbody').innerHTML = branchRows.map(b=>`
@@ -5395,16 +5460,17 @@ function renderDebtReport(){
     <td style="text-align:center">${total ? Math.round(b.sum/total*100) : 0}%</td></tr>`
   ).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--text-dim)">لا توجد بيانات ضمن الفلتر الحالي</td></tr>';
 
-  // ملخص حسب المندوب
+  // ملخص حسب المندوب (بنفس منطق تجميع العملاء الفريدة لأجل الرسم البياني لدور المشرف)
   const byRep = {};
   rows.forEach(r=>{
     const p = r['Sales rep'] || 'غير محدد';
-    if(!byRep[p]) byRep[p] = {count:0, overdue:0, overdueVal:0, sum:0, branch:r.الفرع||''};
+    if(!byRep[p]) byRep[p] = {count:0, overdue:0, overdueVal:0, sum:0, branch:r.الفرع||'', clients:new Set()};
     byRep[p].count++;
     if(r.نوع==='متجاوز'){ byRep[p].overdue++; byRep[p].overdueVal += (+r.المديونيه||0); }
     byRep[p].sum += (+r.المديونيه||0);
+    byRep[p].clients.add((r['كود العميل']||'')+'|'+(r['اسم العميل']||''));
   });
-  const repRows = Object.keys(byRep).map(p=>({person:p, ...byRep[p]})).sort((a,b)=>b.sum-a.sum);
+  const repRows = Object.keys(byRep).map(p=>({person:p, ...byRep[p], clientsCount:byRep[p].clients.size})).sort((a,b)=>b.sum-a.sum);
 
   document.getElementById('debt-rep-badge').textContent = repRows.length;
   document.getElementById('debt-rep-tbody').innerHTML = repRows.map(r=>`
@@ -5427,10 +5493,59 @@ function renderDebtReport(){
     <td>${esc(r.المحصل)}</td><td style="text-align:center">${(+r.المديونيه||0).toLocaleString('ar-IQ')}</td></tr>`
   ).join('') || '<tr><td colspan="11" style="text-align:center;color:var(--text-dim)">لا توجد بيانات ضمن الفلتر الحالي</td></tr>';
 
-  renderDebtBranchChart(branchRows);
+  // قسم "التوزيع": بيتحدد حسب أضيق فلتر مختار فعليًا (مش الدور بس) —
+  // شخص محدد (من فلتر الأعلى أو لأن الدور نفسه مندوب/محصل) => أكبر 5 عملاء
+  // فرع واحد محدد (باختيار الإدارة أو لأن المشرف مقفول على فرعه) => توزيع بالمناديب
+  // من غير أي تحديد => توزيع بالفروع (الوضع الافتراضي للإدارة)
+  const role = currentUser ? (currentUser.role || 'إدارة') : 'إدارة';
+  const branchVal = document.getElementById('f-branch').value;
+  const personVal = document.getElementById('f-person').value;
+  const isPersonLocked = role === 'مندوب' || role === 'محصل';
+  const isBranchLocked = currentUser && currentUser.branch && currentUser.branch !== 'كل الفروع';
 
-  EXPORT_DATA.debtByBranch = branchRows.map(b=>({'الفرع':b.branch,'عدد الفواتير':b.count,'متجاوز':b.overdue,'قيمة المتجاوز':b.overdueVal,'إجمالي المديونية':b.sum}));
-  EXPORT_DATA.debtByRep = repRows.map(r=>({'المندوب':r.person,'الفرع':r.branch,'عدد الفواتير':r.count,'متجاوز':r.overdue,'قيمة المتجاوز':r.overdueVal,'إجمالي المديونية':r.sum}));
+  let distMode;
+  if(isPersonLocked || personVal){
+    distMode = 'top5';
+  } else if(branchVal || isBranchLocked){
+    distMode = 'byRep';
+  } else {
+    distMode = 'byBranch';
+  }
+
+  const distTitleEl = document.getElementById('debt-dist-title');
+  const chartCard = document.getElementById('debt-dist-chart-card');
+  const tableCard = document.getElementById('debt-dist-table-card');
+
+  if(distMode === 'top5'){
+    chartCard.style.display = 'none';
+    tableCard.style.display = '';
+    const personLabel = isPersonLocked ? currentUser.person : personVal;
+    distTitleEl.textContent = '⭐ أكبر 5 عملاء مديونية — ' + personLabel;
+    const top5 = clientRowsSorted.slice(0,5);
+    document.getElementById('debt-top5-badge').textContent = top5.length;
+    document.getElementById('debt-top5-tbody').innerHTML = top5.map(c=>`
+      <tr><td>${esc(c.name)}</td><td style="text-align:center">${esc(c.code)}</td><td style="text-align:center">${c.count}</td>
+      <td style="text-align:center"><span class="pill ${c.hasOverdue?'pill-red':'pill-green'}">${c.hasOverdue?'فيه متجاوز':'منتظم'}</span></td>
+      <td style="text-align:center">${c.sum.toLocaleString('ar-IQ')}</td></tr>`
+    ).join('') || '<tr><td colspan="5" style="text-align:center;color:var(--text-dim)">لا توجد بيانات ضمن الفلتر الحالي</td></tr>';
+  } else if(distMode === 'byRep'){
+    chartCard.style.display = '';
+    tableCard.style.display = 'none';
+    distTitleEl.textContent = '📊 توزيع المديونية حسب المندوب' + (branchVal ? ' — ' + branchVal : '');
+    renderDebtBranchChart(repRows.map(r=>({label:r.person, count:r.count, overdueVal:r.overdueVal, sum:r.sum, clientsCount:r.clientsCount})));
+  } else {
+    chartCard.style.display = '';
+    tableCard.style.display = 'none';
+    distTitleEl.textContent = '📊 توزيع المديونية حسب الفرع';
+    renderDebtBranchChart(branchRows.map(b=>({label:b.branch, count:b.count, overdueVal:b.overdueVal, sum:b.sum, clientsCount:b.clientsCount})));
+  }
+
+  // ظهور أقسام الملخص حسب الدور: ملخص الفرع للإدارة فقط، ملخص المندوب للإدارة والمشرف فقط
+  document.getElementById('debt-branch-section').style.display = (role === 'إدارة') ? '' : 'none';
+  document.getElementById('debt-rep-section').style.display = (role === 'إدارة' || role === 'مشرف') ? '' : 'none';
+
+  EXPORT_DATA.debtByBranch = branchRows.map(b=>({'الفرع':b.branch,'عدد الفواتير':b.count,'متجاوز':b.overdue,'قيمة المتجاوز':b.overdueVal,'إجمالي المديونية':b.sum,'عدد العملاء':b.clientsCount}));
+  EXPORT_DATA.debtByRep = repRows.map(r=>({'المندوب':r.person,'الفرع':r.branch,'عدد الفواتير':r.count,'متجاوز':r.overdue,'قيمة المتجاوز':r.overdueVal,'إجمالي المديونية':r.sum,'عدد العملاء':r.clientsCount}));
   EXPORT_DATA.debtDetail = sortedRows.map(r=>({
     'الفرع': r.الفرع, 'المندوب': r['Sales rep'], 'العميل': r['اسم العميل'], 'كود العميل': r['كود العميل'],
     'تصنيف': r['تصنيق العميل'], 'نوع الدفع': r.نقدي, 'التاريخ': r.التاريخ, 'عمر الفاتورة': r['عمر الفاتوره'],
@@ -5438,7 +5553,9 @@ function renderDebtReport(){
   }));
 }
 
-function renderDebtBranchChart(branchRows){
+// dataRows: [{label, count, overdueVal, sum, clientsCount}] — بيرسم عمودين لكل عنصر (إجمالي المديونية + المتجاوز)
+// والـ tooltip (بالتمرير على الديسكتوب أو بالضغط على الموبايل) بيضيف عدد الفواتير وعدد العملاء تلقائي
+function renderDebtBranchChart(dataRows){
   const canvas = document.getElementById('debt-branch-chart');
   if(!canvas || typeof Chart === 'undefined') return;
   const colors = themeColors();
@@ -5446,16 +5563,26 @@ function renderDebtBranchChart(branchRows){
   debtBranchChartInstance = new Chart(canvas.getContext('2d'), {
     type: 'bar',
     data: {
-      labels: branchRows.map(b=>b.branch),
-      datasets: [{
-        label: 'إجمالي المديونية (د.ع)',
-        data: branchRows.map(b=>b.sum),
-        backgroundColor: '#c0392b'
-      }]
+      labels: dataRows.map(r=>r.label),
+      datasets: [
+        { label: 'إجمالي المديونية', data: dataRows.map(r=>r.sum), backgroundColor: '#6b3fa0' },
+        { label: 'المتجاوز', data: dataRows.map(r=>r.overdueVal), backgroundColor: '#c0392b' }
+      ]
     },
     options: {
       responsive: true,
-      plugins: { legend: { display: false } },
+      plugins: {
+        legend: { display: true, labels: { color: colors.text } },
+        tooltip: {
+          callbacks: {
+            label: (ctx) => ctx.dataset.label + ': ' + (+ctx.parsed.y).toLocaleString('ar-IQ') + ' د.ع',
+            afterBody: (items) => {
+              const r = dataRows[items[0].dataIndex];
+              return ['عدد الفواتير: ' + r.count.toLocaleString('ar-IQ'), 'عدد العملاء: ' + r.clientsCount.toLocaleString('ar-IQ')];
+            }
+          }
+        }
+      },
       scales: {
         x: { ticks: { color: colors.text }, grid: { color: colors.grid } },
         y: { ticks: { color: colors.text, callback: v => (+v).toLocaleString('ar-IQ') }, grid: { color: colors.grid } }
