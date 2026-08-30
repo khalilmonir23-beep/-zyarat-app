@@ -682,7 +682,6 @@ body.role-field-restricted #fg-branch, body.role-field-restricted #fg-type, body
   <div class="kpi red kpi-clickable" id="k-shortvisits-card" onclick="showShortVisitsModal()"><div class="kpi-icon">⏱️</div><div class="kpi-val" id="k-shortvisits">0</div><div class="kpi-label">زيارات أقل من 5 دقايق</div><div class="kpi-tap-hint">اضغط لعرض الأسماء 👆</div></div>
   <div class="kpi blue"><div class="kpi-icon">🕐</div><div class="kpi-val kpi-val-small" id="k-worktime">- ← -</div><div class="kpi-label">بداية وختام الحركة</div><div class="kpi-sub" id="k-worktime-span">-</div></div>
   <div class="kpi indigo"><div class="kpi-icon">⏳</div><div class="kpi-val" id="k-totalduration">0</div><div class="kpi-label">إجمالي وقت الزيارات عند العملاء</div></div>
-  <div class="kpi orange"><div class="kpi-icon">🔥</div><div class="kpi-val" id="k-streak">0</div><div class="kpi-label">أيام العمل المتتالية بدون انقطاع</div></div>
 </div>
 
 <!-- مودال قائمة العملاء اللي لسه محتاجين زيارة -->
@@ -818,11 +817,6 @@ body.role-field-restricted #fg-branch, body.role-field-restricted #fg-type, body
       <div style="font-size:22px;">🔁</div>
       <div style="font-size:20px; font-weight:800; color:#c0392b; margin-top:4px;" id="sc-dupclients">0</div>
       <div style="font-size:11px; color:#70758f; margin-top:2px;">عملاء تم زيارتهم أكثر من مرة</div>
-    </div>
-    <div style="grid-column:1/-1; background:#fff; border-radius:12px; padding:14px; text-align:center; box-shadow:0 1px 4px rgba(0,0,0,.08);">
-      <div style="font-size:22px;">🔥</div>
-      <div style="font-size:20px; font-weight:800; color:#e67e22; margin-top:4px;" id="sc-streak">0</div>
-      <div style="font-size:11px; color:#70758f; margin-top:2px;">يوم عمل متتالي بدون انقطاع</div>
     </div>
   </div>
 </div>
@@ -2787,31 +2781,7 @@ function updateExtraKPIs(){
   }, 0);
   document.getElementById('k-totalduration').textContent = formatMinutesAsHM(totalMinutes);
 
-  // 5) أيام العمل المتتالية بدون انقطاع — بتحسب رجوعًا من آخر يوم فيه زيارة فعلية ضمن النطاق الحالي
-  document.getElementById('k-streak').textContent = computeVisitStreak(branch, person).toLocaleString('ar-IQ');
-
   updateShareButtonState();
-}
-
-// عدد الأيام المتتالية (بدون أي انقطاع يوم واحد) اللي فيها زيارة واحدة على الأقل، رجوعًا من آخر يوم نشاط
-// مسجّل ضمن النطاق (مش بالضرورة "النهاردة" لو الملف اتأخر ترفيعه — بنحسب من آخر بيانات فعلية موجودة)
-function computeVisitStreak(branch, person){
-  let scope = DATA;
-  if(branch) scope = scope.filter(r=>r.الفرع===branch);
-  if(person) scope = scope.filter(r=>r['الشخص اللي قام بالزياره']===person);
-  const dateKeys = new Set();
-  scope.forEach(r=>{
-    if(r.year && r.month && r.day) dateKeys.add(Date.UTC(r.year, r.month-1, r.day));
-  });
-  if(!dateKeys.size) return 0;
-  const sortedDesc = [...dateKeys].sort((a,b)=>b-a);
-  let streak = 1;
-  for(let i=1;i<sortedDesc.length;i++){
-    const diffDays = Math.round((sortedDesc[i-1]-sortedDesc[i]) / 86400000);
-    if(diffDays === 1) streak++;
-    else break;
-  }
-  return streak;
 }
 
 function updateShareButtonState(){
@@ -3001,7 +2971,6 @@ function fillShareCardFields(){
   document.getElementById('sc-worktime-span').textContent = document.getElementById('k-worktime-span').textContent;
   document.getElementById('sc-totalduration').textContent = document.getElementById('k-totalduration').textContent;
   document.getElementById('sc-dupclients').textContent = computeDuplicateClientsCount();
-  document.getElementById('sc-streak').textContent = document.getElementById('k-streak').textContent;
   // أي KPI جديدة تتضاف في لوحة القيادة لازم تتحط هنا كمان عشان تبان في صورة المشاركة على واتساب
   document.getElementById('sc-debt-total').textContent = document.getElementById('k-debt-total').textContent;
   document.getElementById('sc-debt-overdue').textContent = document.getElementById('k-debt-overdue-val').textContent;
