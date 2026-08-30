@@ -577,6 +577,13 @@ body.role-field-restricted #fg-branch, body.role-field-restricted #fg-type, body
   </div>
 </div>
 
+<!-- بانر تنبيه أولويات اليوم — بيظهر تلقائي للمندوب/المحصل بعد الدخول لو عنده عملاء متجاوزين أو قربوا يدخلوا التجاوز -->
+<div id="priority-banner" style="display:none;background:#fdecea;border-bottom:1px solid #f5c6cb;padding:10px 30px;align-items:center;gap:10px;cursor:pointer" onclick="switchTab('debt')">
+  <span style="font-size:18px">⚠️</span>
+  <span id="priority-banner-text" style="font-size:13px;font-weight:700;color:#c0392b;flex:1"></span>
+  <button onclick="event.stopPropagation();document.getElementById('priority-banner').style.display='none'" style="background:none;border:none;color:#c0392b;font-size:16px;cursor:pointer;padding:0 4px">✕</button>
+</div>
+
 <!-- FILTERS -->
 <div class="filters">
   <div class="filter-group" id="fg-branch">
@@ -675,6 +682,7 @@ body.role-field-restricted #fg-branch, body.role-field-restricted #fg-type, body
   <div class="kpi red kpi-clickable" id="k-shortvisits-card" onclick="showShortVisitsModal()"><div class="kpi-icon">⏱️</div><div class="kpi-val" id="k-shortvisits">0</div><div class="kpi-label">زيارات أقل من 5 دقايق</div><div class="kpi-tap-hint">اضغط لعرض الأسماء 👆</div></div>
   <div class="kpi blue"><div class="kpi-icon">🕐</div><div class="kpi-val kpi-val-small" id="k-worktime">- ← -</div><div class="kpi-label">بداية وختام الحركة</div><div class="kpi-sub" id="k-worktime-span">-</div></div>
   <div class="kpi indigo"><div class="kpi-icon">⏳</div><div class="kpi-val" id="k-totalduration">0</div><div class="kpi-label">إجمالي وقت الزيارات عند العملاء</div></div>
+  <div class="kpi orange"><div class="kpi-icon">🔥</div><div class="kpi-val" id="k-streak">0</div><div class="kpi-label">أيام العمل المتتالية بدون انقطاع</div></div>
 </div>
 
 <!-- مودال قائمة العملاء اللي لسه محتاجين زيارة -->
@@ -810,6 +818,11 @@ body.role-field-restricted #fg-branch, body.role-field-restricted #fg-type, body
       <div style="font-size:22px;">🔁</div>
       <div style="font-size:20px; font-weight:800; color:#c0392b; margin-top:4px;" id="sc-dupclients">0</div>
       <div style="font-size:11px; color:#70758f; margin-top:2px;">عملاء تم زيارتهم أكثر من مرة</div>
+    </div>
+    <div style="grid-column:1/-1; background:#fff; border-radius:12px; padding:14px; text-align:center; box-shadow:0 1px 4px rgba(0,0,0,.08);">
+      <div style="font-size:22px;">🔥</div>
+      <div style="font-size:20px; font-weight:800; color:#e67e22; margin-top:4px;" id="sc-streak">0</div>
+      <div style="font-size:11px; color:#70758f; margin-top:2px;">يوم عمل متتالي بدون انقطاع</div>
     </div>
   </div>
 </div>
@@ -1286,6 +1299,25 @@ body.role-field-restricted #fg-branch, body.role-field-restricted #fg-type, body
     <button class="btn-reset" onclick="resetDebtFilters()">↺ إعادة ضبط فلاتر المديونية</button>
   </div>
 
+  <!-- أولوياتي اليوم: خلاصة سريعة تجمع المتجاوز + قرب التجاوز + عملاء لسه ما اتزاروش، عشان مايحتاجش يدور في كل قسم لوحده -->
+  <div class="report-card" id="debt-priorities-card" style="padding:16px">
+    <div style="font-weight:800;font-size:15px;margin-bottom:12px">🎯 أولوياتي اليوم</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px">
+      <div>
+        <div style="font-size:12px;font-weight:700;color:var(--red);margin-bottom:6px">🔴 عملاء متجاوزين (الأكبر قيمة)</div>
+        <div id="priority-overdue-list" style="font-size:13px"></div>
+      </div>
+      <div>
+        <div style="font-size:12px;font-weight:700;color:var(--orange);margin-bottom:6px">⏳ قربوا يدخلوا التجاوز</div>
+        <div id="priority-nearoverdue-list" style="font-size:13px"></div>
+      </div>
+      <div>
+        <div style="font-size:12px;font-weight:700;color:#00897b;margin-bottom:6px">🚫 لسه ما اتزاروش الشهر ده</div>
+        <div id="priority-unvisited-list" style="font-size:13px"></div>
+      </div>
+    </div>
+  </div>
+
   <div class="section-title">💰 تقرير المديونية</div>
   <div class="section-sub">
     مبني على شيت "المديونيه" (تواريخ الفواتير) — <b>لا يتأثر بفلتر السنة/الشهر/اليوم/الدقة</b> أعلى الصفحة لأن هذه تواريخ فواتير وليست تواريخ زيارات.
@@ -1376,7 +1408,7 @@ body.role-field-restricted #fg-branch, body.role-field-restricted #fg-type, body
   <div class="report-card">
     <div class="report-header"><h4>فواتير قريبة من التجاوز</h4><span class="badge" id="debt-nearoverdue-badge">0</span><button class="mini-export-btn" style="margin-right:auto" onclick="exportReport('debtNearOverdue')">📤 تصدير</button></div>
     <div class="report-scroll"><table class="report-table" id="debt-nearoverdue-table">
-      <thead><tr><th>العميل</th><th style="text-align:center">كود العميل</th><th>الفرع</th><th>المندوب</th><th style="text-align:center">عمر الفاتورة</th><th style="text-align:center">أيام السماح</th><th style="text-align:center">أيام متبقية</th><th style="text-align:center">المديونية</th></tr></thead>
+      <thead><tr><th>العميل</th><th style="text-align:center">كود العميل</th><th>الفرع</th><th>المندوب</th><th style="text-align:center">تاريخ الفاتورة</th><th style="text-align:center">أيام السماح</th><th style="text-align:center">أيام متبقية</th><th style="text-align:center">المديونية</th></tr></thead>
       <tbody id="debt-nearoverdue-tbody"></tbody>
     </table></div>
   </div>
@@ -1777,6 +1809,19 @@ function fmtDateParts(p){
   return `${p.y}-${String(p.m).padStart(2,'0')}-${String(p.d).padStart(2,'0')}`;
 }
 
+// عدد الأيام الفعلي بين "تاريخ الفاتورة" (نص "YYYY-MM-DD") ودلوقتي — بيتحسب حي كل مرة التقرير يتفتح،
+// عشان يفضل مظبوط حتى لو الملف مترفعش تاني من كذا يوم (بعكس عمود "عمر الفاتورة" الجاهز في الإكسل اللي
+// بيبقى ثابت وقت التصدير وبيبقى غلط كل ما الوقت يعدي من غير ما حد يرفع نسخة جديدة)
+function daysSinceDate(dateStr){
+  if(!dateStr) return null;
+  const m = String(dateStr).match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if(!m) return null;
+  const invoiceUTC = Date.UTC(+m[1], +m[2]-1, +m[3]);
+  const now = new Date();
+  const todayUTC = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+  return Math.round((todayUTC - invoiceUTC) / 86400000);
+}
+
 // إعدادات ملف الإكسل المتزامن من جوجل درايف (نفس الملف اللي بتحفظه على جهازك جوه فولدر My Drive)
 // ملحوظة أمنية: شيتي user والصلاحيات (فيهم كلمات السر) موجودين جوه نفس الملف، فبيتحدثوا تلقائي كمان —
 // لو عايز تمنع ده لاحقًا، سيب شيتي user والصلاحيات في نسخة منفصلة وارفعها يدوي بس من الأدمن بانل.
@@ -1844,6 +1889,7 @@ function silentDataRefresh(){
     // فاليوم المحدد سابقًا بيتصفّر طبيعي هنا بدل ما يفضل فلترة على يوم ممكن يكون بقى مش هو الأحدث
     renderCoverageReport2();
   }
+  showLoginPriorityBanner();
 }
 
 async function fetchGoogleSheetsData(){
@@ -2398,6 +2444,32 @@ function onTypeChange(){
   if(currentTab==='debt') renderDebtReport();
 }
 
+// بانر أولويات اليوم اللي بيظهر تلقائي بعد الدخول للمندوب/المحصل لو عنده عملاء متجاوزين أو قربوا يدخلوا التجاوز
+function showLoginPriorityBanner(){
+  const banner = document.getElementById('priority-banner');
+  if(!banner) return;
+  if(!currentUser || (currentUser.role !== 'مندوب' && currentUser.role !== 'محصل')){ banner.style.display = 'none'; return; }
+  const hasDebtAccess = currentUser.tabs && currentUser.tabs.includes('debt');
+  if(!hasDebtAccess){ banner.style.display = 'none'; return; }
+
+  const overdueClients = new Set(DEBT.filter(r=>r.نوع==='متجاوز').map(r=>(r['كود العميل']||'')+'|'+(r['اسم العميل']||''))).size;
+  const nearOverdueCount = DEBT.filter(r=>{
+    if(r.نوع === 'متجاوز') return false;
+    const liveAge = daysSinceDate(r.التاريخ);
+    if(liveAge==null) return false;
+    const remaining = (+r['عدد  ايام السماح']||0) - liveAge;
+    return remaining >= 0 && remaining <= 4;
+  }).length;
+
+  if(!overdueClients && !nearOverdueCount){ banner.style.display = 'none'; return; }
+
+  const parts = [];
+  if(overdueClients) parts.push(`${overdueClients.toLocaleString('ar-IQ')} عميل متجاوز`);
+  if(nearOverdueCount) parts.push(`${nearOverdueCount.toLocaleString('ar-IQ')} فاتورة قربت تدخل التجاوز`);
+  document.getElementById('priority-banner-text').textContent = 'عندك ' + parts.join(' و') + ' — اضغط هنا لعرض التفاصيل';
+  banner.style.display = 'flex';
+}
+
 function init(){
   buildFilterOptions();
   const alreadyFiltered = applyRoleRestrictions();
@@ -2416,6 +2488,7 @@ function init(){
   document.getElementById('app').style.display = 'block';
   startAutoSyncInterval();
   fetchGoogleSheetsData(); // تحديث فوري في الخلفية (من غير ما يعطّل فتح الصفحة) عشان البيانات الحقيقية تظهر خلال ثواني بدل الانتظار لحد أول تحديث دوري بعد ساعتين
+  showLoginPriorityBanner();
 }
 
 function onYearChange(){
@@ -2714,7 +2787,31 @@ function updateExtraKPIs(){
   }, 0);
   document.getElementById('k-totalduration').textContent = formatMinutesAsHM(totalMinutes);
 
+  // 5) أيام العمل المتتالية بدون انقطاع — بتحسب رجوعًا من آخر يوم فيه زيارة فعلية ضمن النطاق الحالي
+  document.getElementById('k-streak').textContent = computeVisitStreak(branch, person).toLocaleString('ar-IQ');
+
   updateShareButtonState();
+}
+
+// عدد الأيام المتتالية (بدون أي انقطاع يوم واحد) اللي فيها زيارة واحدة على الأقل، رجوعًا من آخر يوم نشاط
+// مسجّل ضمن النطاق (مش بالضرورة "النهاردة" لو الملف اتأخر ترفيعه — بنحسب من آخر بيانات فعلية موجودة)
+function computeVisitStreak(branch, person){
+  let scope = DATA;
+  if(branch) scope = scope.filter(r=>r.الفرع===branch);
+  if(person) scope = scope.filter(r=>r['الشخص اللي قام بالزياره']===person);
+  const dateKeys = new Set();
+  scope.forEach(r=>{
+    if(r.year && r.month && r.day) dateKeys.add(Date.UTC(r.year, r.month-1, r.day));
+  });
+  if(!dateKeys.size) return 0;
+  const sortedDesc = [...dateKeys].sort((a,b)=>b-a);
+  let streak = 1;
+  for(let i=1;i<sortedDesc.length;i++){
+    const diffDays = Math.round((sortedDesc[i-1]-sortedDesc[i]) / 86400000);
+    if(diffDays === 1) streak++;
+    else break;
+  }
+  return streak;
 }
 
 function updateShareButtonState(){
@@ -2904,6 +3001,7 @@ function fillShareCardFields(){
   document.getElementById('sc-worktime-span').textContent = document.getElementById('k-worktime-span').textContent;
   document.getElementById('sc-totalduration').textContent = document.getElementById('k-totalduration').textContent;
   document.getElementById('sc-dupclients').textContent = computeDuplicateClientsCount();
+  document.getElementById('sc-streak').textContent = document.getElementById('k-streak').textContent;
   // أي KPI جديدة تتضاف في لوحة القيادة لازم تتحط هنا كمان عشان تبان في صورة المشاركة على واتساب
   document.getElementById('sc-debt-total').textContent = document.getElementById('k-debt-total').textContent;
   document.getElementById('sc-debt-overdue').textContent = document.getElementById('k-debt-overdue-val').textContent;
@@ -5418,6 +5516,36 @@ function renderDebtReport(){
   const overduePct = count ? Math.round(overdueCount/count*100) : 0;
   const avgAge = count ? Math.round(rows.reduce((s,r)=>s+(+r['عمر الفاتوره']||0),0)/count) : 0;
 
+  // 🎯 أولوياتي اليوم — ملخص سريع يجمع أهم 5 عملاء متجاوزين + أقرب 5 فواتير هتدخل التجاوز + أول 5 عملاء لسه ما اتزاروش الشهر ده
+  {
+    const byOverdueClient = {};
+    overdueRows.forEach(r=>{
+      const key = (r['كود العميل']||'') + '|' + (r['اسم العميل']||'');
+      if(!byOverdueClient[key]) byOverdueClient[key] = {name:r['اسم العميل'], sum:0};
+      byOverdueClient[key].sum += (+r.المديونيه||0);
+    });
+    const topOverdue = Object.values(byOverdueClient).sort((a,b)=>b.sum-a.sum).slice(0,5);
+    document.getElementById('priority-overdue-list').innerHTML = topOverdue.length
+      ? topOverdue.map(c=>`<div style="padding:4px 0;display:flex;justify-content:space-between;gap:8px"><span>${esc(c.name)}</span><b style="color:var(--red);white-space:nowrap">${c.sum.toLocaleString('ar-IQ')}</b></div>`).join('')
+      : '<div style="color:var(--text-dim)">مفيش عملاء متجاوزين 🎉</div>';
+
+    const nearOverdueForPriority = notOverdueRows.map(r=>{
+      const liveAge = daysSinceDate(r.التاريخ);
+      const remaining = liveAge==null ? null : (+r['عدد  ايام السماح']||0) - liveAge;
+      return {name:r['اسم العميل'], remaining};
+    }).filter(r => r.remaining!=null && r.remaining >= 0 && r.remaining <= 4)
+      .sort((a,b)=>a.remaining-b.remaining).slice(0,5);
+    document.getElementById('priority-nearoverdue-list').innerHTML = nearOverdueForPriority.length
+      ? nearOverdueForPriority.map(c=>`<div style="padding:4px 0;display:flex;justify-content:space-between;gap:8px"><span>${esc(c.name)}</span><b style="color:var(--orange);white-space:nowrap">${c.remaining===0?'اليوم':c.remaining+' يوم'}</b></div>`).join('')
+      : '<div style="color:var(--text-dim)">مفيش فواتير قريبة من التجاوز 👍</div>';
+
+    const unvisitedTop = (UNVISITED_CLIENTS_LIST || []).slice(0,5);
+    document.getElementById('priority-unvisited-list').innerHTML = unvisitedTop.length
+      ? unvisitedTop.map(name=>`<div style="padding:4px 0">${esc(name)}</div>`).join('') +
+        (UNVISITED_CLIENTS_LIST.length>5 ? `<div style="color:var(--text-dim);font-size:11.5px;margin-top:4px">+${UNVISITED_CLIENTS_LIST.length-5} عميل تاني — شوف كارت "عملاء لم تتم زيارتهم" باللوحة</div>` : '')
+      : '<div style="color:var(--text-dim)">كل العملاء اتزاروا 🎉</div>';
+  }
+
   document.getElementById('debt-k-total').textContent = total.toLocaleString('ar-IQ');
   document.getElementById('debt-k-count').textContent = count.toLocaleString('ar-IQ');
   document.getElementById('debt-k-overdue').textContent = overdueCount.toLocaleString('ar-IQ');
@@ -5549,27 +5677,28 @@ function renderDebtReport(){
     '0-9':c.b0, '10-19':c.b10, '20-29':c.b20, '30-39':c.b30, '40-49':c.b40, '+50':c.b50, 'عدد الفواتير':c.count, 'إجمالي المديونية':c.sum
   }));
 
-  // تحذير مبكر: فواتير لسه مش متجاوزة بس باقيلها 4 أيام أو أقل قبل ما تدخل التجاوز
+  // تحذير مبكر: فواتير باقيلها 4 أيام أو أقل قبل ما تدخل التجاوز — محسوبة حي من تاريخ الفاتورة الفعلي
+  // مقارنة بتاريخ اليوم (مش من عمود "عمر الفاتورة" الجاهز اللي بيبقى قديم لو الملف اتأخر ترفيعه)
   const NEAR_OVERDUE_THRESHOLD_DAYS = 4;
-  const nearOverdueRows = rows.filter(r=>{
-    if(r.نوع === 'متجاوز') return false;
-    const remaining = (+r['عدد  ايام السماح']||0) - (+r['عمر الفاتوره']||0);
-    return remaining >= 0 && remaining <= NEAR_OVERDUE_THRESHOLD_DAYS;
-  }).map(r=>({...r, remaining: (+r['عدد  ايام السماح']||0) - (+r['عمر الفاتوره']||0)}))
+  const nearOverdueRows = rows.map(r=>{
+    const liveAge = daysSinceDate(r.التاريخ);
+    const remaining = liveAge==null ? null : (+r['عدد  ايام السماح']||0) - liveAge;
+    return {...r, liveAge, remaining};
+  }).filter(r => r.remaining!=null && r.remaining >= 0 && r.remaining <= NEAR_OVERDUE_THRESHOLD_DAYS)
     .sort((a,b)=>a.remaining-b.remaining);
 
   document.getElementById('debt-nearoverdue-badge').textContent = nearOverdueRows.length;
   document.getElementById('debt-nearoverdue-tbody').innerHTML = nearOverdueRows.map(r=>`
     <tr><td>${esc(r['اسم العميل'])}</td><td style="text-align:center">${esc(r['كود العميل'])}</td><td>${esc(r.الفرع)}</td><td>${esc(r['Sales rep'])}</td>
-    <td style="text-align:center">${r['عمر الفاتوره']!=null?r['عمر الفاتوره']:'-'}</td>
+    <td style="text-align:center">${esc(r.التاريخ)||'-'}</td>
     <td style="text-align:center">${r['عدد  ايام السماح']!=null?r['عدد  ايام السماح']:'-'}</td>
-    <td style="text-align:center;font-weight:700;color:${r.remaining<=1?'var(--red)':'var(--orange)'}">${r.remaining}</td>
+    <td style="text-align:center;font-weight:700;color:${r.remaining<=1?'var(--red)':'var(--orange)'}">${r.remaining === 0 ? 'اليوم' : r.remaining}</td>
     <td style="text-align:center">${(+r.المديونيه||0).toLocaleString('ar-IQ')}</td></tr>`
   ).join('') || '<tr><td colspan="8" style="text-align:center;color:var(--text-dim)">لا توجد فواتير قريبة من التجاوز ضمن الفلتر الحالي</td></tr>';
 
   EXPORT_DATA.debtNearOverdue = nearOverdueRows.map(r=>({
     'العميل':r['اسم العميل'], 'كود العميل':r['كود العميل'], 'الفرع':r.الفرع, 'المندوب':r['Sales rep'],
-    'عمر الفاتورة':r['عمر الفاتوره'], 'أيام السماح':r['عدد  ايام السماح'], 'أيام متبقية':r.remaining, 'المديونية':r.المديونيه
+    'تاريخ الفاتورة':r.التاريخ, 'أيام السماح':r['عدد  ايام السماح'], 'أيام متبقية':r.remaining, 'المديونية':r.المديونيه
   }));
 
   // قسم "التوزيع": بيتحدد حسب أضيق فلتر مختار فعليًا (مش الدور بس) —
