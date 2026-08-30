@@ -662,7 +662,7 @@ body:not(.role-admin) .section-sub, body:not(.role-admin) #overdue-modal-sub{dis
 
 <!-- KPI CARDS -->
 <div class="kpi-row">
-  <div class="kpi red kpi-clickable" id="k-debt-card" onclick="showOverdueClientsModal()"><div class="kpi-icon">💰</div><div class="kpi-val" id="k-debt-total">0</div><div class="kpi-label">إجمالي المديونية</div><div class="kpi-sub" id="k-debt-overdue-val" style="color:var(--red)">متجاوز: 0 د.ع</div><div class="kpi-sub" id="k-debt-overdue-pct">النسبة: 0%</div><div class="kpi-tap-hint">اضغط لعرض العملاء المتجاوزين 👆</div></div>
+  <div class="kpi red kpi-clickable" id="k-debt-card" onclick="showOverdueClientsModal()"><div class="kpi-icon">💰</div><div class="kpi-val" id="k-debt-total">0</div><div class="kpi-label">إجمالي المديونية</div><div class="kpi-sub" id="k-debt-overdue-val" style="color:var(--red)">متجاوز: 0 د.ع</div><div class="kpi-sub" id="k-debt-overdue-pct">النسبة: 0%</div><div class="kpi-sub" id="k-debt-clients">0 عميل • 0 متجاوز</div><div class="kpi-tap-hint">اضغط لعرض العملاء المتجاوزين 👆</div></div>
   <div class="kpi blue kpi-clickable" id="k-total-card" onclick="showTotalVisitsModal()"><div class="kpi-icon">📋</div><div class="kpi-val" id="k-total">0</div><div class="kpi-label">إجمالي الزيارات</div><div class="kpi-sub" id="k-total-clients">0 عميل</div><div class="kpi-tap-hint">اضغط لعرض الأسماء 👆</div></div>
   <div class="kpi green"><div class="kpi-icon">✅</div><div class="kpi-val" id="k-acc">0</div><div class="kpi-label">زيارات دقيقة</div><div class="kpi-sub" id="k-acc-pct">0%</div></div>
   <div class="kpi red"><div class="kpi-icon">❌</div><div class="kpi-val" id="k-inacc">0</div><div class="kpi-label">زيارات غير دقيقة</div><div class="kpi-sub" id="k-inacc-pct">0%</div></div>
@@ -730,7 +730,7 @@ body:not(.role-admin) .section-sub, body:not(.role-admin) #overdue-modal-sub{dis
     <div class="sub" id="overdue-modal-sub">قيمة التجاوز وعدد الزيارات لكل عميل ضمن الفلتر الحالي</div>
     <div class="unvisited-list">
       <table class="overdue-table">
-        <thead><tr><th>اسم العميل</th><th style="text-align:center">قيمة التجاوز</th><th style="text-align:center">عدد الزيارات</th></tr></thead>
+        <thead><tr><th>اسم العميل</th><th style="text-align:center">قيمة التجاوز</th><th style="text-align:center">عدد الزيارات</th><th style="text-align:center">كام يوم متجاوز</th></tr></thead>
         <tbody id="overdue-list"></tbody>
       </table>
     </div>
@@ -1286,10 +1286,6 @@ body:not(.role-admin) .section-sub, body:not(.role-admin) #overdue-modal-sub{dis
         <option value="">الكل</option>
       </select>
     </div>
-    <div class="filter-group" style="flex:1;min-width:180px">
-      <label>بحث (اسم/كود عميل)</label>
-      <input type="text" id="debt-search" placeholder="اكتب اسم العميل أو الكود..." oninput="renderDebtReport()" style="width:100%">
-    </div>
     <div class="filter-group">
       <label>اسم العميل (اختيار دقيق)</label>
       <select id="debt-f-client" onchange="renderDebtReport()">
@@ -1361,6 +1357,26 @@ body:not(.role-admin) .section-sub, body:not(.role-admin) #overdue-modal-sub{dis
     <div class="report-scroll"><table class="report-table" id="debt-detail-table">
       <thead><tr><th>الفرع</th><th>المندوب</th><th>العميل</th><th style="text-align:center">كود العميل</th><th style="text-align:center">تصنيف</th><th style="text-align:center">نوع الدفع</th><th style="text-align:center">عمر الفاتورة</th><th style="text-align:center">أيام السماح</th><th style="text-align:center">الحالة</th><th>المحصل</th><th style="text-align:center">المديونية</th></tr></thead>
       <tbody id="debt-detail-tbody"></tbody>
+    </table></div>
+  </div>
+
+  <!-- تقرير أعمار الديون: مديونية كل عميل موزّعة على شرائح عمر الفاتورة -->
+  <div class="section-title">📆 تقرير أعمار الديون حسب العميل</div>
+  <div class="report-card">
+    <div class="report-header"><h4>الشرائح العمرية</h4><span class="badge" id="debt-aging-badge">0</span><span class="hint" id="debt-aging-hint" style="display:none">أول 300 عميل فقط للعرض (التصدير يشمل الكل)</span><button class="mini-export-btn" onclick="exportReport('debtAging')">📤 تصدير الكل</button></div>
+    <div class="report-scroll"><table class="report-table" id="debt-aging-table">
+      <thead><tr><th>العميل</th><th style="text-align:center">كود العميل</th><th>الفرع</th><th>المندوب</th><th style="text-align:center">تصنيف</th><th style="text-align:center">الحالة</th><th style="text-align:center">0-9</th><th style="text-align:center">10-19</th><th style="text-align:center">20-29</th><th style="text-align:center">30-39</th><th style="text-align:center">40-49</th><th style="text-align:center">+50</th><th style="text-align:center">عدد الفواتير</th><th style="text-align:center">إجمالي المديونية</th></tr></thead>
+      <tbody id="debt-aging-tbody"></tbody>
+    </table></div>
+  </div>
+
+  <!-- تحذير مبكر: فواتير قريبة تدخل التجاوز خلال 4 أيام -->
+  <div class="section-title">⏳ عملاء قربوا يدخلوا التجاوز (خلال 4 أيام)</div>
+  <div class="report-card">
+    <div class="report-header"><h4>فواتير قريبة من التجاوز</h4><span class="badge" id="debt-nearoverdue-badge">0</span><button class="mini-export-btn" style="margin-right:auto" onclick="exportReport('debtNearOverdue')">📤 تصدير</button></div>
+    <div class="report-scroll"><table class="report-table" id="debt-nearoverdue-table">
+      <thead><tr><th>العميل</th><th style="text-align:center">كود العميل</th><th>الفرع</th><th>المندوب</th><th style="text-align:center">عمر الفاتورة</th><th style="text-align:center">أيام السماح</th><th style="text-align:center">أيام متبقية</th><th style="text-align:center">المديونية</th></tr></thead>
+      <tbody id="debt-nearoverdue-tbody"></tbody>
     </table></div>
   </div>
 
@@ -5280,19 +5296,24 @@ function updateDebtDashboardKPI(){
   const overdueRows = rows.filter(r=>r.نوع==='متجاوز');
   const overdueVal = overdueRows.reduce((s,r)=>s+(+r.المديونيه||0), 0);
   const pct = total ? Math.round(overdueVal/total*100) : 0;
+  const allClients = new Set(rows.map(r=>(r['كود العميل']||'')+'|'+(r['اسم العميل']||'')).filter(k=>k!=='|'));
+  const overdueClients = new Set(overdueRows.map(r=>(r['كود العميل']||'')+'|'+(r['اسم العميل']||'')).filter(k=>k!=='|'));
   document.getElementById('k-debt-total').textContent = total.toLocaleString('ar-IQ');
   document.getElementById('k-debt-overdue-val').textContent = 'متجاوز: ' + overdueVal.toLocaleString('ar-IQ') + ' د.ع';
   document.getElementById('k-debt-overdue-pct').textContent = 'النسبة: ' + pct + '%';
+  document.getElementById('k-debt-clients').textContent = allClients.size.toLocaleString('ar-IQ') + ' عميل • ' + overdueClients.size.toLocaleString('ar-IQ') + ' متجاوز';
 }
 
 function showOverdueClientsModal(){
   const rows = getDebtScope().filter(r=>r.نوع==='متجاوز');
-  // تجميع لكل عميل: قيمة التجاوز (مجموع فواتيره المتجاوزة بس) + عدد زياراته (من شيت الزيارات، بالمطابقة بالاسم)
+  // تجميع لكل عميل: قيمة التجاوز (مجموع فواتيره المتجاوزة بس) + أسوأ عدد أيام تجاوز + عدد زياراته (من شيت الزيارات، بالمطابقة بالاسم)
   const byClient = {};
   rows.forEach(r=>{
     const key = (r['كود العميل']||'') + '|' + (r['اسم العميل']||'');
-    if(!byClient[key]) byClient[key] = {name:r['اسم العميل'], sum:0};
+    if(!byClient[key]) byClient[key] = {name:r['اسم العميل'], sum:0, maxOverdueDays:0};
     byClient[key].sum += (+r.المديونيه||0);
+    const overdueDays = (+r['عمر الفاتوره']||0) - (+r['عدد  ايام السماح']||0);
+    if(overdueDays > byClient[key].maxOverdueDays) byClient[key].maxOverdueDays = overdueDays;
   });
   const list = Object.values(byClient).map(c=>{
     const visitsCount = DATA.filter(v=>v.العميل === c.name).length;
@@ -5304,8 +5325,9 @@ function showOverdueClientsModal(){
   document.getElementById('overdue-list').innerHTML = list.map(c=>`
     <tr><td class="oc-name">${esc(c.name)}</td>
     <td style="text-align:center;color:var(--red);font-weight:700">${c.sum.toLocaleString('ar-IQ')}</td>
-    <td style="text-align:center">${c.visitsCount.toLocaleString('ar-IQ')}</td></tr>`
-  ).join('') || '<tr><td colspan="3" style="text-align:center;color:var(--text-dim)">لا يوجد عملاء متجاوزين ضمن الفلتر الحالي</td></tr>';
+    <td style="text-align:center">${c.visitsCount.toLocaleString('ar-IQ')}</td>
+    <td style="text-align:center;color:var(--red);font-weight:700">${c.maxOverdueDays.toLocaleString('ar-IQ')}</td></tr>`
+  ).join('') || '<tr><td colspan="4" style="text-align:center;color:var(--text-dim)">لا يوجد عملاء متجاوزين ضمن الفلتر الحالي</td></tr>';
 
   document.getElementById('overdue-overlay').style.display = 'flex';
 }
@@ -5320,7 +5342,6 @@ function resetDebtFilters(){
   document.getElementById('debt-f-status').value = '';
   document.getElementById('debt-f-grade').value = '';
   document.getElementById('debt-f-collector').value = '';
-  document.getElementById('debt-search').value = '';
   const clientSel = document.getElementById('debt-f-client');
   if(clientSel) clientSel.value = '';
   renderDebtReport();
@@ -5387,18 +5408,11 @@ function renderDebtReport(){
   const grade = document.getElementById('debt-f-grade').value;
   const collector = document.getElementById('debt-f-collector').value;
   const client = document.getElementById('debt-f-client').value;
-  const search = (document.getElementById('debt-search').value || '').trim().toLowerCase();
 
   if(status) rows = rows.filter(r => r.نوع === status);
   if(grade) rows = rows.filter(r => r['تصنيق العميل'] === grade);
   if(collector) rows = rows.filter(r => r.المحصل === collector);
   if(client) rows = rows.filter(r => r['اسم العميل'] === client);
-  if(search){
-    rows = rows.filter(r =>
-      (r['اسم العميل']||'').toLowerCase().includes(search) ||
-      String(r['كود العميل']||'').toLowerCase().includes(search)
-    );
-  }
 
   const total = rows.reduce((s,r)=>s+(+r.المديونيه||0), 0);
   const count = rows.length;
@@ -5492,6 +5506,78 @@ function renderDebtReport(){
     <td style="text-align:center"><span class="pill ${r.نوع==='متجاوز'?'pill-red':'pill-green'}">${esc(r.نوع)||'-'}</span></td>
     <td>${esc(r.المحصل)}</td><td style="text-align:center">${(+r.المديونيه||0).toLocaleString('ar-IQ')}</td></tr>`
   ).join('') || '<tr><td colspan="11" style="text-align:center;color:var(--text-dim)">لا توجد بيانات ضمن الفلتر الحالي</td></tr>';
+
+  // تقرير أعمار الديون: مديونية كل عميل موزّعة على شرائح عمر الفاتورة (كل 10 أيام)
+  const AGING_BUCKETS = [
+    {key:'b0',  label:'0-9',  min:0,  max:9},
+    {key:'b10', label:'10-19',min:10, max:19},
+    {key:'b20', label:'20-29',min:20, max:29},
+    {key:'b30', label:'30-39',min:30, max:39},
+    {key:'b40', label:'40-49',min:40, max:49},
+    {key:'b50', label:'+50',  min:50, max:Infinity}
+  ];
+  function ageBucketKey(age){
+    const a = +age || 0;
+    for(const b of AGING_BUCKETS){ if(a >= b.min && a <= b.max) return b.key; }
+    return 'b0';
+  }
+  const agingByClient = {};
+  rows.forEach(r=>{
+    const key = (r['كود العميل']||'') + '|' + (r['اسم العميل']||'');
+    if(!agingByClient[key]){
+      agingByClient[key] = {name:r['اسم العميل'], code:r['كود العميل'], branch:r.الفرع, rep:r['Sales rep'], grade:r['تصنيق العميل'], hasOverdue:false, count:0, sum:0, b0:0,b10:0,b20:0,b30:0,b40:0,b50:0};
+    }
+    const c = agingByClient[key];
+    c.count++;
+    c.sum += (+r.المديونيه||0);
+    c[ageBucketKey(r['عمر الفاتوره'])] += (+r.المديونيه||0);
+    if(r.نوع==='متجاوز') c.hasOverdue = true;
+  });
+  const agingRows = Object.values(agingByClient).sort((a,b)=>b.sum-a.sum);
+  const AGING_DISPLAY_CAP = 300;
+  document.getElementById('debt-aging-badge').textContent = agingRows.length;
+  document.getElementById('debt-aging-hint').style.display = agingRows.length > AGING_DISPLAY_CAP ? '' : 'none';
+  document.getElementById('debt-aging-tbody').innerHTML = agingRows.slice(0, AGING_DISPLAY_CAP).map(c=>`
+    <tr><td>${esc(c.name)}</td><td style="text-align:center">${esc(c.code)}</td><td>${esc(c.branch)}</td><td>${esc(c.rep)}</td>
+    <td style="text-align:center">${esc(c.grade)}</td>
+    <td style="text-align:center"><span class="pill ${c.hasOverdue?'pill-red':'pill-green'}">${c.hasOverdue?'متجاوز':'منتظم'}</span></td>
+    <td style="text-align:center">${c.b0 ? c.b0.toLocaleString('ar-IQ') : '-'}</td>
+    <td style="text-align:center">${c.b10 ? c.b10.toLocaleString('ar-IQ') : '-'}</td>
+    <td style="text-align:center">${c.b20 ? c.b20.toLocaleString('ar-IQ') : '-'}</td>
+    <td style="text-align:center">${c.b30 ? c.b30.toLocaleString('ar-IQ') : '-'}</td>
+    <td style="text-align:center">${c.b40 ? c.b40.toLocaleString('ar-IQ') : '-'}</td>
+    <td style="text-align:center;color:var(--red)">${c.b50 ? c.b50.toLocaleString('ar-IQ') : '-'}</td>
+    <td style="text-align:center">${c.count}</td>
+    <td style="text-align:center;font-weight:700">${c.sum.toLocaleString('ar-IQ')}</td></tr>`
+  ).join('') || '<tr><td colspan="14" style="text-align:center;color:var(--text-dim)">لا توجد بيانات ضمن الفلتر الحالي</td></tr>';
+
+  EXPORT_DATA.debtAging = agingRows.map(c=>({
+    'العميل':c.name, 'كود العميل':c.code, 'الفرع':c.branch, 'المندوب':c.rep, 'تصنيف':c.grade, 'الحالة':c.hasOverdue?'متجاوز':'منتظم',
+    '0-9':c.b0, '10-19':c.b10, '20-29':c.b20, '30-39':c.b30, '40-49':c.b40, '+50':c.b50, 'عدد الفواتير':c.count, 'إجمالي المديونية':c.sum
+  }));
+
+  // تحذير مبكر: فواتير لسه مش متجاوزة بس باقيلها 4 أيام أو أقل قبل ما تدخل التجاوز
+  const NEAR_OVERDUE_THRESHOLD_DAYS = 4;
+  const nearOverdueRows = rows.filter(r=>{
+    if(r.نوع === 'متجاوز') return false;
+    const remaining = (+r['عدد  ايام السماح']||0) - (+r['عمر الفاتوره']||0);
+    return remaining >= 0 && remaining <= NEAR_OVERDUE_THRESHOLD_DAYS;
+  }).map(r=>({...r, remaining: (+r['عدد  ايام السماح']||0) - (+r['عمر الفاتوره']||0)}))
+    .sort((a,b)=>a.remaining-b.remaining);
+
+  document.getElementById('debt-nearoverdue-badge').textContent = nearOverdueRows.length;
+  document.getElementById('debt-nearoverdue-tbody').innerHTML = nearOverdueRows.map(r=>`
+    <tr><td>${esc(r['اسم العميل'])}</td><td style="text-align:center">${esc(r['كود العميل'])}</td><td>${esc(r.الفرع)}</td><td>${esc(r['Sales rep'])}</td>
+    <td style="text-align:center">${r['عمر الفاتوره']!=null?r['عمر الفاتوره']:'-'}</td>
+    <td style="text-align:center">${r['عدد  ايام السماح']!=null?r['عدد  ايام السماح']:'-'}</td>
+    <td style="text-align:center;font-weight:700;color:${r.remaining<=1?'var(--red)':'var(--orange)'}">${r.remaining}</td>
+    <td style="text-align:center">${(+r.المديونيه||0).toLocaleString('ar-IQ')}</td></tr>`
+  ).join('') || '<tr><td colspan="8" style="text-align:center;color:var(--text-dim)">لا توجد فواتير قريبة من التجاوز ضمن الفلتر الحالي</td></tr>';
+
+  EXPORT_DATA.debtNearOverdue = nearOverdueRows.map(r=>({
+    'العميل':r['اسم العميل'], 'كود العميل':r['كود العميل'], 'الفرع':r.الفرع, 'المندوب':r['Sales rep'],
+    'عمر الفاتورة':r['عمر الفاتوره'], 'أيام السماح':r['عدد  ايام السماح'], 'أيام متبقية':r.remaining, 'المديونية':r.المديونيه
+  }));
 
   // قسم "التوزيع": بيتحدد حسب أضيق فلتر مختار فعليًا (مش الدور بس) —
   // شخص محدد (من فلتر الأعلى أو لأن الدور نفسه مندوب/محصل) => أكبر 5 عملاء
@@ -5611,7 +5697,9 @@ const EXPORT_CONFIG = {
   similar:      {file:'أماكن_متشابهة_كل_العملاء', sheet:'أماكن متشابهة'},
   debtByBranch: {file:'المديونية_حسب_الفرع', sheet:'المديونية حسب الفرع'},
   debtByRep:    {file:'المديونية_حسب_المندوب', sheet:'المديونية حسب المندوب'},
-  debtDetail:   {file:'تفاصيل_المديونية', sheet:'تفاصيل المديونية'}
+  debtDetail:   {file:'تفاصيل_المديونية', sheet:'تفاصيل المديونية'},
+  debtAging:    {file:'أعمار_الديون', sheet:'أعمار الديون'},
+  debtNearOverdue: {file:'عملاء_قرب_التجاوز', sheet:'قرب التجاوز'}
 };
 
 function exportReport(key){
