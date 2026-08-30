@@ -3382,6 +3382,10 @@ function switchTab(name){
   });
   if(name==='debt'){
     document.getElementById('days-group').style.display = 'none';
+  } else {
+    // بيرجّع فلتر "اليوم" لحالته الصح (ظاهر لو فيه شهر متحدد فعلًا، مخفي لو لأ) — لازم نعيد حسابها هنا
+    // وإلا كانت بتفضل مقفولة لو المستخدم زار تاب المديونية قبل كده وبعدين رجع لأي تاب تاني بدون تغيير الشهر
+    populateDaySelect();
   }
   if(name==='charts') renderCharts();
   else if(name==='quality') renderQualityReports();
