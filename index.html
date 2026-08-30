@@ -160,9 +160,15 @@ body.role-admin .qty-kpi-line{display:block !important}
 .unvisited-item{padding:10px 12px; border-radius:8px; background:var(--bg-card2); margin-bottom:6px; font-size:13.5px; color:var(--text-primary); display:flex; align-items:center; gap:8px}
 .unvisited-item::before{content:"📍"; flex-shrink:0}
 .unvisited-item.two-col{justify-content:space-between}
-.unvisited-item .item-name{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.unvisited-item .item-name{flex:1; min-width:0; overflow-wrap:break-word; word-break:break-word; white-space:normal}
 .unvisited-item .item-badges{display:flex; gap:6px; flex-shrink:0}
 .unvisited-item .item-badge{background:var(--bg-card); border:1px solid var(--border-main); border-radius:6px; padding:2px 8px; font-size:11.5px; font-weight:700; color:var(--accent); white-space:nowrap}
+/* نسخة أوسع من نافذة admin-panel للقوائم اللي فيها أسماء عملاء طويلة (زي قايمة المتجاوزين) عشان الاسم يبان كامل */
+.admin-panel-wide{width:760px}
+.overdue-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px}
+.overdue-table th{background:var(--bg-card2);padding:8px 10px;text-align:right;color:var(--text-dim);font-weight:700;border-bottom:1px solid var(--border-main);white-space:nowrap;position:sticky;top:0}
+.overdue-table td{padding:8px 10px;border-bottom:1px solid var(--border-main);color:var(--text-primary)}
+.overdue-table td.oc-name{white-space:normal;word-break:break-word;max-width:280px}
 .share-kpi-btn{
   background:linear-gradient(135deg,#25d366,#1da851); color:#fff; border:none;
   border-radius:10px; padding:10px 20px; font-size:13px; font-weight:700; cursor:pointer;
@@ -585,13 +591,13 @@ body.role-admin .qty-kpi-line{display:block !important}
       <option value="">الكل</option>
     </select>
   </div>
-  <div class="filter-group">
+  <div class="filter-group" id="fg-year">
     <label>السنة</label>
     <select id="f-year" onchange="onYearChange()">
       <option value="">الكل</option>
     </select>
   </div>
-  <div class="filter-group">
+  <div class="filter-group" id="fg-month">
     <label>الشهر</label>
     <select id="f-month" onchange="onMonthChange()">
       <option value="">الكل</option>
@@ -603,7 +609,7 @@ body.role-admin .qty-kpi-line{display:block !important}
       <option value="">اختر يوم</option>
     </select>
   </div>
-  <div class="filter-group">
+  <div class="filter-group" id="fg-acc">
     <label>الدقة</label>
     <select id="f-acc" onchange="applyFilters()">
       <option value="">الكل</option>
@@ -633,6 +639,7 @@ body.role-admin .qty-kpi-line{display:block !important}
 <!-- TAB BAR -->
 <div class="tab-bar">
   <button class="tab-btn active" id="tabbtn-dashboard" onclick="switchTab('dashboard')">📋 لوحة القيادة</button>
+  <button class="tab-btn" id="tabbtn-debt" onclick="switchTab('debt')">💰 المديونية</button>
   <button class="tab-btn" id="tabbtn-tracking" onclick="switchTab('tracking')">🚶 تتبع الحركة اليومية</button>
   <button class="tab-btn" id="tabbtn-geomap" onclick="switchTab('geomap')">🗺️ خريطة أداء المندوب</button>
   <button class="tab-btn" id="tabbtn-coverage" onclick="switchTab('coverage')">📊 تغطية العملاء الشهرية</button>
@@ -652,6 +659,7 @@ body.role-admin .qty-kpi-line{display:block !important}
 
 <!-- KPI CARDS -->
 <div class="kpi-row">
+  <div class="kpi red kpi-clickable" id="k-debt-card" onclick="showOverdueClientsModal()"><div class="kpi-icon">💰</div><div class="kpi-val" id="k-debt-total">0</div><div class="kpi-label">إجمالي المديونية</div><div class="kpi-sub" id="k-debt-overdue-val" style="color:var(--red)">متجاوز: 0 د.ع</div><div class="kpi-sub" id="k-debt-overdue-pct">النسبة: 0%</div><div class="kpi-tap-hint">اضغط لعرض العملاء المتجاوزين 👆</div></div>
   <div class="kpi blue kpi-clickable" id="k-total-card" onclick="showTotalVisitsModal()"><div class="kpi-icon">📋</div><div class="kpi-val" id="k-total">0</div><div class="kpi-label">إجمالي الزيارات</div><div class="kpi-sub" id="k-total-clients">0 عميل</div><div class="kpi-tap-hint">اضغط لعرض الأسماء 👆</div></div>
   <div class="kpi green"><div class="kpi-icon">✅</div><div class="kpi-val" id="k-acc">0</div><div class="kpi-label">زيارات دقيقة</div><div class="kpi-sub" id="k-acc-pct">0%</div></div>
   <div class="kpi red"><div class="kpi-icon">❌</div><div class="kpi-val" id="k-inacc">0</div><div class="kpi-label">زيارات غير دقيقة</div><div class="kpi-sub" id="k-inacc-pct">0%</div></div>
@@ -665,7 +673,7 @@ body.role-admin .qty-kpi-line{display:block !important}
 
 <!-- مودال قائمة العملاء اللي لسه محتاجين زيارة -->
 <div class="admin-overlay" id="unvisited-overlay">
-  <div class="admin-panel">
+  <div class="admin-panel admin-panel-wide">
     <button class="admin-close" onclick="closeUnvisitedClientsModal()">✕</button>
     <h3>🚫 عملاء لسه محتاجين زيارة</h3>
     <div class="sub" id="unvisited-modal-sub">قائمة العملاء اللي معندهمش أي زيارة مسجّلة في الفترة الحالية</div>
@@ -683,7 +691,7 @@ body.role-admin .qty-kpi-line{display:block !important}
 
 <!-- مودال قائمة عملاء إجمالي الزيارات (عدد الزيارات + كمية المبيعات لكل عميل) -->
 <div class="admin-overlay" id="total-visits-overlay">
-  <div class="admin-panel">
+  <div class="admin-panel admin-panel-wide">
     <button class="admin-close" onclick="closeTotalVisitsModal()">✕</button>
     <h3>📋 عملاء إجمالي الزيارات</h3>
     <div class="sub" id="total-visits-modal-sub">عدد الزيارات وكمية المبيعات لكل عميل ضمن الفلتر الحالي</div>
@@ -693,7 +701,7 @@ body.role-admin .qty-kpi-line{display:block !important}
 
 <!-- مودال قائمة عملاء إجمالي الطلبيات (كمية لكل عميل) -->
 <div class="admin-overlay" id="orders-overlay">
-  <div class="admin-panel">
+  <div class="admin-panel admin-panel-wide">
     <button class="admin-close" onclick="closeOrdersModal()">✕</button>
     <h3>📦 عملاء الطلبيات</h3>
     <div class="sub" id="orders-modal-sub">العملاء اللي اتعملها طلبيات وكميتها ضمن الفلتر الحالي</div>
@@ -703,7 +711,7 @@ body.role-admin .qty-kpi-line{display:block !important}
 
 <!-- مودال قائمة عملاء الزيارات أقل من 5 دقايق -->
 <div class="admin-overlay" id="short-visits-overlay">
-  <div class="admin-panel">
+  <div class="admin-panel admin-panel-wide">
     <button class="admin-close" onclick="closeShortVisitsModal()">✕</button>
     <h3>⏱️ عملاء الزيارات السريعة (أقل من 5 دقايق)</h3>
     <div class="sub" id="short-visits-modal-sub">قائمة العملاء اللي زيارتهم استغرقت أقل من 5 دقايق ضمن الفلتر الحالي</div>
@@ -711,7 +719,20 @@ body.role-admin .qty-kpi-line{display:block !important}
   </div>
 </div>
 
-<!-- قالب مخفي: صورة الملخص اللي بتتبعت على واتساب — مش ظاهر في الصفحة، بس بيتلقط كصورة -->
+<!-- مودال قائمة العملاء المتجاوزين في المديونية (قيمة التجاوز + عدد الزيارات لكل عميل) -->
+<div class="admin-overlay" id="overdue-overlay">
+  <div class="admin-panel admin-panel-wide">
+    <button class="admin-close" onclick="closeOverdueClientsModal()">✕</button>
+    <h3>⏰ العملاء المتجاوزين في المديونية</h3>
+    <div class="sub" id="overdue-modal-sub">قيمة التجاوز وعدد الزيارات لكل عميل ضمن الفلتر الحالي</div>
+    <div class="unvisited-list">
+      <table class="overdue-table">
+        <thead><tr><th>اسم العميل</th><th style="text-align:center">قيمة التجاوز</th><th style="text-align:center">عدد الزيارات</th></tr></thead>
+        <tbody id="overdue-list"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
 <div id="share-card" style="position:absolute; top:-9999px; left:0; width:420px; direction:rtl; font-family:'Segoe UI',Arial,sans-serif; background:linear-gradient(135deg,#f8f9fc,#eef1f8); padding:24px; border-radius:0;">
   <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; padding-bottom:14px; border-bottom:2px solid #1d4fa3;">
     <div style="font-size:18px; font-weight:800; color:#1d2333;">📋 ملخص الزيارات الميدانية</div>
@@ -780,6 +801,7 @@ body.role-admin .qty-kpi-line{display:block !important}
     </div>
   </div>
 </div>
+
 <!-- SUMMARY TABLES -->
 <div class="tables-row">
   <div class="card">
@@ -1224,6 +1246,101 @@ body.role-admin .qty-kpi-line{display:block !important}
   </div>
 </div><!-- end tab-similar -->
 
+<!-- TAB: DEBT (المديونية) -->
+<div class="tab-content" id="tab-debt">
+
+  <div class="section-title">💰 تقرير المديونية</div>
+  <div class="section-sub">
+    مبني على شيت "المديونيه" (تواريخ الفواتير) — <b>لا يتأثر بفلتر السنة/الشهر/اليوم/الدقة</b> أعلى الصفحة لأن هذه تواريخ فواتير وليست تواريخ زيارات.
+    الفرع والشخص يتبعان نفس فلاتر الأعلى.
+  </div>
+
+  <!-- فلاتر إضافية خاصة بالمديونية فقط -->
+  <div class="filters" style="margin:0 30px 16px;padding:12px 14px;background:var(--bg-card);border:1px solid var(--border-main);border-radius:10px">
+    <div class="filter-group">
+      <label>حالة الفاتورة</label>
+      <select id="debt-f-status" onchange="renderDebtReport()">
+        <option value="">الكل</option>
+        <option value="متجاوز">متجاوز ⏰</option>
+        <option value="غير متجاوز">غير متجاوز ✅</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>تصنيف العميل</label>
+      <select id="debt-f-grade" onchange="renderDebtReport()">
+        <option value="">الكل</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>المحصل</label>
+      <select id="debt-f-collector" onchange="renderDebtReport()">
+        <option value="">الكل</option>
+      </select>
+    </div>
+    <div class="filter-group" style="flex:1;min-width:180px">
+      <label>بحث (اسم/كود عميل)</label>
+      <input type="text" id="debt-search" placeholder="اكتب اسم العميل أو الكود..." oninput="renderDebtReport()" style="width:100%">
+    </div>
+    <button class="btn-reset" onclick="resetDebtFilters()">↺ إعادة ضبط فلاتر المديونية</button>
+  </div>
+
+  <!-- KPIs -->
+  <div class="kpi-mini-row">
+    <div class="kpi-mini"><div class="v" id="debt-k-total">0</div><div class="l">إجمالي المديونية (د.ع)</div></div>
+    <div class="kpi-mini"><div class="v" id="debt-k-count">0</div><div class="l">عدد الفواتير</div></div>
+    <div class="kpi-mini"><div class="v" style="color:var(--red)" id="debt-k-overdue">0</div><div class="l">عدد الفواتير المتجاوزة</div></div>
+    <div class="kpi-mini"><div class="v" style="color:var(--red)" id="debt-k-overdue-val">0</div><div class="l">قيمة المتجاوز (د.ع)</div></div>
+    <div class="kpi-mini"><div class="v" style="color:var(--green)" id="debt-k-notoverdue">0</div><div class="l">فواتير غير متجاوزة</div></div>
+    <div class="kpi-mini"><div class="v" style="color:var(--green)" id="debt-k-notoverdue-val">0</div><div class="l">قيمة غير المتجاوز (د.ع)</div></div>
+    <div class="kpi-mini"><div class="v" id="debt-k-overduepct">0%</div><div class="l">نسبة الفواتير المتجاوزة</div></div>
+    <div class="kpi-mini"><div class="v" id="debt-k-avgage">0</div><div class="l">متوسط عمر الفاتورة (يوم)</div></div>
+  </div>
+
+  <!-- أكبر عميل مديونية -->
+  <div class="report-card" id="debt-top-client-card" style="padding:14px 16px">
+    <div style="font-size:12px;color:var(--text-dim);margin-bottom:4px">⚠️ أكبر عميل مديونية ضمن الفلتر الحالي</div>
+    <div style="font-size:16px;font-weight:700" id="debt-top-client-name">-</div>
+    <div style="font-size:13px;color:var(--text-dim)" id="debt-top-client-detail">-</div>
+  </div>
+
+  <!-- رسم بياني: المديونية حسب الفرع -->
+  <div class="section-title">📊 توزيع المديونية حسب الفرع</div>
+  <div class="report-card" style="padding:16px">
+    <canvas id="debt-branch-chart" height="90"></canvas>
+  </div>
+
+  <!-- ملخص حسب الفرع -->
+  <div class="section-title">🏢 ملخص المديونية حسب الفرع</div>
+  <div class="report-card">
+    <div class="report-header"><h4>الفروع</h4><span class="badge" id="debt-branch-badge">0</span><button class="mini-export-btn" style="margin-right:auto" onclick="exportReport('debtByBranch')">📤 تصدير</button></div>
+    <div class="report-scroll"><table class="report-table" id="debt-branch-table">
+      <thead><tr><th>الفرع</th><th style="text-align:center">عدد الفواتير</th><th style="text-align:center">متجاوز</th><th style="text-align:center">قيمة المتجاوز</th><th style="text-align:center">إجمالي المديونية</th><th style="text-align:center">نسبة من الإجمالي</th></tr></thead>
+      <tbody id="debt-branch-tbody"></tbody>
+    </table></div>
+  </div>
+
+  <!-- ملخص حسب المندوب -->
+  <div class="section-title">🧑‍💼 ملخص المديونية حسب المندوب (Sales rep)</div>
+  <div class="report-card">
+    <div class="report-header"><h4>المناديب</h4><span class="badge" id="debt-rep-badge">0</span><button class="mini-export-btn" style="margin-right:auto" onclick="exportReport('debtByRep')">📤 تصدير</button></div>
+    <div class="report-scroll"><table class="report-table" id="debt-rep-table">
+      <thead><tr><th>المندوب</th><th>الفرع</th><th style="text-align:center">عدد الفواتير</th><th style="text-align:center">متجاوز</th><th style="text-align:center">قيمة المتجاوز</th><th style="text-align:center">إجمالي المديونية</th></tr></thead>
+      <tbody id="debt-rep-tbody"></tbody>
+    </table></div>
+  </div>
+
+  <!-- جدول تفصيلي -->
+  <div class="section-title">📋 تفاصيل كل الفواتير</div>
+  <div class="report-card">
+    <div class="report-header"><h4>الفواتير</h4><span class="badge" id="debt-detail-badge">0</span><span class="hint" id="debt-detail-hint" style="display:none">أول 300 فاتورة فقط للعرض (التصدير يشمل الكل)</span><button class="mini-export-btn" onclick="exportReport('debtDetail')">📤 تصدير الكل</button></div>
+    <div class="report-scroll"><table class="report-table" id="debt-detail-table">
+      <thead><tr><th>الفرع</th><th>المندوب</th><th>العميل</th><th style="text-align:center">كود العميل</th><th style="text-align:center">تصنيف</th><th style="text-align:center">نوع الدفع</th><th style="text-align:center">عمر الفاتورة</th><th style="text-align:center">أيام السماح</th><th style="text-align:center">الحالة</th><th>المحصل</th><th style="text-align:center">المديونية</th></tr></thead>
+      <tbody id="debt-detail-tbody"></tbody>
+    </table></div>
+  </div>
+
+</div><!-- end tab-debt -->
+
 </div><!-- end app -->
 
 <!-- ADMIN OVERLAY: revealed by clicking the header icon 5 times within 2 seconds -->
@@ -1272,6 +1389,7 @@ body.role-admin .qty-kpi-line{display:block !important}
 <script type="application/json" id="month-days-data">{}</script>
 <script type="application/json" id="clients-data">[]</script>
 <script type="application/json" id="users-data">[]</script>
+<script type="application/json" id="debt-data">[]</script>
 
 <script>
 const MONTH_NAMES = {"1":"يناير","2":"فبراير","3":"مارس","4":"أبريل","5":"مايو","6":"يونيو","7":"يوليو","8":"أغسطس","9":"سبتمبر","10":"أكتوبر","11":"نوفمبر","12":"ديسمبر"};
@@ -1280,6 +1398,7 @@ let DATA = JSON.parse(document.getElementById('visits-data').textContent);
 let MONTH_DAYS = JSON.parse(document.getElementById('month-days-data').textContent);
 let CLIENTS = JSON.parse(document.getElementById('clients-data').textContent);
 let USERS = JSON.parse(document.getElementById('users-data').textContent);
+let DEBT = JSON.parse(document.getElementById('debt-data').textContent);
 let currentUser = null;
 
 // المندوب والمشرف يشوفوا "الكمية" بدل "قيمة الطلبية" في كل مكان — الإدارة بس اللي تشوف القيمة المالية الحقيقية
@@ -1316,6 +1435,7 @@ function updateOrderColumnLabels(){
 // تعريف كل التابات المتاحة في الداشبورد — تُستخدم في صلاحيات المستخدمين (شيت "الصلاحيات")
 const TAB_DEFS = [
   {id:'dashboard', label:'لوحة القيادة'},
+  {id:'debt', label:'المديونية'},
   {id:'tracking', label:'تتبع الحركة اليومية'},
   {id:'geomap', label:'خريطة أداء المندوب'},
   {id:'coverage', label:'تغطية العملاء الشهرية'},
@@ -1392,10 +1512,15 @@ function startSession(user){
     // تقييد كل البيانات على فرع المستخدم فقط — من غير ما يقدر يشوف أي فرع تاني
     DATA = DATA.filter(r => r.الفرع === user.branch);
     CLIENTS = CLIENTS.filter(c => c.الفرع === user.branch);
+    DEBT = DEBT.filter(r => r.الفرع === user.branch);
   }
   if(user.role === 'مندوب' && user.person){
-    // المندوب يشوف زياراته هو بس
+    // المندوب يشوف زياراته هو بس، وفي شيت المديونية: فواتيره هو بس (عمود Sales rep)
     DATA = DATA.filter(r => r['الشخص اللي قام بالزياره'] === user.person);
+    DEBT = DEBT.filter(r => r['Sales rep'] === user.person);
+  } else if(user.role === 'محصل' && user.person){
+    // المحصل يشوف في شيت المديونية الفواتير المكلّف بتحصيلها بس (عمود المحصل)
+    DEBT = DEBT.filter(r => r.المحصل === user.person);
   }
   {
     const md = {};
@@ -1498,6 +1623,30 @@ function showAdminStatus(msg, type){
 
 function stripBranchPrefix(v){
   return (v==null?'':String(v)).replace(/^Z\d+-/, '').trim();
+}
+
+// شيت "المديونيه" بيكتب أسماء الفروع من غير كلمة "فرع" وبفروق إملائية بسيطة (ة/ه) عن باقي
+// الشيتات (العملاء/الزيارات/user) اللي بتستخدم "فرع الناصرية"، "فرع البصرة"... إلخ.
+// الماب ده بيوحّد الاسم لنفس صيغة باقي الشيتات عشان فلتر الفرع وصلاحية المشرف يشتغلوا صح
+// على شيت المديونية بدون أي تعديل يدوي في ملف الإكسل نفسه.
+// عايز تضيف فرع جديد؟ زوّد سطر هنا: 'الاسم زي ما هو في شيت المديونيه' : 'فرع الاسم زي باقي الشيتات'
+const DEBT_BRANCH_MAP = {
+  'كربلاء': 'فرع كربلاء',
+  'النجف': 'فرع النجف',
+  'العماره': 'فرع العماره',
+  'العمارة': 'فرع العماره',
+  'الناصريه': 'فرع الناصرية',
+  'الناصرية': 'فرع الناصرية',
+  'المثنى': 'فرع المثنى',
+  'بغداد': 'فرع بغداد',
+  'البصره': 'فرع البصرة',
+  'البصرة': 'فرع البصرة'
+};
+function normalizeDebtBranch(v){
+  const raw = (v==null?'':String(v)).trim();
+  if(!raw) return '';
+  if(DEBT_BRANCH_MAP[raw]) return DEBT_BRANCH_MAP[raw];
+  return raw.indexOf('فرع') === 0 ? raw : ('فرع ' + raw); // أفضل تخمين لو ظهر اسم فرع جديد مش في الماب فوق
 }
 function parseCoordsFromUrl(url){
   if(!url) return [null, null];
@@ -1696,6 +1845,7 @@ function applyWorkbookData(wb, opts){
     const wsItemName = wb.SheetNames.find(n => n.toLowerCase().indexOf('item') !== -1);
     const wsUserName = wb.SheetNames.find(n => n.toLowerCase().indexOf('user') !== -1);
     const wsPermName = wb.SheetNames.find(n => n.indexOf('صلاحي') !== -1);
+    const wsDebtName = wb.SheetNames.find(n => n.indexOf('مديون') !== -1);
 
     const hasClientsVisits = wsClientsName && wsVisitsName;
     // نسمح بملف "صلاحيات بس" (من غير العملاء/الزيارات) — بيحدّث بيانات الدخول بس ومايلمسش بيانات الزيارات الحالية
@@ -1708,6 +1858,7 @@ function applyWorkbookData(wb, opts){
     const itemRaw    = wsItemName ? XLSX.utils.sheet_to_json(wb.Sheets[wsItemName], {defval:null}) : [];
     const userRaw    = wsUserName ? XLSX.utils.sheet_to_json(wb.Sheets[wsUserName], {defval:null}) : [];
     const permRaw    = wsPermName ? XLSX.utils.sheet_to_json(wb.Sheets[wsPermName], {defval:null}) : [];
+    const debtRaw    = wsDebtName ? XLSX.utils.sheet_to_json(wb.Sheets[wsDebtName], {defval:null}) : [];
 
     // شيت "الصلاحيات": أول عمود = اسم التاب، وباقي الأعمدة = يوزرات بقيمة Yes/No لكل تاب
     const permMap = {}; // username -> Set(tabId)
@@ -1836,6 +1987,45 @@ function applyWorkbookData(wb, opts){
     CLIENTS = clientsMaster;
     } // end if(hasClientsVisits)
 
+    // شيت "المديونيه": مستقل تمامًا عن شيتي العملاء/الزيارات — ملف "مديونية بس" لوحده كفاية لتحديثه
+    let newDebt = DEBT; // لو الملف المرفوع مفهوش شيت مديونية، نسيب بيانات المديونية الحالية زي ما هي
+    if(debtRaw.length){
+      newDebt = debtRaw.filter(r => r['اسم العميل'] || r['كود العميل']).map(r => {
+        const rawDebt = +r['المديونيه'] || 0; // القيمة في الملف الأصلي بالسالب دايمًا
+        const dateParts = parseExcelDateValue(r['التاريخ']);
+        return {
+          الفرع: normalizeDebtBranch(r['الفرع']),
+          نوع: r['نوع'] || '',                              // متجاوز / غير متجاوز
+          'Sales rep': r['Sales rep'] != null ? String(r['Sales rep']).trim() : '',
+          'كود العميل': r['كود العميل'] != null ? r['كود العميل'] : '',
+          'اسم العميل': r['اسم العميل'] != null ? String(r['اسم العميل']) : '',
+          'عمر الفاتوره': r['عمر الفاتوره'] != null ? +r['عمر الفاتوره'] : null,
+          نقدي: r['نقدي'] || '',
+          'التاريخ': dateParts ? fmtDateParts(dateParts) : '',
+          'تصنيق العميل': r['تصنيق العميل'] || '',
+          'عدد  ايام السماح': r['عدد  ايام السماح'] != null ? +r['عدد  ايام السماح'] : null,
+          المديونيه: Math.abs(rawDebt), // بالموجب لتسهيل القراءة زي ما طُلب — القيمة الأصلية دايمًا سالبة في الملف
+          المحصل: r['المحصل'] != null ? String(r['المحصل']).trim() : ''
+        };
+      });
+      const safeDebtJson = JSON.stringify(newDebt).replace(/</g, '\\u003c');
+      document.getElementById('debt-data').textContent = safeDebtJson;
+      DEBT = newDebt;
+    }
+
+    // نفس منطق تقييد بيانات الزيارات بالفرع/الشخص، لكن لشيت المديونية: تقييد بالفرع لأي مستخدم غير "كل الفروع"،
+    // وتقييد إضافي بالاسم لدوري "مندوب" (عمود Sales rep) و"محصل" (عمود المحصل) تحديدًا.
+    if(currentUser && debtRaw.length){
+      if(currentUser.branch !== 'كل الفروع'){
+        DEBT = DEBT.filter(r => r.الفرع === currentUser.branch);
+      }
+      if(currentUser.role === 'مندوب' && currentUser.person){
+        DEBT = DEBT.filter(r => r['Sales rep'] === currentUser.person);
+      } else if(currentUser.role === 'محصل' && currentUser.person){
+        DEBT = DEBT.filter(r => r.المحصل === currentUser.person);
+      }
+    }
+
     // شيت user اختياري: لو موجود في الملف المرفوع بنحدّث بيه بيانات الدخول،
     // ولو مش موجود نسيب اليوزرات الحالية زي ما هي (مايتمسحوش)
     // حماية أمنية: التحديث التلقائي من Google Drive (skipUsers=true) بيتجاهل شيتي user والصلاحيات تمامًا حتى لو موجودين بالغلط في الملف —
@@ -1941,6 +2131,7 @@ function resetAndRebuild(){
   buildFilterOptions();
   renderCoverageReport2();
   applyFilters();
+  resetDebtFilters();
 }
 
 function saveReport(){
@@ -2066,11 +2257,13 @@ function onBranchChange(){
   cascadeFilterOptions();
   populateDaySelect();
   applyFilters();
+  if(currentTab==='debt') renderDebtReport();
 }
 
 function onPersonChange(){
   populateDaySelect();
   applyFilters();
+  if(currentTab==='debt') renderDebtReport();
 }
 
 /* ---------- تقييد الواجهة حسب دور المستخدم (إدارة / مشرف / مندوب) ---------- */
@@ -2112,7 +2305,7 @@ function applyRoleRestrictions(){
   // قفل فلتر الفرع والشخص على المندوب نفسه بس — لازم يحصل الأول قبل أي استدعاء لـ applyFilters()،
   // وإلا أول عرض للكروت (زي "عملاء لم تتم زيارتهم") بيتحسب لحظة ما فلتر الشخص لسه فاضي "الكل"
   // فيطلع بعدد عملاء الفرع كله بدل عملاء المندوب بس، ومحدّش بيعيد الحساب تاني بعد كده
-  if(role === 'مندوب'){
+  if(role === 'مندوب' || role === 'محصل'){
     if(currentUser.branch){
       const bf = document.getElementById('f-branch');
       bf.value = currentUser.branch;
@@ -2120,8 +2313,14 @@ function applyRoleRestrictions(){
     }
     if(currentUser.person){
       const pf = document.getElementById('f-person');
-      pf.value = currentUser.person;
-      pf.disabled = true;
+      // فلتر "الشخص" مبني على بيانات الزيارات؛ لو المحصل مالوش زيارات مسجّلة بنفس اسمه بالظبط
+      // ممكن اسمه مايكونش موجود كخيار في القايمة أصلًا — بنحاول نظبطها هنا، لكن تاب المديونية
+      // نفسه بيعتمد مباشرة على currentUser.person (مش على قيمة الفلتر) فمش هيتأثر لو الخيار ده مش موجود.
+      const opts = [...pf.options].map(o=>o.value);
+      if(opts.includes(currentUser.person)){
+        pf.value = currentUser.person;
+        pf.disabled = true;
+      }
     }
   }
 
@@ -2153,6 +2352,7 @@ function applyRoleRestrictions(){
 function onTypeChange(){
   cascadeFilterOptions();
   applyFilters();
+  if(currentTab==='debt') renderDebtReport();
 }
 
 function init(){
@@ -2362,6 +2562,7 @@ function updateKPIs(){
   document.getElementById('hs-inacc').textContent = inaccCount.toLocaleString();
 
   updateExtraKPIs();
+  updateDebtDashboardKPI();
   scheduleShareCardPrep();
 }
 
@@ -2998,6 +3199,7 @@ function resetFilters(){
   cascadeFilterOptions(); // يعيد بناء قوائم النوع والشخص كاملة بعد تصفير الفرع والنوع والشخص
   applyRoleRestrictions(); // يرجّع قفل الفترة/الشخص لو المستخدم مشرف أو مندوب
   applyFilters();
+  if(currentTab==='debt') renderDebtReport();
 }
 
 /* ---------- TAB SWITCHING ---------- */
@@ -3007,6 +3209,15 @@ function switchTab(name){
   document.getElementById('tab-'+name).classList.add('active');
   document.getElementById('tabbtn-'+name).classList.add('active');
   currentTab = name;
+  // شيت المديونية مبني على تواريخ فواتير مش تواريخ زيارات، فمفيش معنى لفلاتر السنة/الشهر/اليوم/الدقة هنا —
+  // بنخفيهم مؤقتًا وقت ما التاب مفتوح ونرجّعهم في أي تاب تاني.
+  ['fg-year','fg-month','fg-acc'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.style.display = (name==='debt') ? 'none' : '';
+  });
+  if(name==='debt'){
+    document.getElementById('days-group').style.display = 'none';
+  }
   if(name==='charts') renderCharts();
   else if(name==='quality') renderQualityReports();
   else if(name==='performance') renderPerformance();
@@ -3015,6 +3226,7 @@ function switchTab(name){
   else if(name==='coverage') renderCoverageReport2();
   else if(name==='clientcard'){ if(clientCardMap) setTimeout(()=>clientCardMap.invalidateSize(), 60); }
   else if(name==='similar') renderSimilarLocationsReport();
+  else if(name==='debt') renderDebtReport();
   autoLabelTables();
 }
 
@@ -5019,6 +5231,239 @@ function buildRoute(){
   container.innerHTML = html;
 }
 
+/* ---------- KPI المديونية في لوحة القيادة (بطاقة واحدة + مودال العملاء المتجاوزين) ---------- */
+function updateDebtDashboardKPI(){
+  const rows = getDebtScope();
+  const total = rows.reduce((s,r)=>s+(+r.المديونيه||0), 0);
+  const overdueRows = rows.filter(r=>r.نوع==='متجاوز');
+  const overdueVal = overdueRows.reduce((s,r)=>s+(+r.المديونيه||0), 0);
+  const pct = total ? Math.round(overdueVal/total*100) : 0;
+  document.getElementById('k-debt-total').textContent = total.toLocaleString('ar-IQ');
+  document.getElementById('k-debt-overdue-val').textContent = 'متجاوز: ' + overdueVal.toLocaleString('ar-IQ') + ' د.ع';
+  document.getElementById('k-debt-overdue-pct').textContent = 'النسبة: ' + pct + '%';
+}
+
+function showOverdueClientsModal(){
+  const rows = getDebtScope().filter(r=>r.نوع==='متجاوز');
+  // تجميع لكل عميل: قيمة التجاوز (مجموع فواتيره المتجاوزة بس) + عدد زياراته (من شيت الزيارات، بالمطابقة بالاسم)
+  const byClient = {};
+  rows.forEach(r=>{
+    const key = (r['كود العميل']||'') + '|' + (r['اسم العميل']||'');
+    if(!byClient[key]) byClient[key] = {name:r['اسم العميل'], sum:0};
+    byClient[key].sum += (+r.المديونيه||0);
+  });
+  const list = Object.values(byClient).map(c=>{
+    const visitsCount = DATA.filter(v=>v.العميل === c.name).length;
+    return {...c, visitsCount};
+  }).sort((a,b)=>b.sum-a.sum);
+
+  document.getElementById('overdue-modal-sub').textContent =
+    `${list.length.toLocaleString('ar-IQ')} عميل متجاوز ضمن الفلتر الحالي — عدد الزيارات معتمد على مطابقة اسم العميل بين شيت المديونية وشيت الزيارات (ممكن يظهر صفر لو الاسم مسجّل بصيغة مختلفة شوية بين الشيتين)`;
+  document.getElementById('overdue-list').innerHTML = list.map(c=>`
+    <tr><td class="oc-name">${esc(c.name)}</td>
+    <td style="text-align:center;color:var(--red);font-weight:700">${c.sum.toLocaleString('ar-IQ')}</td>
+    <td style="text-align:center">${c.visitsCount.toLocaleString('ar-IQ')}</td></tr>`
+  ).join('') || '<tr><td colspan="3" style="text-align:center;color:var(--text-dim)">لا يوجد عملاء متجاوزين ضمن الفلتر الحالي</td></tr>';
+
+  document.getElementById('overdue-overlay').style.display = 'flex';
+}
+function closeOverdueClientsModal(){
+  document.getElementById('overdue-overlay').style.display = 'none';
+}
+
+/* ---------- تاب المديونية ---------- */
+let debtBranchChartInstance = null;
+
+function resetDebtFilters(){
+  document.getElementById('debt-f-status').value = '';
+  document.getElementById('debt-f-grade').value = '';
+  document.getElementById('debt-f-collector').value = '';
+  document.getElementById('debt-search').value = '';
+  renderDebtReport();
+}
+
+// نطاق البيانات المسموح للمستخدم الحالي يشوفه: فرع + شخص (Sales rep / المحصل) — بدون أي فلتر تاريخ عمدًا
+function getDebtScope(){
+  let rows = DEBT.slice();
+
+  const branchVal = document.getElementById('f-branch').value;
+  if(branchVal) rows = rows.filter(r => r.الفرع === branchVal);
+
+  if(currentUser && currentUser.role === 'مندوب' && currentUser.person){
+    // حماية إضافية على مستوى العرض (البيانات أصلًا مقيّدة من وقت التحميل، لكن نتأكد هنا كمان)
+    rows = rows.filter(r => r['Sales rep'] === currentUser.person);
+  } else if(currentUser && currentUser.role === 'محصل' && currentUser.person){
+    rows = rows.filter(r => r.المحصل === currentUser.person);
+  } else {
+    const personVal = document.getElementById('f-person').value;
+    if(personVal) rows = rows.filter(r => r['Sales rep'] === personVal || r.المحصل === personVal);
+  }
+  return rows;
+}
+
+// بناء خيارات فلاتر "تصنيف العميل" و"المحصل" الخاصة بالتاب، بناءً على نطاق الفرع/الشخص الحالي فقط
+// (قبل تطبيق فلاتر الحالة/التصنيف/المحصل نفسها، عشان القوائم متتصفّرش لنفسها)
+function populateDebtLocalFilterOptions(){
+  const scope = getDebtScope();
+
+  const gradeSel = document.getElementById('debt-f-grade');
+  const prevGrade = gradeSel.value;
+  const grades = [...new Set(scope.map(r=>r['تصنيق العميل']).filter(Boolean))].sort();
+  gradeSel.innerHTML = '<option value="">الكل</option>' + grades.map(g=>`<option value="${esc(g)}">${esc(g)}</option>`).join('');
+  if(grades.includes(prevGrade)) gradeSel.value = prevGrade;
+
+  // فلتر المحصل مفيد بس للإدارة/المشرف (المحصل نفسه أصلًا مقفول على فواتيره هو بس)
+  const collectorSel = document.getElementById('debt-f-collector');
+  if(currentUser && currentUser.role === 'محصل'){
+    collectorSel.innerHTML = '<option value="">الكل</option>';
+    collectorSel.disabled = true;
+  } else {
+    const prevCollector = collectorSel.value;
+    const collectors = [...new Set(scope.map(r=>r.المحصل).filter(v=>v && v!=='0' && v!=='لايوجد'))].sort();
+    collectorSel.innerHTML = '<option value="">الكل</option>' + collectors.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');
+    if(collectors.includes(prevCollector)) collectorSel.value = prevCollector;
+    collectorSel.disabled = false;
+  }
+}
+
+function renderDebtReport(){
+  populateDebtLocalFilterOptions();
+
+  let rows = getDebtScope();
+  const status = document.getElementById('debt-f-status').value;
+  const grade = document.getElementById('debt-f-grade').value;
+  const collector = document.getElementById('debt-f-collector').value;
+  const search = (document.getElementById('debt-search').value || '').trim().toLowerCase();
+
+  if(status) rows = rows.filter(r => r.نوع === status);
+  if(grade) rows = rows.filter(r => r['تصنيق العميل'] === grade);
+  if(collector) rows = rows.filter(r => r.المحصل === collector);
+  if(search){
+    rows = rows.filter(r =>
+      (r['اسم العميل']||'').toLowerCase().includes(search) ||
+      String(r['كود العميل']||'').toLowerCase().includes(search)
+    );
+  }
+
+  const total = rows.reduce((s,r)=>s+(+r.المديونيه||0), 0);
+  const count = rows.length;
+  const overdueRows = rows.filter(r=>r.نوع==='متجاوز');
+  const notOverdueRows = rows.filter(r=>r.نوع!=='متجاوز');
+  const overdueCount = overdueRows.length;
+  const notOverdueCount = notOverdueRows.length;
+  const overdueVal = overdueRows.reduce((s,r)=>s+(+r.المديونيه||0), 0);
+  const notOverdueVal = notOverdueRows.reduce((s,r)=>s+(+r.المديونيه||0), 0);
+  const overduePct = count ? Math.round(overdueCount/count*100) : 0;
+  const avgAge = count ? Math.round(rows.reduce((s,r)=>s+(+r['عمر الفاتوره']||0),0)/count) : 0;
+
+  document.getElementById('debt-k-total').textContent = total.toLocaleString('ar-IQ');
+  document.getElementById('debt-k-count').textContent = count.toLocaleString('ar-IQ');
+  document.getElementById('debt-k-overdue').textContent = overdueCount.toLocaleString('ar-IQ');
+  document.getElementById('debt-k-overdue-val').textContent = overdueVal.toLocaleString('ar-IQ');
+  document.getElementById('debt-k-notoverdue').textContent = notOverdueCount.toLocaleString('ar-IQ');
+  document.getElementById('debt-k-notoverdue-val').textContent = notOverdueVal.toLocaleString('ar-IQ');
+  document.getElementById('debt-k-overduepct').textContent = overduePct + '%';
+  document.getElementById('debt-k-avgage').textContent = avgAge;
+
+  const topClientNameEl = document.getElementById('debt-top-client-name');
+  const topClientDetailEl = document.getElementById('debt-top-client-detail');
+  if(rows.length){
+    const top = rows.reduce((a,b) => (+b.المديونيه||0) > (+a.المديونيه||0) ? b : a);
+    topClientNameEl.textContent = top['اسم العميل'] || '-';
+    topClientDetailEl.textContent = `${top.الفرع||'-'} — ${top['Sales rep']||'-'} — ${(+top.المديونيه||0).toLocaleString('ar-IQ')} د.ع`;
+  } else {
+    topClientNameEl.textContent = '-';
+    topClientDetailEl.textContent = '-';
+  }
+
+  // ملخص حسب الفرع
+  const byBranch = {};
+  rows.forEach(r=>{
+    const b = r.الفرع || 'غير محدد';
+    if(!byBranch[b]) byBranch[b] = {count:0, overdue:0, overdueVal:0, sum:0};
+    byBranch[b].count++;
+    if(r.نوع==='متجاوز'){ byBranch[b].overdue++; byBranch[b].overdueVal += (+r.المديونيه||0); }
+    byBranch[b].sum += (+r.المديونيه||0);
+  });
+  const branchRows = Object.keys(byBranch).map(b=>({branch:b, ...byBranch[b]})).sort((a,b)=>b.sum-a.sum);
+
+  document.getElementById('debt-branch-badge').textContent = branchRows.length;
+  document.getElementById('debt-branch-tbody').innerHTML = branchRows.map(b=>`
+    <tr><td>${esc(b.branch)}</td><td style="text-align:center">${b.count}</td><td style="text-align:center">${b.overdue}</td>
+    <td style="text-align:center;color:var(--red)">${b.overdueVal.toLocaleString('ar-IQ')}</td>
+    <td style="text-align:center">${b.sum.toLocaleString('ar-IQ')}</td>
+    <td style="text-align:center">${total ? Math.round(b.sum/total*100) : 0}%</td></tr>`
+  ).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--text-dim)">لا توجد بيانات ضمن الفلتر الحالي</td></tr>';
+
+  // ملخص حسب المندوب
+  const byRep = {};
+  rows.forEach(r=>{
+    const p = r['Sales rep'] || 'غير محدد';
+    if(!byRep[p]) byRep[p] = {count:0, overdue:0, overdueVal:0, sum:0, branch:r.الفرع||''};
+    byRep[p].count++;
+    if(r.نوع==='متجاوز'){ byRep[p].overdue++; byRep[p].overdueVal += (+r.المديونيه||0); }
+    byRep[p].sum += (+r.المديونيه||0);
+  });
+  const repRows = Object.keys(byRep).map(p=>({person:p, ...byRep[p]})).sort((a,b)=>b.sum-a.sum);
+
+  document.getElementById('debt-rep-badge').textContent = repRows.length;
+  document.getElementById('debt-rep-tbody').innerHTML = repRows.map(r=>`
+    <tr><td>${esc(r.person)}</td><td>${esc(r.branch)}</td><td style="text-align:center">${r.count}</td><td style="text-align:center">${r.overdue}</td>
+    <td style="text-align:center;color:var(--red)">${r.overdueVal.toLocaleString('ar-IQ')}</td>
+    <td style="text-align:center">${r.sum.toLocaleString('ar-IQ')}</td></tr>`
+  ).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--text-dim)">لا توجد بيانات ضمن الفلتر الحالي</td></tr>';
+
+  // جدول تفصيلي (سقف عرض للأداء، التصدير بياخد الكل)
+  const DEBT_DISPLAY_CAP = 300;
+  const sortedRows = rows.slice().sort((a,b)=>(+b.المديونيه||0)-(+a.المديونيه||0));
+  document.getElementById('debt-detail-badge').textContent = sortedRows.length;
+  document.getElementById('debt-detail-hint').style.display = sortedRows.length > DEBT_DISPLAY_CAP ? '' : 'none';
+  document.getElementById('debt-detail-tbody').innerHTML = sortedRows.slice(0, DEBT_DISPLAY_CAP).map(r=>`
+    <tr><td>${esc(r.الفرع)}</td><td>${esc(r['Sales rep'])}</td><td>${esc(r['اسم العميل'])}</td>
+    <td style="text-align:center">${esc(r['كود العميل'])}</td><td style="text-align:center">${esc(r['تصنيق العميل'])}</td>
+    <td style="text-align:center">${esc(r.نقدي)}</td><td style="text-align:center">${r['عمر الفاتوره']!=null?r['عمر الفاتوره']:'-'}</td>
+    <td style="text-align:center">${r['عدد  ايام السماح']!=null?r['عدد  ايام السماح']:'-'}</td>
+    <td style="text-align:center"><span class="pill ${r.نوع==='متجاوز'?'pill-red':'pill-green'}">${esc(r.نوع)||'-'}</span></td>
+    <td>${esc(r.المحصل)}</td><td style="text-align:center">${(+r.المديونيه||0).toLocaleString('ar-IQ')}</td></tr>`
+  ).join('') || '<tr><td colspan="11" style="text-align:center;color:var(--text-dim)">لا توجد بيانات ضمن الفلتر الحالي</td></tr>';
+
+  renderDebtBranchChart(branchRows);
+
+  EXPORT_DATA.debtByBranch = branchRows.map(b=>({'الفرع':b.branch,'عدد الفواتير':b.count,'متجاوز':b.overdue,'قيمة المتجاوز':b.overdueVal,'إجمالي المديونية':b.sum}));
+  EXPORT_DATA.debtByRep = repRows.map(r=>({'المندوب':r.person,'الفرع':r.branch,'عدد الفواتير':r.count,'متجاوز':r.overdue,'قيمة المتجاوز':r.overdueVal,'إجمالي المديونية':r.sum}));
+  EXPORT_DATA.debtDetail = sortedRows.map(r=>({
+    'الفرع': r.الفرع, 'المندوب': r['Sales rep'], 'العميل': r['اسم العميل'], 'كود العميل': r['كود العميل'],
+    'تصنيف': r['تصنيق العميل'], 'نوع الدفع': r.نقدي, 'التاريخ': r.التاريخ, 'عمر الفاتورة': r['عمر الفاتوره'],
+    'أيام السماح': r['عدد  ايام السماح'], 'الحالة': r.نوع, 'المحصل': r.المحصل, 'المديونية': r.المديونيه
+  }));
+}
+
+function renderDebtBranchChart(branchRows){
+  const canvas = document.getElementById('debt-branch-chart');
+  if(!canvas || typeof Chart === 'undefined') return;
+  const colors = themeColors();
+  if(debtBranchChartInstance) debtBranchChartInstance.destroy();
+  debtBranchChartInstance = new Chart(canvas.getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: branchRows.map(b=>b.branch),
+      datasets: [{
+        label: 'إجمالي المديونية (د.ع)',
+        data: branchRows.map(b=>b.sum),
+        backgroundColor: '#c0392b'
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: colors.text }, grid: { color: colors.grid } },
+        y: { ticks: { color: colors.text, callback: v => (+v).toLocaleString('ar-IQ') }, grid: { color: colors.grid } }
+      }
+    }
+  });
+}
+
 /* ---------- EXPORT (generic for every report/table) ---------- */
 const EXPORT_CONFIG = {
   visitsPivot:  {file:'ملخص_الزيارات', sheet:'ملخص الزيارات'},
@@ -5036,7 +5481,10 @@ const EXPORT_CONFIG = {
   tracking:     {file:'تتبع_الحركة_اليومية', sheet:'تتبع الحركة'},
   coverage2:    {file:'تغطية_العملاء_الشهرية', sheet:'تغطية العملاء'},
   clientcard:   {file:'كارت_العميل', sheet:'زيارات العميل'},
-  similar:      {file:'أماكن_متشابهة_كل_العملاء', sheet:'أماكن متشابهة'}
+  similar:      {file:'أماكن_متشابهة_كل_العملاء', sheet:'أماكن متشابهة'},
+  debtByBranch: {file:'المديونية_حسب_الفرع', sheet:'المديونية حسب الفرع'},
+  debtByRep:    {file:'المديونية_حسب_المندوب', sheet:'المديونية حسب المندوب'},
+  debtDetail:   {file:'تفاصيل_المديونية', sheet:'تفاصيل المديونية'}
 };
 
 function exportReport(key){
