@@ -249,6 +249,9 @@ body.role-admin .qty-kpi-line{display:block !important}
 /* الشروحات التقنية (زي منطق كشف الزيارات الوهمية، أو ملاحظات مطابقة البيانات) غير مقصودة لغير الإدارة —
    ظهورها لغير الإدارة ممكن يكشف تفاصيل رقابية حساسة أو يلخبط مستخدم مش محتاجها أصلًا */
 body:not(.role-admin) .section-sub, body:not(.role-admin) #overdue-modal-sub{display:none}
+/* تبسيط شريط الفلاتر العلوي للمندوب والمحصل — الفرع والنوع والسنة مش محتاجينهم أصلًا (الفرع/الشخص مقفولين
+   عليهم بالفعل، والنوع/السنة مش مفيدين لدور ميداني واحد) */
+body.role-field-restricted #fg-branch, body.role-field-restricted #fg-type, body.role-field-restricted #fg-year{display:none}
 .chart-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:0 30px 20px}
 .chart-card{background:var(--bg-card);border:1px solid var(--border-main);border-radius:12px;padding:16px;box-shadow:var(--shadow)}
 .chart-card h4{font-size:13px;color:var(--text-heading);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}
@@ -576,13 +579,13 @@ body:not(.role-admin) .section-sub, body:not(.role-admin) #overdue-modal-sub{dis
 
 <!-- FILTERS -->
 <div class="filters">
-  <div class="filter-group">
+  <div class="filter-group" id="fg-branch">
     <label>الفرع</label>
     <select id="f-branch" onchange="onBranchChange()">
       <option value="">الكل</option>
     </select>
   </div>
-  <div class="filter-group">
+  <div class="filter-group" id="fg-type">
     <label>النوع</label>
     <select id="f-type" onchange="onTypeChange()">
       <option value="">الكل</option>
@@ -1258,13 +1261,7 @@ body:not(.role-admin) .section-sub, body:not(.role-admin) #overdue-modal-sub{dis
 <!-- TAB: DEBT (المديونية) -->
 <div class="tab-content" id="tab-debt">
 
-  <div class="section-title">💰 تقرير المديونية</div>
-  <div class="section-sub">
-    مبني على شيت "المديونيه" (تواريخ الفواتير) — <b>لا يتأثر بفلتر السنة/الشهر/اليوم/الدقة</b> أعلى الصفحة لأن هذه تواريخ فواتير وليست تواريخ زيارات.
-    الفرع والشخص يتبعان نفس فلاتر الأعلى.
-  </div>
-
-  <!-- فلاتر إضافية خاصة بالمديونية فقط -->
+  <!-- فلاتر إضافية خاصة بالمديونية فقط — متحطوطة فوق مباشرة عشان تبقى جنب فلاتر الفرع/الشخص العلوية -->
   <div class="filters" style="margin:0 30px 16px;padding:12px 14px;background:var(--bg-card);border:1px solid var(--border-main);border-radius:10px">
     <div class="filter-group">
       <label>حالة الفاتورة</label>
@@ -1281,18 +1278,18 @@ body:not(.role-admin) .section-sub, body:not(.role-admin) #overdue-modal-sub{dis
       </select>
     </div>
     <div class="filter-group">
-      <label>المحصل</label>
-      <select id="debt-f-collector" onchange="renderDebtReport()">
-        <option value="">الكل</option>
-      </select>
-    </div>
-    <div class="filter-group">
       <label>اسم العميل (اختيار دقيق)</label>
       <select id="debt-f-client" onchange="renderDebtReport()">
         <option value="">الكل</option>
       </select>
     </div>
     <button class="btn-reset" onclick="resetDebtFilters()">↺ إعادة ضبط فلاتر المديونية</button>
+  </div>
+
+  <div class="section-title">💰 تقرير المديونية</div>
+  <div class="section-sub">
+    مبني على شيت "المديونيه" (تواريخ الفواتير) — <b>لا يتأثر بفلتر السنة/الشهر/اليوم/الدقة</b> أعلى الصفحة لأن هذه تواريخ فواتير وليست تواريخ زيارات.
+    الفرع والشخص يتبعان نفس فلاتر الأعلى.
   </div>
 
   <!-- KPIs -->
@@ -1307,10 +1304,12 @@ body:not(.role-admin) .section-sub, body:not(.role-admin) #overdue-modal-sub{dis
     <div class="kpi-mini"><div class="v" id="debt-k-avgage">0</div><div class="l">متوسط عمر الفاتورة (يوم)</div></div>
   </div>
 
-  <!-- أكبر 3 عملاء مديونية -->
+  <!-- أكبر 3 عملاء مديونية (إدارة فقط) -->
+  <div id="debt-top3-section">
   <div class="report-card" id="debt-top-client-card" style="padding:14px 16px">
     <div style="font-size:12px;color:var(--text-dim);margin-bottom:8px">⚠️ أكبر 3 عملاء مديونية ضمن الفلتر الحالي</div>
     <div id="debt-top-clients-list"></div>
+  </div>
   </div>
 
   <!-- توزيع المديونية: رسم بياني (إدارة/مشرف) أو أكبر 5 عملاء (مندوب) -->
@@ -1360,7 +1359,8 @@ body:not(.role-admin) .section-sub, body:not(.role-admin) #overdue-modal-sub{dis
     </table></div>
   </div>
 
-  <!-- تقرير أعمار الديون: مديونية كل عميل موزّعة على شرائح عمر الفاتورة -->
+  <!-- تقرير أعمار الديون: مديونية كل عميل موزّعة على شرائح عمر الفاتورة (إدارة ومشرف فقط) -->
+  <div id="debt-aging-section">
   <div class="section-title">📆 تقرير أعمار الديون حسب العميل</div>
   <div class="report-card">
     <div class="report-header"><h4>الشرائح العمرية</h4><span class="badge" id="debt-aging-badge">0</span><span class="hint" id="debt-aging-hint" style="display:none">أول 300 عميل فقط للعرض (التصدير يشمل الكل)</span><button class="mini-export-btn" onclick="exportReport('debtAging')">📤 تصدير الكل</button></div>
@@ -1368,6 +1368,7 @@ body:not(.role-admin) .section-sub, body:not(.role-admin) #overdue-modal-sub{dis
       <thead><tr><th>العميل</th><th style="text-align:center">كود العميل</th><th>الفرع</th><th>المندوب</th><th style="text-align:center">تصنيف</th><th style="text-align:center">الحالة</th><th style="text-align:center">0-9</th><th style="text-align:center">10-19</th><th style="text-align:center">20-29</th><th style="text-align:center">30-39</th><th style="text-align:center">40-49</th><th style="text-align:center">+50</th><th style="text-align:center">عدد الفواتير</th><th style="text-align:center">إجمالي المديونية</th></tr></thead>
       <tbody id="debt-aging-tbody"></tbody>
     </table></div>
+  </div>
   </div>
 
   <!-- تحذير مبكر: فواتير قريبة تدخل التجاوز خلال 4 أيام -->
@@ -2313,6 +2314,7 @@ function applyRoleRestrictions(){
   const role = currentUser.role || 'إدارة';
   updateOrderColumnLabels();
   document.body.classList.toggle('role-admin', role === 'إدارة');
+  document.body.classList.toggle('role-field-restricted', role === 'مندوب' || role === 'محصل');
 
   // إخفاء التابات الممنوعة على المشرف/المندوب — الإدارة تشوف كل حاجة
   const allowed = role === 'إدارة' ? null : (currentUser.tabs && currentUser.tabs.length ? currentUser.tabs : ['dashboard']);
@@ -3022,6 +3024,9 @@ function renderPivots(){
   // لو مفيش غير فرع واحد ضمن البيانات الحالية (زي حالة مندوب/محصل/مشرف المقفولين على فرعهم، أو إدارة فلترت
   // على فرع واحد بالتحديد)، صف "إجمالي الفرع" بيبقى مطابق تمامًا لصف "Grand Total" وياخد مساحة من غير فايدة
   const singleBranchScope = Object.keys(brGroups).length <= 1;
+  // ولو كمان مفيش غير مجموعة واحدة بالظبط (فرع+نوع+شخص) — زي حالة المندوب اللي بيشوف بياناته هو بس —
+  // صف "Grand Total" نفسه بيبقى مطابق لصف البيانات الوحيد، فبنشيله كمان
+  const singleGroupScope = Object.keys(groups).length <= 1;
 
   let vhtml=''; let grandTotal=0,grandAcc=0,grandInacc=0;
   Object.keys(brGroups).sort().forEach(br=>{
@@ -3045,8 +3050,10 @@ function renderPivots(){
     }
     grandTotal += brT; grandAcc += brA; grandInacc += brI;
   });
-  vhtml += `<tr class="total-row"><td colspan="3">Grand Total</td>
-  <td class="num">${grandAcc}</td><td class="num">${grandInacc}</td><td class="num">${grandTotal}</td></tr>`;
+  if(!singleGroupScope){
+    vhtml += `<tr class="total-row"><td colspan="3">Grand Total</td>
+    <td class="num">${grandAcc}</td><td class="num">${grandInacc}</td><td class="num">${grandTotal}</td></tr>`;
+  }
   document.getElementById('visits-pivot-body').innerHTML = vhtml || '<tr><td colspan="6" class="no-data">لا توجد بيانات</td></tr>';
   document.getElementById('visits-badge').textContent = grandTotal.toLocaleString();
   EXPORT_DATA.visitsPivot = Object.values(groups).map(g=>({
@@ -3082,12 +3089,14 @@ function renderPivots(){
     }
     grandOrd += brOrd; grandOrdV += brOrdV; grandOrdQ += brOrdQ; grandCol += brCol; grandColV += brColV;
   });
-  fhtml += `<tr class="total-row"><td colspan="3">Grand Total</td>
-  <td class="num">${grandOrd}</td>
-  <td class="money">${grandOrdV.toLocaleString('ar-IQ')}</td>
-  <td class="money qty-col">${grandOrdQ.toLocaleString('ar-IQ')}</td>
-  <td class="num">${grandCol}</td>
-  <td class="money">${grandColV.toLocaleString('ar-IQ')}</td></tr>`;
+  if(!singleGroupScope){
+    fhtml += `<tr class="total-row"><td colspan="3">Grand Total</td>
+    <td class="num">${grandOrd}</td>
+    <td class="money">${grandOrdV.toLocaleString('ar-IQ')}</td>
+    <td class="money qty-col">${grandOrdQ.toLocaleString('ar-IQ')}</td>
+    <td class="num">${grandCol}</td>
+    <td class="money">${grandColV.toLocaleString('ar-IQ')}</td></tr>`;
+  }
   document.getElementById('finance-pivot-body').innerHTML = fhtml || '<tr><td colspan="8" class="no-data">لا توجد بيانات مالية</td></tr>';
   document.getElementById('finance-badge').textContent = (grandOrd+grandCol).toLocaleString();
   EXPORT_DATA.financePivot = Object.values(groups).filter(g=>g.orders>0||g.collects>0).map(g=>({
@@ -5341,7 +5350,6 @@ let debtBranchChartInstance = null;
 function resetDebtFilters(){
   document.getElementById('debt-f-status').value = '';
   document.getElementById('debt-f-grade').value = '';
-  document.getElementById('debt-f-collector').value = '';
   const clientSel = document.getElementById('debt-f-client');
   if(clientSel) clientSel.value = '';
   renderDebtReport();
@@ -5366,8 +5374,8 @@ function getDebtScope(){
   return rows;
 }
 
-// بناء خيارات فلاتر "تصنيف العميل" و"المحصل" و"اسم العميل" الخاصة بالتاب، بناءً على نطاق الفرع/الشخص الحالي فقط
-// (قبل تطبيق فلاتر الحالة/التصنيف/المحصل/العميل نفسها، عشان القوائم متتصفّرش لنفسها)
+// بناء خيارات فلاتر "تصنيف العميل" و"اسم العميل" الخاصة بالتاب، بناءً على نطاق الفرع/الشخص الحالي فقط
+// (قبل تطبيق فلاتر الحالة/التصنيف/العميل نفسها، عشان القوائم متتصفّرش لنفسها)
 function populateDebtLocalFilterOptions(){
   const scope = getDebtScope();
 
@@ -5376,19 +5384,6 @@ function populateDebtLocalFilterOptions(){
   const grades = [...new Set(scope.map(r=>r['تصنيق العميل']).filter(Boolean))].sort();
   gradeSel.innerHTML = '<option value="">الكل</option>' + grades.map(g=>`<option value="${esc(g)}">${esc(g)}</option>`).join('');
   if(grades.includes(prevGrade)) gradeSel.value = prevGrade;
-
-  // فلتر المحصل مفيد بس للإدارة/المشرف (المحصل نفسه أصلًا مقفول على فواتيره هو بس)
-  const collectorSel = document.getElementById('debt-f-collector');
-  if(currentUser && currentUser.role === 'محصل'){
-    collectorSel.innerHTML = '<option value="">الكل</option>';
-    collectorSel.disabled = true;
-  } else {
-    const prevCollector = collectorSel.value;
-    const collectors = [...new Set(scope.map(r=>r.المحصل).filter(v=>v && v!=='0' && v!=='لايوجد'))].sort();
-    collectorSel.innerHTML = '<option value="">الكل</option>' + collectors.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');
-    if(collectors.includes(prevCollector)) collectorSel.value = prevCollector;
-    collectorSel.disabled = false;
-  }
 
   // فلتر اسم العميل (قائمة منسدلة لاختيار عميل بعينه بدقة)
   const clientSel = document.getElementById('debt-f-client');
@@ -5406,12 +5401,10 @@ function renderDebtReport(){
   let rows = getDebtScope();
   const status = document.getElementById('debt-f-status').value;
   const grade = document.getElementById('debt-f-grade').value;
-  const collector = document.getElementById('debt-f-collector').value;
   const client = document.getElementById('debt-f-client').value;
 
   if(status) rows = rows.filter(r => r.نوع === status);
   if(grade) rows = rows.filter(r => r['تصنيق العميل'] === grade);
-  if(collector) rows = rows.filter(r => r.المحصل === collector);
   if(client) rows = rows.filter(r => r['اسم العميل'] === client);
 
   const total = rows.reduce((s,r)=>s+(+r.المديونيه||0), 0);
@@ -5629,6 +5622,8 @@ function renderDebtReport(){
   // ظهور أقسام الملخص حسب الدور: ملخص الفرع للإدارة فقط، ملخص المندوب للإدارة والمشرف فقط
   document.getElementById('debt-branch-section').style.display = (role === 'إدارة') ? '' : 'none';
   document.getElementById('debt-rep-section').style.display = (role === 'إدارة' || role === 'مشرف') ? '' : 'none';
+  document.getElementById('debt-top3-section').style.display = (role === 'إدارة') ? '' : 'none';
+  document.getElementById('debt-aging-section').style.display = (role === 'إدارة' || role === 'مشرف') ? '' : 'none';
 
   EXPORT_DATA.debtByBranch = branchRows.map(b=>({'الفرع':b.branch,'عدد الفواتير':b.count,'متجاوز':b.overdue,'قيمة المتجاوز':b.overdueVal,'إجمالي المديونية':b.sum,'عدد العملاء':b.clientsCount}));
   EXPORT_DATA.debtByRep = repRows.map(r=>({'المندوب':r.person,'الفرع':r.branch,'عدد الفواتير':r.count,'متجاوز':r.overdue,'قيمة المتجاوز':r.overdueVal,'إجمالي المديونية':r.sum,'عدد العملاء':r.clientsCount}));
