@@ -1318,6 +1318,11 @@ body.role-field-restricted #fg-branch, body.role-field-restricted #fg-type, body
     </div>
   </div>
 
+  <!-- مقارنة الأسبوع اللي فات: محفوظة محليًا على المتصفح (localStorage)، بتبان تلقائي بعد أسبوع من الاستخدام -->
+  <div class="report-card" id="debt-trend-card" style="padding:14px 16px">
+    <div id="debt-trend-box"></div>
+  </div>
+
   <div class="section-title">💰 تقرير المديونية</div>
   <div class="section-sub">
     مبني على شيت "المديونيه" (تواريخ الفواتير) — <b>لا يتأثر بفلتر السنة/الشهر/اليوم/الدقة</b> أعلى الصفحة لأن هذه تواريخ فواتير وليست تواريخ زيارات.
@@ -1386,7 +1391,7 @@ body.role-field-restricted #fg-branch, body.role-field-restricted #fg-type, body
   <div class="report-card">
     <div class="report-header"><h4>الفواتير</h4><span class="badge" id="debt-detail-badge">0</span><span class="hint" id="debt-detail-hint" style="display:none">أول 300 فاتورة فقط للعرض (التصدير يشمل الكل)</span><button class="mini-export-btn" onclick="exportReport('debtDetail')">📤 تصدير الكل</button></div>
     <div class="report-scroll"><table class="report-table" id="debt-detail-table">
-      <thead><tr><th>الفرع</th><th>المندوب</th><th>العميل</th><th style="text-align:center">كود العميل</th><th style="text-align:center">تصنيف</th><th style="text-align:center">نوع الدفع</th><th style="text-align:center">عمر الفاتورة</th><th style="text-align:center">أيام السماح</th><th style="text-align:center">الحالة</th><th>المحصل</th><th style="text-align:center">المديونية</th></tr></thead>
+      <thead><tr><th>الفرع</th><th>المندوب</th><th>العميل</th><th style="text-align:center">كود العميل</th><th style="text-align:center">تصنيف</th><th style="text-align:center">الالتزام</th><th style="text-align:center">نوع الدفع</th><th style="text-align:center">عمر الفاتورة</th><th style="text-align:center">أيام السماح</th><th style="text-align:center">الحالة</th><th>المحصل</th><th style="text-align:center">المديونية</th></tr></thead>
       <tbody id="debt-detail-tbody"></tbody>
     </table></div>
   </div>
@@ -1397,7 +1402,7 @@ body.role-field-restricted #fg-branch, body.role-field-restricted #fg-type, body
   <div class="report-card">
     <div class="report-header"><h4>الشرائح العمرية</h4><span class="badge" id="debt-aging-badge">0</span><span class="hint" id="debt-aging-hint" style="display:none">أول 300 عميل فقط للعرض (التصدير يشمل الكل)</span><button class="mini-export-btn" onclick="exportReport('debtAging')">📤 تصدير الكل</button></div>
     <div class="report-scroll"><table class="report-table" id="debt-aging-table">
-      <thead><tr><th>العميل</th><th style="text-align:center">كود العميل</th><th>الفرع</th><th>المندوب</th><th style="text-align:center">تصنيف</th><th style="text-align:center">الحالة</th><th style="text-align:center">0-9</th><th style="text-align:center">10-19</th><th style="text-align:center">20-29</th><th style="text-align:center">30-39</th><th style="text-align:center">40-49</th><th style="text-align:center">+50</th><th style="text-align:center">عدد الفواتير</th><th style="text-align:center">إجمالي المديونية</th></tr></thead>
+      <thead><tr><th>العميل</th><th style="text-align:center">كود العميل</th><th>الفرع</th><th>المندوب</th><th style="text-align:center">تصنيف</th><th style="text-align:center">الالتزام</th><th style="text-align:center">الحالة</th><th style="text-align:center">0-9</th><th style="text-align:center">10-19</th><th style="text-align:center">20-29</th><th style="text-align:center">30-39</th><th style="text-align:center">40-49</th><th style="text-align:center">+50</th><th style="text-align:center">عدد الفواتير</th><th style="text-align:center">إجمالي المديونية</th></tr></thead>
       <tbody id="debt-aging-tbody"></tbody>
     </table></div>
   </div>
@@ -1596,6 +1601,7 @@ function startSession(user){
     // المحصل يشوف في شيت المديونية الفواتير المكلّف بتحصيلها بس (عمود المحصل)
     DEBT = DEBT.filter(r => r.المحصل === user.person);
   }
+  snapshotDebtTrend(); // 🔄 نلقط رقم اليوم (إجمالي + متجاوز) عشان مقارنة الأسبوع اللي فات، حتى لو الجلسة محفوظة من قبل
   {
     const md = {};
     DATA.forEach(r=>{
@@ -2114,6 +2120,7 @@ function applyWorkbookData(wb, opts){
         DEBT = DEBT.filter(r => r.المحصل === currentUser.person);
       }
     }
+    if(debtRaw.length) snapshotDebtTrend(); // 🔄 نلقط رقم اليوم (إجمالي + متجاوز) عشان مقارنة الأسبوع اللي فات
 
     // شيت user اختياري: لو موجود في الملف المرفوع بنحدّث بيه بيانات الدخول،
     // ولو مش موجود نسيب اليوزرات الحالية زي ما هي (مايتمسحوش)
@@ -5444,6 +5451,63 @@ function closeOverdueClientsModal(){
 
 /* ---------- تاب المديونية ---------- */
 let debtBranchChartInstance = null;
+
+// 🔄 مقارنة الأسبوع اللي فات: بتتحفظ محليًا على متصفح كل مستخدم (localStorage) — رقم واحد بس (إجمالي + متجاوز)
+// في كل مرة تترفع بيانات جديدة، وبنقارنها بأقرب سجل عمره أسبوع تقريبًا لما التاب يتفتح
+function getDebtTrendStorageKey(){
+  return 'debtTrend_' + (currentUser && currentUser.username ? currentUser.username : 'guest');
+}
+function snapshotDebtTrend(){
+  try{
+    if(!DEBT || !DEBT.length) return;
+    const key = getDebtTrendStorageKey();
+    const todayStr = new Date().toISOString().slice(0,10);
+    const total = DEBT.reduce((s,r)=>s+(+r.المديونيه||0), 0);
+    const overdueVal = DEBT.filter(r=>r.نوع==='متجاوز').reduce((s,r)=>s+(+r.المديونيه||0), 0);
+    let history = [];
+    try{ history = JSON.parse(localStorage.getItem(key)) || []; }catch(e){ history = []; }
+    const last = history[history.length-1];
+    if(last && last.date === todayStr){
+      last.total = total; last.overdueVal = overdueVal; // تحديث نفس يوم النهاردة لو الملف اتحدّث أكتر من مرة
+    } else {
+      history.push({date: todayStr, total, overdueVal});
+    }
+    if(history.length > 30) history = history.slice(history.length - 30);
+    localStorage.setItem(key, JSON.stringify(history));
+  }catch(e){ /* localStorage ممكن يكون متقفل (وضع تصفح خاص مثلًا) — بنتجاهل بهدوء */ }
+}
+function renderDebtTrendComparison(){
+  const box = document.getElementById('debt-trend-box');
+  if(!box) return;
+  let history = [];
+  try{ history = JSON.parse(localStorage.getItem(getDebtTrendStorageKey())) || []; }catch(e){ history = []; }
+  if(!history.length){ box.innerHTML = ''; return; }
+  const todayEntry = history[history.length - 1];
+  const todayDate = new Date(todayEntry.date + 'T00:00:00Z');
+  let compareEntry = null, diffDaysFound = 0;
+  for(let i = history.length - 2; i >= 0; i--){
+    const d = new Date(history[i].date + 'T00:00:00Z');
+    const diffDays = Math.round((todayDate - d) / 86400000);
+    if(diffDays >= 6){ compareEntry = history[i]; diffDaysFound = diffDays; break; }
+  }
+  if(!compareEntry){
+    box.innerHTML = `<div style="color:var(--text-dim);font-size:12.5px">📅 مقارنة الأسبوع اللي فات: مفيش بيانات كفاية للمقارنة لسه — هتظهر تلقائي بعد أسبوع من الاستخدام</div>`;
+    return;
+  }
+  const totalDiff = todayEntry.total - compareEntry.total;
+  const overdueDiff = todayEntry.overdueVal - compareEntry.overdueVal;
+  const totalPct = compareEntry.total ? Math.round(totalDiff/compareEntry.total*100) : 0;
+  const overduePct2 = compareEntry.overdueVal ? Math.round(overdueDiff/compareEntry.overdueVal*100) : 0;
+  const fmt = v => (v>=0?'+':'') + v.toLocaleString('ar-IQ');
+  const arrow = v => v>0 ? '🔺' : (v<0 ? '🔻' : '➖');
+  const colorFor = v => v>0 ? 'var(--red)' : (v<0 ? 'var(--green)' : 'var(--text-dim)');
+  box.innerHTML = `
+    <div style="font-size:12px;color:var(--text-dim);margin-bottom:6px">📅 مقارنة بـ ${compareEntry.date} (قبل ${diffDaysFound} يوم) — محفوظة على هذا الجهاز/المتصفح فقط</div>
+    <div style="display:flex;gap:24px;flex-wrap:wrap;font-size:13px">
+      <div>إجمالي المديونية: <b style="color:${colorFor(totalDiff)}">${arrow(totalDiff)} ${fmt(totalDiff)} د.ع (${totalPct>=0?'+':''}${totalPct}%)</b></div>
+      <div>المتجاوز: <b style="color:${colorFor(overdueDiff)}">${arrow(overdueDiff)} ${fmt(overdueDiff)} د.ع (${overduePct2>=0?'+':''}${overduePct2}%)</b></div>
+    </div>`;
+}
 // حالة أقسام "أولوياتي اليوم": البيانات الكاملة لكل قايمة + هل هي متوسّعة (عرض الكل) ولا مطوية (أول 5 بس)
 const PRIORITY_LISTS = {overdue:[], near:[], unvisited:[]};
 const PRIORITY_EXPANDED = {overdue:false, near:false, unvisited:false};
@@ -5553,8 +5617,29 @@ function populateDebtLocalFilterOptions(){
 
 function renderDebtReport(){
   populateDebtLocalFilterOptions();
+  renderDebtTrendComparison();
 
   let rows = getDebtScope();
+
+  // 🎯 نقاط الالتزام: بتتحسب من كل فواتير العميل المفتوحة ضمن نطاق الفرع/الشخص (بدون تأثير فلاتر الحالة/التصنيف/العميل
+  // المحلية)، عشان لو حد فلتر على "متجاوز" بس، مايتغيرش تصنيف العميل بسبب الفلترة نفسها
+  const CLIENT_COMMITMENT = {};
+  rows.forEach(r=>{
+    const key = (r['كود العميل']||'') + '|' + (r['اسم العميل']||'');
+    if(!CLIENT_COMMITMENT[key]) CLIENT_COMMITMENT[key] = {total:0, overdue:0};
+    CLIENT_COMMITMENT[key].total++;
+    if(r.نوع === 'متجاوز') CLIENT_COMMITMENT[key].overdue++;
+  });
+  Object.values(CLIENT_COMMITMENT).forEach(c=>{ c.pct = c.total ? Math.round(c.overdue/c.total*100) : 0; });
+  function clientCommitmentKey(r){ return (r['كود العميل']||'') + '|' + (r['اسم العميل']||''); }
+  function commitmentBadge(r){
+    const c = CLIENT_COMMITMENT[clientCommitmentKey(r)];
+    if(!c) return '-';
+    if(c.pct === 0) return '<span class="pill pill-green">منضبط ⭐</span>';
+    if(c.pct <= 50) return '<span class="pill pill-orange">متوسط 🟡</span>';
+    return '<span class="pill pill-red">بطيء بالدفع ⚠️</span>';
+  }
+
   const status = document.getElementById('debt-f-status').value;
   const grade = document.getElementById('debt-f-grade').value;
   const client = document.getElementById('debt-f-client').value;
@@ -5678,11 +5763,12 @@ function renderDebtReport(){
   document.getElementById('debt-detail-tbody').innerHTML = sortedRows.slice(0, DEBT_DISPLAY_CAP).map(r=>`
     <tr><td>${esc(r.الفرع)}</td><td>${esc(r['Sales rep'])}</td><td>${esc(r['اسم العميل'])}</td>
     <td style="text-align:center">${esc(r['كود العميل'])}</td><td style="text-align:center">${esc(r['تصنيق العميل'])}</td>
+    <td style="text-align:center">${commitmentBadge(r)}</td>
     <td style="text-align:center">${esc(r.نقدي)}</td><td style="text-align:center">${r['عمر الفاتوره']!=null?r['عمر الفاتوره']:'-'}</td>
     <td style="text-align:center">${r['عدد  ايام السماح']!=null?r['عدد  ايام السماح']:'-'}</td>
     <td style="text-align:center"><span class="pill ${r.نوع==='متجاوز'?'pill-red':'pill-green'}">${esc(r.نوع)||'-'}</span></td>
     <td>${esc(r.المحصل)}</td><td style="text-align:center">${(+r.المديونيه||0).toLocaleString('ar-IQ')}</td></tr>`
-  ).join('') || '<tr><td colspan="11" style="text-align:center;color:var(--text-dim)">لا توجد بيانات ضمن الفلتر الحالي</td></tr>';
+  ).join('') || '<tr><td colspan="12" style="text-align:center;color:var(--text-dim)">لا توجد بيانات ضمن الفلتر الحالي</td></tr>';
 
   // تقرير أعمار الديون: مديونية كل عميل موزّعة على شرائح عمر الفاتورة (كل 10 أيام)
   const AGING_BUCKETS = [
@@ -5702,7 +5788,7 @@ function renderDebtReport(){
   rows.forEach(r=>{
     const key = (r['كود العميل']||'') + '|' + (r['اسم العميل']||'');
     if(!agingByClient[key]){
-      agingByClient[key] = {name:r['اسم العميل'], code:r['كود العميل'], branch:r.الفرع, rep:r['Sales rep'], grade:r['تصنيق العميل'], hasOverdue:false, count:0, sum:0, b0:0,b10:0,b20:0,b30:0,b40:0,b50:0};
+      agingByClient[key] = {name:r['اسم العميل'], code:r['كود العميل'], branch:r.الفرع, rep:r['Sales rep'], grade:r['تصنيق العميل'], key, hasOverdue:false, count:0, sum:0, b0:0,b10:0,b20:0,b30:0,b40:0,b50:0};
     }
     const c = agingByClient[key];
     c.count++;
@@ -5717,6 +5803,7 @@ function renderDebtReport(){
   document.getElementById('debt-aging-tbody').innerHTML = agingRows.slice(0, AGING_DISPLAY_CAP).map(c=>`
     <tr><td>${esc(c.name)}</td><td style="text-align:center">${esc(c.code)}</td><td>${esc(c.branch)}</td><td>${esc(c.rep)}</td>
     <td style="text-align:center">${esc(c.grade)}</td>
+    <td style="text-align:center">${CLIENT_COMMITMENT[c.key] ? commitmentBadge({'كود العميل':c.code,'اسم العميل':c.name}) : '-'}</td>
     <td style="text-align:center"><span class="pill ${c.hasOverdue?'pill-red':'pill-green'}">${c.hasOverdue?'متجاوز':'منتظم'}</span></td>
     <td style="text-align:center">${c.b0 ? c.b0.toLocaleString('ar-IQ') : '-'}</td>
     <td style="text-align:center">${c.b10 ? c.b10.toLocaleString('ar-IQ') : '-'}</td>
@@ -5726,7 +5813,7 @@ function renderDebtReport(){
     <td style="text-align:center;color:var(--red)">${c.b50 ? c.b50.toLocaleString('ar-IQ') : '-'}</td>
     <td style="text-align:center">${c.count}</td>
     <td style="text-align:center;font-weight:700">${c.sum.toLocaleString('ar-IQ')}</td></tr>`
-  ).join('') || '<tr><td colspan="14" style="text-align:center;color:var(--text-dim)">لا توجد بيانات ضمن الفلتر الحالي</td></tr>';
+  ).join('') || '<tr><td colspan="15" style="text-align:center;color:var(--text-dim)">لا توجد بيانات ضمن الفلتر الحالي</td></tr>';
 
   EXPORT_DATA.debtAging = agingRows.map(c=>({
     'العميل':c.name, 'كود العميل':c.code, 'الفرع':c.branch, 'المندوب':c.rep, 'تصنيف':c.grade, 'الحالة':c.hasOverdue?'متجاوز':'منتظم',
