@@ -15,6 +15,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
@@ -746,6 +747,71 @@ body.role-field-restricted #fg-branch, body.role-field-restricted #fg-type, body
     </div>
   </div>
 </div>
+
+<!-- قالب مخفي: تقرير المديونية القابل للطباعة/تصدير PDF — مش ظاهر في الصفحة، بس بيتلقط كصورة وتتحول لملف PDF -->
+<div id="debt-pdf-template" style="position:absolute; top:-9999px; left:0; width:780px; direction:rtl; font-family:'Segoe UI',Arial,sans-serif; background:#fff; padding:32px; color:#1d2333;">
+  <div style="display:flex; align-items:center; justify-content:space-between; border-bottom:3px solid #1d4fa3; padding-bottom:14px; margin-bottom:18px;">
+    <div>
+      <div style="font-size:22px; font-weight:800;">💰 تقرير المديونية</div>
+      <div style="font-size:12px; color:#70758f; margin-top:4px;" id="pdf-debt-scope">-</div>
+    </div>
+    <div style="font-size:12px; color:#70758f; text-align:left;" id="pdf-debt-date">-</div>
+  </div>
+
+  <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:24px;">
+    <div style="background:#f8f9fc; border-radius:10px; padding:12px; text-align:center;">
+      <div style="font-size:11px; color:#70758f;">إجمالي المديونية</div>
+      <div style="font-size:18px; font-weight:800;" id="pdf-debt-total">0</div>
+    </div>
+    <div style="background:#fdecea; border-radius:10px; padding:12px; text-align:center;">
+      <div style="font-size:11px; color:#70758f;">قيمة المتجاوز</div>
+      <div style="font-size:18px; font-weight:800; color:#c0392b;" id="pdf-debt-overdue">0</div>
+    </div>
+    <div style="background:#f8f9fc; border-radius:10px; padding:12px; text-align:center;">
+      <div style="font-size:11px; color:#70758f;">نسبة المتجاوز</div>
+      <div style="font-size:18px; font-weight:800;" id="pdf-debt-pct">0%</div>
+    </div>
+    <div style="background:#f8f9fc; border-radius:10px; padding:12px; text-align:center;">
+      <div style="font-size:11px; color:#70758f;">عدد العملاء</div>
+      <div style="font-size:18px; font-weight:800;" id="pdf-debt-clients">0</div>
+    </div>
+  </div>
+
+  <div id="pdf-branch-section" style="margin-bottom:24px;">
+    <div style="font-size:15px; font-weight:800; margin-bottom:10px; border-right:4px solid #1d4fa3; padding-right:8px;">🏢 ملخص المديونية حسب الفرع</div>
+    <table style="width:100%; border-collapse:collapse; font-size:12.5px;">
+      <thead><tr style="background:#f0f2f8;">
+        <th style="padding:8px; text-align:right;">الفرع</th>
+        <th style="padding:8px; text-align:center;">عدد الفواتير</th>
+        <th style="padding:8px; text-align:center;">متجاوز</th>
+        <th style="padding:8px; text-align:center;">قيمة المتجاوز</th>
+        <th style="padding:8px; text-align:center;">إجمالي المديونية</th>
+        <th style="padding:8px; text-align:center;">نسبة المتجاوز</th>
+      </tr></thead>
+      <tbody id="pdf-branch-tbody"></tbody>
+    </table>
+  </div>
+
+  <div id="pdf-rep-section">
+    <div style="font-size:15px; font-weight:800; margin-bottom:10px; border-right:4px solid #1d4fa3; padding-right:8px;">🧑‍💼 ملخص المديونية حسب المندوب</div>
+    <table style="width:100%; border-collapse:collapse; font-size:12.5px;">
+      <thead><tr style="background:#f0f2f8;">
+        <th style="padding:8px; text-align:right;">المندوب</th>
+        <th style="padding:8px; text-align:right;">الفرع</th>
+        <th style="padding:8px; text-align:center;">عدد الفواتير</th>
+        <th style="padding:8px; text-align:center;">متجاوز</th>
+        <th style="padding:8px; text-align:center;">قيمة المتجاوز</th>
+        <th style="padding:8px; text-align:center;">إجمالي المديونية</th>
+      </tr></thead>
+      <tbody id="pdf-rep-tbody"></tbody>
+    </table>
+  </div>
+
+  <div style="margin-top:26px; padding-top:12px; border-top:1px solid #eee; font-size:10.5px; color:#a0a4b8; text-align:center;">
+    تقرير مُولّد تلقائيًا من نظام مساعد المندوب
+  </div>
+</div>
+
 <div id="share-card" style="position:absolute; top:-9999px; left:0; width:420px; direction:rtl; font-family:'Segoe UI',Arial,sans-serif; background:linear-gradient(135deg,#f8f9fc,#eef1f8); padding:24px; border-radius:0;">
   <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; padding-bottom:14px; border-bottom:2px solid #1d4fa3;">
     <div style="font-size:18px; font-weight:800; color:#1d2333;">📋 ملخص الزيارات الميدانية</div>
@@ -1294,6 +1360,7 @@ body.role-field-restricted #fg-branch, body.role-field-restricted #fg-type, body
       </select>
     </div>
     <button class="btn-reset" onclick="resetDebtFilters()">↺ إعادة ضبط فلاتر المديونية</button>
+    <button class="mini-export-btn" onclick="exportDebtPDF()">🖨️ تصدير PDF</button>
   </div>
 
   <!-- أولوياتي اليوم: خلاصة سريعة تجمع المتجاوز + قرب التجاوز + عملاء لسه ما اتزاروش، عشان مايحتاجش يدور في كل قسم لوحده -->
@@ -5942,6 +6009,84 @@ function renderDebtBranchChart(dataRows){
       }
     }
   });
+}
+
+// 🖨️ تصدير تقرير المديونية كملف PDF جاهز للطباعة/المشاركة — بيستخدم نفس بيانات الملخصات المعروضة حاليًا
+// (يحترم الفلاتر الحالية وصلاحيات الدور)، عن طريق التقاط قالب مخفي كصورة وتحويله لـPDF بصفحات متعددة لو طال المحتوى
+async function exportDebtPDF(){
+  const btn = document.querySelector('#tab-debt button[onclick="exportDebtPDF()"]');
+  const originalLabel = btn ? btn.textContent : '';
+  if(btn){ btn.disabled = true; btn.textContent = '⏳ جاري التجهيز...'; }
+  try{
+    const role = currentUser ? (currentUser.role || 'إدارة') : 'إدارة';
+    const branchVal = document.getElementById('f-branch').value;
+    const personVal = document.getElementById('f-person').value;
+    const scopeLabel = (currentUser && (currentUser.role==='مندوب'||currentUser.role==='محصل') && currentUser.person)
+      ? currentUser.person
+      : [branchVal, personVal].filter(Boolean).join(' — ') || 'كل الفروع';
+
+    document.getElementById('pdf-debt-scope').textContent = scopeLabel;
+    document.getElementById('pdf-debt-date').textContent = 'تاريخ التقرير: ' + new Date().toLocaleDateString('ar-EG', {year:'numeric', month:'long', day:'numeric'});
+    document.getElementById('pdf-debt-total').textContent = document.getElementById('debt-k-total').textContent + ' د.ع';
+    document.getElementById('pdf-debt-overdue').textContent = document.getElementById('debt-k-overdue-val').textContent + ' د.ع';
+    document.getElementById('pdf-debt-pct').textContent = document.getElementById('debt-k-overduepct').textContent;
+    document.getElementById('pdf-debt-clients').textContent = document.getElementById('k-debt-clients').textContent;
+
+    const branchData = EXPORT_DATA.debtByBranch || [];
+    document.getElementById('pdf-branch-section').style.display = (role === 'إدارة' && branchData.length) ? '' : 'none';
+    document.getElementById('pdf-branch-tbody').innerHTML = branchData.map(b=>{
+      const pct = b['إجمالي المديونية'] ? Math.round(b['قيمة المتجاوز']/b['إجمالي المديونية']*100) : 0;
+      return `<tr>
+        <td style="padding:7px; border-bottom:1px solid #eee;">${esc(b['الفرع'])}</td>
+        <td style="padding:7px; border-bottom:1px solid #eee; text-align:center;">${(+b['عدد الفواتير']||0).toLocaleString('ar-IQ')}</td>
+        <td style="padding:7px; border-bottom:1px solid #eee; text-align:center;">${(+b['متجاوز']||0).toLocaleString('ar-IQ')}</td>
+        <td style="padding:7px; border-bottom:1px solid #eee; text-align:center; color:#c0392b;">${(+b['قيمة المتجاوز']||0).toLocaleString('ar-IQ')}</td>
+        <td style="padding:7px; border-bottom:1px solid #eee; text-align:center;">${(+b['إجمالي المديونية']||0).toLocaleString('ar-IQ')}</td>
+        <td style="padding:7px; border-bottom:1px solid #eee; text-align:center;">${pct}%</td>
+      </tr>`;
+    }).join('');
+
+    const repData = EXPORT_DATA.debtByRep || [];
+    const showRep = (role === 'إدارة' || role === 'مشرف') && repData.length;
+    document.getElementById('pdf-rep-section').style.display = showRep ? '' : 'none';
+    document.getElementById('pdf-rep-tbody').innerHTML = repData.map(r=>`
+      <tr>
+        <td style="padding:7px; border-bottom:1px solid #eee;">${esc(r['المندوب'])}</td>
+        <td style="padding:7px; border-bottom:1px solid #eee;">${esc(r['الفرع'])}</td>
+        <td style="padding:7px; border-bottom:1px solid #eee; text-align:center;">${(+r['عدد الفواتير']||0).toLocaleString('ar-IQ')}</td>
+        <td style="padding:7px; border-bottom:1px solid #eee; text-align:center;">${(+r['متجاوز']||0).toLocaleString('ar-IQ')}</td>
+        <td style="padding:7px; border-bottom:1px solid #eee; text-align:center; color:#c0392b;">${(+r['قيمة المتجاوز']||0).toLocaleString('ar-IQ')}</td>
+        <td style="padding:7px; border-bottom:1px solid #eee; text-align:center;">${(+r['إجمالي المديونية']||0).toLocaleString('ar-IQ')}</td>
+      </tr>`).join('');
+
+    const el = document.getElementById('debt-pdf-template');
+    const canvas = await html2canvas(el, {scale:2, backgroundColor:'#ffffff', useCORS:true});
+
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const imgWidth = pageWidth;
+    const imgHeight = canvas.height * imgWidth / canvas.width;
+    let heightLeft = imgHeight;
+    let position = 0;
+    const imgData = canvas.toDataURL('image/png');
+
+    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+    heightLeft -= pageHeight;
+    while(heightLeft > 0){
+      position = heightLeft - imgHeight;
+      pdf.addPage();
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+    }
+
+    pdf.save('تقرير_المديونية_' + new Date().toISOString().slice(0,10) + '.pdf');
+  }catch(err){
+    alert('حصل خطأ أثناء تجهيز ملف PDF: ' + err.message);
+  }finally{
+    if(btn){ btn.disabled = false; btn.textContent = originalLabel; }
+  }
 }
 
 /* ---------- EXPORT (generic for every report/table) ---------- */
