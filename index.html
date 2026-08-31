@@ -785,12 +785,15 @@ body.role-field-restricted #fg-branch, body.role-field-restricted #fg-type, body
       <div style="font-size:22px;">💰</div>
       <div style="font-size:22px; font-weight:800; color:#6b3fa0; margin-top:4px;" id="sc-collect">0</div>
       <div style="font-size:11px; color:#70758f; margin-top:2px;">إجمالي التحصيل</div>
+      <div style="font-size:11px; color:#6b3fa0; margin-top:2px; font-weight:700;" id="sc-collect-count">0 عملية تحصيل</div>
     </div>
     <div style="grid-column:1/-1; background:#fff; border-radius:12px; padding:14px; text-align:center; box-shadow:0 1px 4px rgba(0,0,0,.08);">
       <div style="font-size:22px;">💰</div>
       <div style="font-size:20px; font-weight:800; color:#1d2333; margin-top:4px;" id="sc-debt-total">0</div>
       <div style="font-size:11px; color:#70758f; margin-top:2px;">إجمالي المديونية</div>
       <div style="font-size:11px; color:#c0392b; margin-top:2px; font-weight:700;" id="sc-debt-overdue">متجاوز: 0 د.ع</div>
+      <div style="font-size:11px; color:#c0392b; margin-top:2px; font-weight:700;" id="sc-debt-overdue-pct">النسبة: 0%</div>
+      <div style="font-size:11px; color:#70758f; margin-top:2px;" id="sc-debt-clients">0 عميل • 0 متجاوز</div>
     </div>
     <div style="background:#fff; border-radius:12px; padding:14px; text-align:center; box-shadow:0 1px 4px rgba(0,0,0,.08);">
       <div style="font-size:22px;">🚫</div>
@@ -1300,14 +1303,17 @@ body.role-field-restricted #fg-branch, body.role-field-restricted #fg-type, body
       <div>
         <div style="font-size:12px;font-weight:700;color:var(--red);margin-bottom:6px">🔴 عملاء متجاوزين (الأكبر قيمة)</div>
         <div id="priority-overdue-list" style="font-size:13px"></div>
+        <span class="day-dup-toggle" id="priority-overdue-toggle" style="display:none;cursor:pointer;color:var(--accent);margin-top:4px" onclick="togglePriorityList('overdue')">عرض الكل ⌄</span>
       </div>
       <div>
         <div style="font-size:12px;font-weight:700;color:var(--orange);margin-bottom:6px">⏳ قربوا يدخلوا التجاوز</div>
         <div id="priority-nearoverdue-list" style="font-size:13px"></div>
+        <span class="day-dup-toggle" id="priority-near-toggle" style="display:none;cursor:pointer;color:var(--accent);margin-top:4px" onclick="togglePriorityList('near')">عرض الكل ⌄</span>
       </div>
       <div>
         <div style="font-size:12px;font-weight:700;color:#00897b;margin-bottom:6px">🚫 لسه ما اتزاروش الشهر ده</div>
         <div id="priority-unvisited-list" style="font-size:13px"></div>
+        <span class="day-dup-toggle" id="priority-unvisited-toggle" style="display:none;cursor:pointer;color:var(--accent);margin-top:4px" onclick="togglePriorityList('unvisited')">عرض الكل ⌄</span>
       </div>
     </div>
   </div>
@@ -1357,7 +1363,7 @@ body.role-field-restricted #fg-branch, body.role-field-restricted #fg-type, body
   <div class="report-card">
     <div class="report-header"><h4>الفروع</h4><span class="badge" id="debt-branch-badge">0</span><button class="mini-export-btn" style="margin-right:auto" onclick="exportReport('debtByBranch')">📤 تصدير</button></div>
     <div class="report-scroll"><table class="report-table" id="debt-branch-table">
-      <thead><tr><th>الفرع</th><th style="text-align:center">عدد الفواتير</th><th style="text-align:center">متجاوز</th><th style="text-align:center">قيمة المتجاوز</th><th style="text-align:center">إجمالي المديونية</th><th style="text-align:center">نسبة من الإجمالي</th></tr></thead>
+      <thead><tr><th>الفرع</th><th style="text-align:center">عدد الفواتير</th><th style="text-align:center">متجاوز</th><th style="text-align:center">قيمة المتجاوز</th><th style="text-align:center">إجمالي المديونية</th><th style="text-align:center">نسبة المتجاوز من مديونية الفرع</th></tr></thead>
       <tbody id="debt-branch-tbody"></tbody>
     </table></div>
   </div>
@@ -2061,6 +2067,7 @@ function applyWorkbookData(wb, opts){
       'المندوب': r['المندوب'] || '',
       'المنطقه سيستم': r['المنطقه سيستم'] || '',
       'الفرع': stripBranchPrefix(r['الفرع']),
+      'تصنيف العميل': r['تصنيف العميل'] || '',
       lng_client: r['احداثيات 1'] != null ? parseFloat(r['احداثيات 1']) : '',
       lat_client: r['احداثيات 2'] != null ? parseFloat(r['احداثيات 2']) : ''
     }));
@@ -2733,7 +2740,7 @@ function updateExtraKPIs(){
   const totalClientsInScope = clientsScope.length;
   const unvisitedClients = clientsScope.filter(c => !visitedClientNames.has(c['اسم العميل']));
   const unvisitedCount = unvisitedClients.length;
-  UNVISITED_CLIENTS_LIST = unvisitedClients.map(c => c['اسم العميل']).filter(Boolean).sort((a,b)=>a.localeCompare(b,'ar'));
+  UNVISITED_CLIENTS_LIST = unvisitedClients.map(c => ({name: c['اسم العميل'], grade: c['تصنيف العميل']||''})).filter(c=>c.name).sort((a,b)=>a.name.localeCompare(b.name,'ar'));
 
   document.getElementById('k-unvisited').textContent = unvisitedCount.toLocaleString();
   document.getElementById('k-unvisited-pct').textContent = totalClientsInScope
@@ -2807,7 +2814,7 @@ function showUnvisitedClientsModal(){
   if(!UNVISITED_CLIENTS_LIST.length){
     listEl.innerHTML = '<div class="no-data">كل العملاء ضمن النطاق الحالي اتزاروا 🎉</div>';
   } else {
-    listEl.innerHTML = UNVISITED_CLIENTS_LIST.map(name => `<div class="unvisited-item">${esc(name)}</div>`).join('');
+    listEl.innerHTML = UNVISITED_CLIENTS_LIST.map(c => `<div class="unvisited-item">${esc(c.name)}${c.grade?` <span style="color:var(--text-dim);font-size:11px">(${esc(c.grade)})</span>`:''}</div>`).join('');
   }
   subEl.textContent = `${UNVISITED_CLIENTS_LIST.length.toLocaleString()} عميل لسه محتاجين زيارة ضمن الفلتر الحالي`;
   document.getElementById('unvisited-overlay').style.display = 'flex';
@@ -2964,6 +2971,7 @@ function fillShareCardFields(){
   document.getElementById('sc-orders-val').textContent = document.getElementById('k-orders-val').textContent;
   document.getElementById('sc-orders-qty').textContent = document.getElementById('k-orders-qty').textContent;
   document.getElementById('sc-collect').textContent = document.getElementById('k-collect-val').textContent;
+  document.getElementById('sc-collect-count').textContent = document.getElementById('k-collect').textContent + ' عملية تحصيل';
   document.getElementById('sc-unvisited').textContent = document.getElementById('k-unvisited').textContent;
   document.getElementById('sc-unvisited-pct').textContent = document.getElementById('k-unvisited-pct').textContent;
   document.getElementById('sc-shortvisits').textContent = document.getElementById('k-shortvisits').textContent;
@@ -2974,6 +2982,8 @@ function fillShareCardFields(){
   // أي KPI جديدة تتضاف في لوحة القيادة لازم تتحط هنا كمان عشان تبان في صورة المشاركة على واتساب
   document.getElementById('sc-debt-total').textContent = document.getElementById('k-debt-total').textContent;
   document.getElementById('sc-debt-overdue').textContent = document.getElementById('k-debt-overdue-val').textContent;
+  document.getElementById('sc-debt-overdue-pct').textContent = document.getElementById('k-debt-overdue-pct').textContent;
+  document.getElementById('sc-debt-clients').textContent = document.getElementById('k-debt-clients').textContent;
 
   return personName;
 }
@@ -3282,7 +3292,7 @@ function renderTable(){
         <td data-label="الفرع" style="color:var(--accent);font-weight:600">${esc(r.الفرع)||'-'}</td>
         <td data-label="الشخص">${esc(r['الشخص اللي قام بالزياره'])||'-'}</td>
         <td data-label="النوع"><span class="type-badge tb-${r.نوع_الشخص}">${esc(r.نوع_الشخص)||'-'}</span></td>
-        <td data-label="العميل" style="max-width:180px;overflow:hidden;text-overflow:ellipsis" title="${esc(r.العميل)}">${esc(r.العميل)||'-'}</td>
+        <td data-label="العميل" style="max-width:180px;overflow:hidden;text-overflow:ellipsis" title="${esc(r.العميل)}">${esc(r.العميل)||'-'}${DEBT_RISK_CLIENT_NAMES.has(r.العميل) ? ' <span title="عميل عنده مديونية متجاوزة أو قربت تدخل التجاوز" style="cursor:help">⚠️</span>' : ''}</td>
         <td data-label="المنطقة">${esc(r['المنطقه سيستم'])||'-'}</td>
         <td data-label="وقت الدخول">${toHHMM(r['وقت الدخول'])}</td>
         <td data-label="مدة (د)" class="num">${r['مدة الدقائق']||'-'}</td>
@@ -5382,6 +5392,23 @@ function updateDebtDashboardKPI(){
   document.getElementById('k-debt-overdue-val').textContent = 'متجاوز: ' + overdueVal.toLocaleString('ar-IQ') + ' د.ع';
   document.getElementById('k-debt-overdue-pct').textContent = 'النسبة: ' + pct + '%';
   document.getElementById('k-debt-clients').textContent = allClients.size.toLocaleString('ar-IQ') + ' عميل • ' + overdueClients.size.toLocaleString('ar-IQ') + ' متجاوز';
+  updateDebtRiskClientSet();
+}
+
+// مجموعة أسماء العملاء اللي عندهم مديونية متجاوزة أو قربوا يدخلوا التجاوز — تُستخدم لعرض علامة ⚠️
+// جنب اسم العميل في جدول "تفاصيل الزيارات" (ربط تاب الزيارات بتاب المديونية)
+let DEBT_RISK_CLIENT_NAMES = new Set();
+function updateDebtRiskClientSet(){
+  DEBT_RISK_CLIENT_NAMES = new Set();
+  DEBT.forEach(r=>{
+    const name = r['اسم العميل'];
+    if(!name) return;
+    if(r.نوع === 'متجاوز'){ DEBT_RISK_CLIENT_NAMES.add(name); return; }
+    const liveAge = daysSinceDate(r.التاريخ);
+    if(liveAge==null) return;
+    const remaining = (+r['عدد  ايام السماح']||0) - liveAge;
+    if(remaining >= 0 && remaining <= 4) DEBT_RISK_CLIENT_NAMES.add(name);
+  });
 }
 
 function showOverdueClientsModal(){
@@ -5417,6 +5444,64 @@ function closeOverdueClientsModal(){
 
 /* ---------- تاب المديونية ---------- */
 let debtBranchChartInstance = null;
+// حالة أقسام "أولوياتي اليوم": البيانات الكاملة لكل قايمة + هل هي متوسّعة (عرض الكل) ولا مطوية (أول 5 بس)
+const PRIORITY_LISTS = {overdue:[], near:[], unvisited:[]};
+const PRIORITY_EXPANDED = {overdue:false, near:false, unvisited:false};
+const PRIORITY_CAP = 5;
+const PRIORITY_EXPANDED_CAP = 50; // سقف أقصى حتى في وضع "عرض الكل" — عشان القايمة متطولش أوي (زي عملاء "لسه ما اتزاروش" اللي ممكن يوصلوا لمئات)
+
+function priorityRowHtml(kind, item){
+  if(kind === 'overdue'){
+    return `<div style="padding:4px 0;display:flex;justify-content:space-between;gap:8px">
+      <span>${esc(item.name)}</span>
+      <span style="text-align:left;white-space:nowrap">
+        <b style="color:var(--red)">${item.sum.toLocaleString('ar-IQ')}</b>
+        <span style="color:var(--text-dim);font-size:11px"> • ${item.maxOverdueDays > 0 ? item.maxOverdueDays + ' يوم' : 'اليوم'}</span>
+      </span></div>`;
+  }
+  if(kind === 'near'){
+    return `<div style="padding:4px 0;display:flex;justify-content:space-between;gap:8px">
+      <span>${esc(item.name)}</span>
+      <span style="text-align:left;white-space:nowrap">
+        <b style="color:var(--orange)">${item.remaining===0?'اليوم':item.remaining+' يوم'}</b>
+        <span style="color:var(--text-dim);font-size:11px"> • ${item.sum.toLocaleString('ar-IQ')}</span>
+      </span></div>`;
+  }
+  // unvisited
+  return `<div style="padding:4px 0">${esc(item.name)}${item.grade?` <span style="color:var(--text-dim);font-size:11px">(${esc(item.grade)})</span>`:''}</div>`;
+}
+
+const PRIORITY_EMPTY_MSG = {overdue:'مفيش عملاء متجاوزين 🎉', near:'مفيش فواتير قريبة من التجاوز 👍', unvisited:'كل العملاء اتزاروا 🎉'};
+const PRIORITY_LIST_EL = {overdue:'priority-overdue-list', near:'priority-nearoverdue-list', unvisited:'priority-unvisited-list'};
+const PRIORITY_TOGGLE_EL = {overdue:'priority-overdue-toggle', near:'priority-near-toggle', unvisited:'priority-unvisited-toggle'};
+
+function renderPriorityList(kind){
+  const data = PRIORITY_LISTS[kind];
+  const listEl = document.getElementById(PRIORITY_LIST_EL[kind]);
+  const toggleEl = document.getElementById(PRIORITY_TOGGLE_EL[kind]);
+  if(!data.length){
+    listEl.innerHTML = `<div style="color:var(--text-dim)">${PRIORITY_EMPTY_MSG[kind]}</div>`;
+    toggleEl.style.display = 'none';
+    return;
+  }
+  const expanded = PRIORITY_EXPANDED[kind];
+  const shown = expanded ? data.slice(0, PRIORITY_EXPANDED_CAP) : data.slice(0, PRIORITY_CAP);
+  listEl.innerHTML = shown.map(item => priorityRowHtml(kind, item)).join('') +
+    (expanded && data.length > PRIORITY_EXPANDED_CAP
+      ? `<div style="color:var(--text-dim);font-size:11.5px;margin-top:6px">+${data.length - PRIORITY_EXPANDED_CAP} عميل تاني — شوف الجدول/الكارت التفصيلي بالأسفل لعرض الكل</div>`
+      : '');
+  if(data.length > PRIORITY_CAP){
+    toggleEl.style.display = 'inline-block';
+    toggleEl.textContent = expanded ? `إخفاء ⌃` : `عرض الكل (${data.length}) ⌄`;
+  } else {
+    toggleEl.style.display = 'none';
+  }
+}
+
+function togglePriorityList(kind){
+  PRIORITY_EXPANDED[kind] = !PRIORITY_EXPANDED[kind];
+  renderPriorityList(kind);
+}
 
 function resetDebtFilters(){
   document.getElementById('debt-f-status').value = '';
@@ -5489,34 +5574,32 @@ function renderDebtReport(){
   const overduePct = count ? Math.round(overdueCount/count*100) : 0;
   const avgAge = count ? Math.round(rows.reduce((s,r)=>s+(+r['عمر الفاتوره']||0),0)/count) : 0;
 
-  // 🎯 أولوياتي اليوم — ملخص سريع يجمع أهم 5 عملاء متجاوزين + أقرب 5 فواتير هتدخل التجاوز + أول 5 عملاء لسه ما اتزاروش الشهر ده
+  // 🎯 أولوياتي اليوم — ملخص سريع يجمع عملاء متجاوزين + فواتير هتدخل التجاوز + عملاء لسه ما اتزاروش الشهر ده
+  // كل قايمة بتتحفظ كاملة في PRIORITY_LISTS وتتعرض أول 5 بس افتراضيًا، مع زرار "عرض الكل" يفتح الباقي و"إخفاء" يرجعها 5
   {
     const byOverdueClient = {};
     overdueRows.forEach(r=>{
       const key = (r['كود العميل']||'') + '|' + (r['اسم العميل']||'');
-      if(!byOverdueClient[key]) byOverdueClient[key] = {name:r['اسم العميل'], sum:0};
+      if(!byOverdueClient[key]) byOverdueClient[key] = {name:r['اسم العميل'], sum:0, maxOverdueDays:0};
       byOverdueClient[key].sum += (+r.المديونيه||0);
+      const liveAge = daysSinceDate(r.التاريخ);
+      const overdueDays = liveAge==null ? 0 : liveAge - (+r['عدد  ايام السماح']||0);
+      if(overdueDays > byOverdueClient[key].maxOverdueDays) byOverdueClient[key].maxOverdueDays = overdueDays;
     });
-    const topOverdue = Object.values(byOverdueClient).sort((a,b)=>b.sum-a.sum).slice(0,5);
-    document.getElementById('priority-overdue-list').innerHTML = topOverdue.length
-      ? topOverdue.map(c=>`<div style="padding:4px 0;display:flex;justify-content:space-between;gap:8px"><span>${esc(c.name)}</span><b style="color:var(--red);white-space:nowrap">${c.sum.toLocaleString('ar-IQ')}</b></div>`).join('')
-      : '<div style="color:var(--text-dim)">مفيش عملاء متجاوزين 🎉</div>';
+    PRIORITY_LISTS.overdue = Object.values(byOverdueClient).sort((a,b)=>b.sum-a.sum);
 
-    const nearOverdueForPriority = notOverdueRows.map(r=>{
+    PRIORITY_LISTS.near = notOverdueRows.map(r=>{
       const liveAge = daysSinceDate(r.التاريخ);
       const remaining = liveAge==null ? null : (+r['عدد  ايام السماح']||0) - liveAge;
-      return {name:r['اسم العميل'], remaining};
+      return {name:r['اسم العميل'], remaining, sum:(+r.المديونيه||0)};
     }).filter(r => r.remaining!=null && r.remaining >= 0 && r.remaining <= 4)
-      .sort((a,b)=>a.remaining-b.remaining).slice(0,5);
-    document.getElementById('priority-nearoverdue-list').innerHTML = nearOverdueForPriority.length
-      ? nearOverdueForPriority.map(c=>`<div style="padding:4px 0;display:flex;justify-content:space-between;gap:8px"><span>${esc(c.name)}</span><b style="color:var(--orange);white-space:nowrap">${c.remaining===0?'اليوم':c.remaining+' يوم'}</b></div>`).join('')
-      : '<div style="color:var(--text-dim)">مفيش فواتير قريبة من التجاوز 👍</div>';
+      .sort((a,b)=>a.remaining-b.remaining);
 
-    const unvisitedTop = (UNVISITED_CLIENTS_LIST || []).slice(0,5);
-    document.getElementById('priority-unvisited-list').innerHTML = unvisitedTop.length
-      ? unvisitedTop.map(name=>`<div style="padding:4px 0">${esc(name)}</div>`).join('') +
-        (UNVISITED_CLIENTS_LIST.length>5 ? `<div style="color:var(--text-dim);font-size:11.5px;margin-top:4px">+${UNVISITED_CLIENTS_LIST.length-5} عميل تاني — شوف كارت "عملاء لم تتم زيارتهم" باللوحة</div>` : '')
-      : '<div style="color:var(--text-dim)">كل العملاء اتزاروا 🎉</div>';
+    PRIORITY_LISTS.unvisited = (UNVISITED_CLIENTS_LIST || []).slice();
+
+    renderPriorityList('overdue');
+    renderPriorityList('near');
+    renderPriorityList('unvisited');
   }
 
   document.getElementById('debt-k-total').textContent = total.toLocaleString('ar-IQ');
@@ -5565,7 +5648,7 @@ function renderDebtReport(){
     <tr><td>${esc(b.branch)}</td><td style="text-align:center">${b.count}</td><td style="text-align:center">${b.overdue}</td>
     <td style="text-align:center;color:var(--red)">${b.overdueVal.toLocaleString('ar-IQ')}</td>
     <td style="text-align:center">${b.sum.toLocaleString('ar-IQ')}</td>
-    <td style="text-align:center">${total ? Math.round(b.sum/total*100) : 0}%</td></tr>`
+    <td style="text-align:center">${b.sum ? Math.round(b.overdueVal/b.sum*100) : 0}%</td></tr>`
   ).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--text-dim)">لا توجد بيانات ضمن الفلتر الحالي</td></tr>';
 
   // ملخص حسب المندوب (بنفس منطق تجميع العملاء الفريدة لأجل الرسم البياني لدور المشرف)
