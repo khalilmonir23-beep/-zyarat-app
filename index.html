@@ -1220,6 +1220,16 @@ body.role-field-restricted #fg-branch, body.role-field-restricted #fg-type, body
     </table></div>
   </div>
 
+  <div class="section-title">📉 عملاء في خطر التوقف (Churn)</div>
+  <div class="section-sub">مقارنة آخر 30 يوم بالـ30 يوم اللي قبلها لكل عميل — عميل كان بيطلب بانتظام وانخفضت طلبياته فجأة يحتاج متابعة قبل ما يتوقف تمامًا.</div>
+  <div class="report-card">
+    <div class="report-header"><h4>حالات الانخفاض (أكثر من 50%)</h4><span class="badge" id="churn-badge">0</span><button class="mini-export-btn" style="margin-right:auto" onclick="exportReport('churn')">📤 تصدير</button></div>
+    <div class="report-scroll"><table class="report-table" id="churn-table">
+      <thead><tr><th>العميل</th><th>الفرع</th><th style="text-align:center" id="th-churn-prior">آخر 30-60 يوم</th><th style="text-align:center" id="th-churn-last">آخر 30 يوم</th><th style="text-align:center">نسبة الانخفاض</th></tr></thead>
+      <tbody id="churn-tbody"></tbody>
+    </table></div>
+  </div>
+
   <div class="section-title">📆 أيام بدون نشاط لكل شخص</div>
   <div class="section-sub">مقارنة بأكبر مدى تاريخ متاح ضمن الفلتر الحالي — أشخاص عندهم فجوات كبيرة من غير أي زيارة.</div>
   <div class="report-card">
@@ -1456,7 +1466,7 @@ body.role-field-restricted #fg-branch, body.role-field-restricted #fg-type, body
   <!-- جدول تفصيلي -->
   <div class="section-title">📋 تفاصيل كل الفواتير</div>
   <div class="report-card">
-    <div class="report-header"><h4>الفواتير</h4><span class="badge" id="debt-detail-badge">0</span><span class="hint" id="debt-detail-hint" style="display:none">أول 300 فاتورة فقط للعرض (التصدير يشمل الكل)</span><button class="mini-export-btn" onclick="exportReport('debtDetail')">📤 تصدير الكل</button></div>
+    <div class="report-header"><h4>الفواتير</h4><span class="badge" id="debt-detail-badge">0</span><span class="hint" id="debt-detail-hint" style="display:none">أول 300 فاتورة فقط للعرض (التصدير يشمل الكل)</span><button class="mini-export-btn" onclick="exportReport('debtDetail')">📤 تصدير الكل</button><button class="mini-export-btn" style="background:linear-gradient(135deg,#455a64,#607d8b)" onclick="exportDebtAccounting()">🧾 تصدير محاسبي</button></div>
     <div class="report-scroll"><table class="report-table" id="debt-detail-table">
       <thead><tr><th>الفرع</th><th>المندوب</th><th>العميل</th><th style="text-align:center">كود العميل</th><th style="text-align:center">تصنيف</th><th style="text-align:center">الالتزام</th><th style="text-align:center">نوع الدفع</th><th style="text-align:center">عمر الفاتورة</th><th style="text-align:center">أيام السماح</th><th style="text-align:center">الحالة</th><th>المحصل</th><th style="text-align:center">المديونية</th></tr></thead>
       <tbody id="debt-detail-tbody"></tbody>
@@ -4151,6 +4161,7 @@ function renderQualityReports(){
   renderRegionAccuracy();
   renderCoverage();
   renderDropAlerts();
+  renderChurnAlerts();
   renderGapDays();
   renderChurnRisk();
 }
@@ -4360,6 +4371,52 @@ function renderDropAlerts(){
   });
   document.getElementById('drop-tbody').innerHTML = html || '<tr><td colspan="5" class="no-data">لا توجد حالات انخفاض ملحوظ ضمن الفلتر الحالي</td></tr>';
   EXPORT_DATA.drop = rows.map(r=>({'الشخص':r.person,'النوع':r.type||'','الأسبوع السابق':r.prior7,'آخر أسبوع':r.last7,'نسبة الانخفاض %':r.dropPct}));
+}
+
+// 📉 عملاء في خطر التوقف: نفس فكرة تنبيه انخفاض النشاط لكن لكل عميل بناءً على قيمة/كمية الطلبيات (30 يوم مقابل 30 يوم اللي قبلها)
+function renderChurnAlerts(){
+  const orderLabel = orderColumnLabel();
+  document.getElementById('th-churn-prior').textContent = 'آخر 30-60 يوم (' + orderLabel + ')';
+  document.getElementById('th-churn-last').textContent = 'آخر 30 يوم (' + orderLabel + ')';
+
+  const dates = filtered.map(r=>r['تاريخ الزيارة']).filter(Boolean).sort();
+  if(dates.length===0){
+    document.getElementById('churn-badge').textContent = '0';
+    document.getElementById('churn-tbody').innerHTML = '<tr><td colspan="5" class="no-data">لا توجد بيانات كافية</td></tr>';
+    EXPORT_DATA.churn = [];
+    return;
+  }
+  const maxDate = parseDateOnly(dates[dates.length-1]);
+  const cut1 = new Date(maxDate); cut1.setDate(cut1.getDate()-30);
+  const cut2 = new Date(maxDate); cut2.setDate(cut2.getDate()-60);
+
+  const last30 = {}, prior30 = {}, branchMap = {};
+  filtered.forEach(r=>{
+    if(!r['تاريخ الزيارة'] || !r.العميل) return;
+    const val = orderRawValue(r);
+    if(!val) return; // بنهتم بس بالزيارات اللي فيها طلبية فعلية
+    const d = parseDateOnly(r['تاريخ الزيارة']);
+    if(!d) return;
+    const c = r.العميل;
+    branchMap[c] = r.الفرع;
+    if(d > cut1 && d <= maxDate) last30[c] = (last30[c]||0) + val;
+    else if(d > cut2 && d <= cut1) prior30[c] = (prior30[c]||0) + val;
+  });
+
+  let rows = Object.keys(prior30).filter(c=>prior30[c]>0).map(c=>{
+    const l30 = last30[c]||0, p30 = prior30[c];
+    return {client:c, branch:branchMap[c], last30:l30, prior30:p30, dropPct: Math.round((1 - l30/p30)*100)};
+  }).filter(r=>r.dropPct >= 50).sort((a,b)=>b.dropPct-a.dropPct);
+
+  document.getElementById('churn-badge').textContent = rows.length.toLocaleString();
+  let html = '';
+  rows.forEach(r=>{
+    html += `<tr><td>${esc(r.client)}</td><td>${esc(r.branch)}</td>
+    <td style="text-align:center">${r.prior30.toLocaleString('ar-IQ')}</td><td style="text-align:center">${r.last30.toLocaleString('ar-IQ')}</td>
+    <td style="text-align:center"><span class="pill pill-red">-${r.dropPct}%</span></td></tr>`;
+  });
+  document.getElementById('churn-tbody').innerHTML = html || '<tr><td colspan="5" class="no-data">لا توجد حالات انخفاض ملحوظ ضمن الفلتر الحالي</td></tr>';
+  EXPORT_DATA.churn = rows.map(r=>({'العميل':r.client,'الفرع':r.branch||'','آخر 30-60 يوم':r.prior30,'آخر 30 يوم':r.last30,'نسبة الانخفاض %':r.dropPct}));
 }
 
 function renderGapDays(){
@@ -4723,12 +4780,27 @@ function buildTrackingMapHtml(person, date, rows){
     + '.pin-badge{position:absolute;width:14px;height:14px;border-radius:50%;border:1.5px solid #fff;font-size:8px;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 3px rgba(0,0,0,.5)}'
     + '.time-label{background:rgba(255,255,255,.92);border:none;box-shadow:0 1px 3px rgba(0,0,0,.35);border-radius:3px;padding:1px 4px;font-size:9px;font-weight:700;color:#222}'
     + '.time-label::before{display:none}'
+    + '.playback-bar{position:absolute;bottom:20px;left:20px;right:250px;background:#fff;padding:10px 16px;border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,.25);font-family:Arial;z-index:1001;display:flex;align-items:center;gap:10px;flex-wrap:wrap}'
+    + '.pb-btn{border:none;background:#e91e8c;color:#fff;width:36px;height:36px;border-radius:50%;font-size:15px;cursor:pointer;flex:none;display:flex;align-items:center;justify-content:center}'
+    + '.pb-speed{border:1px solid #dfe3ee;background:#f4f6fb;border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer;flex:none}'
+    + '.pb-speed.active{background:#e91e8c;color:#fff;border-color:#e91e8c}'
+    + '.pb-clock{font-weight:800;font-size:14px;color:#1a1d2b;min-width:52px;text-align:center;flex:none}'
+    + '.pb-slider{flex:1;min-width:120px}'
+    + '@media (max-width:800px){.playback-bar{right:20px;bottom:140px}}'
     + '</style></head><body><div id="map"></div>'
     + '<div class="info"><b>🚶 ' + personSafe + '</b><div>📅 ' + date + '</div><div>📍 ' + stops.length + ' زيارة</div>'
     + '<div>⏰ من ' + firstTime.substring(0,5) + ' إلى ' + lastTime.substring(0,5) + '</div>'
     + '<div>📏 إجمالي المسافة: ' + totalKm.toFixed(1) + ' كم</div>' + noteHtml
     + '<label style="display:flex;align-items:center;gap:6px;margin-top:8px;cursor:pointer;font-size:12px"><input type="checkbox" id="radiusToggle" checked onchange="toggleRadius(this.checked)"> دايرة نطاق التغطية (150م)</label></div>'
     + '<div class="legend2"><div><span style="background:#1e8e5a"></span> زيارة دقيقة</div><div><span style="background:#e30b0b"></span> زيارة غير دقيقة</div><div><span style="background:#1d4fa3;border-radius:4px;width:12px;height:12px">📦</span> شارة = فيها طلبية</div><div><span style="background:#c9a227;border-radius:4px;width:12px;height:12px">💰</span> شارة = فيها تحصيل</div><div><span style="background:#e91e8c;border-radius:4px;width:16px;height:5px"></span> خط الاتجاه بين الزيارات</div></div>'
+    + '<div class="playback-bar">'
+    + '<button class="pb-btn" id="playBtn" onclick="togglePlay()">▶️</button>'
+    + '<span class="pb-clock" id="clockLabel">--:--</span>'
+    + '<input type="range" class="pb-slider" id="scrubber" min="0" max="1" value="0" oninput="onScrub(this.value)">'
+    + '<button class="pb-speed" data-s="1" onclick="setSpeed(1,this)">1x</button>'
+    + '<button class="pb-speed active" data-s="4" onclick="setSpeed(4,this)">4x</button>'
+    + '<button class="pb-speed" data-s="12" onclick="setSpeed(12,this)">12x</button>'
+    + '</div>'
     + '<script>'
     + 'var stops = ' + stopsJson + ';'
     + 'var map = L.map("map");'
@@ -4793,6 +4865,52 @@ function buildTrackingMapHtml(person, date, rows){
     + 'map.on("zoomend", updateStopLabels);'
     + 'updateStopLabels();'
     + 'map.fitBounds(latlngs, {padding:[50,50]});'
+    // ---- محرك إعادة تشغيل مسار اليوم كأنيميشن (▶️ زي فيديو) بدل الخط الثابت بس ----
+    + 'stops.forEach(function(s){ var parts=(s.time||"00:00").split(":"); s.tmin = (+parts[0]||0)*60 + (+parts[1]||0); });'
+    + 'var minT = stops.length ? stops[0].tmin : 0;'
+    + 'var maxT = stops.length ? stops[stops.length-1].tmin : 1;'
+    + 'if(maxT<=minT) maxT = minT+1;'
+    + 'var curT = minT, playing = false, speedMult = 4, lastTs = null;'
+    + 'var baseRate = (maxT-minT)/30;' // مسار اليوم كامل يتشغل في حوالي 30 ثانية عند سرعة 1x
+    + 'var scrubber = document.getElementById("scrubber");'
+    + 'scrubber.min = minT; scrubber.max = maxT; scrubber.value = minT;'
+    + 'var moverIcon = L.divIcon({className:"", html:"<div style=\\"width:18px;height:18px;border-radius:50%;background:#e91e8c;border:3px solid #fff;box-shadow:0 0 0 4px #e91e8c55, 0 2px 8px rgba(0,0,0,.45)\\"></div>", iconSize:[18,18], iconAnchor:[9,9]});'
+    + 'var mover = stops.length ? L.marker([stops[0].dLat, stops[0].dLng], {icon:moverIcon, zIndexOffset:3000}).addTo(map) : null;'
+    + 'function positionAt(t){'
+    + '  if(t <= stops[0].tmin) return [stops[0].dLat, stops[0].dLng];'
+    + '  if(t >= stops[stops.length-1].tmin) return [stops[stops.length-1].dLat, stops[stops.length-1].dLng];'
+    + '  for(var i=0;i<stops.length-1;i++){'
+    + '    if(t>=stops[i].tmin && t<=stops[i+1].tmin){'
+    + '      var span = stops[i+1].tmin - stops[i].tmin;'
+    + '      var frac = span>0 ? (t-stops[i].tmin)/span : 0;'
+    + '      return [stops[i].dLat + (stops[i+1].dLat-stops[i].dLat)*frac, stops[i].dLng + (stops[i+1].dLng-stops[i].dLng)*frac];'
+    + '    }'
+    + '  }'
+    + '  return [stops[0].dLat, stops[0].dLng];'
+    + '}'
+    + 'function pad2(n){ return String(n).padStart(2,"0"); }'
+    + 'function renderFrame(t){'
+    + '  if(mover) mover.setLatLng(positionAt(t));'
+    + '  document.getElementById("clockLabel").textContent = pad2(Math.floor(t/60)) + ":" + pad2(Math.floor(t%60));'
+    + '  scrubber.value = t;'
+    + '}'
+    + 'function tick(ts){'
+    + '  if(!playing) return;'
+    + '  if(lastTs==null) lastTs = ts;'
+    + '  var dt = (ts-lastTs)/1000; lastTs = ts;'
+    + '  curT += dt * baseRate * speedMult;'
+    + '  if(curT >= maxT){ curT = maxT; playing = false; document.getElementById("playBtn").textContent = "▶️"; renderFrame(curT); return; }'
+    + '  renderFrame(curT);'
+    + '  requestAnimationFrame(tick);'
+    + '}'
+    + 'function togglePlay(){'
+    + '  playing = !playing;'
+    + '  document.getElementById("playBtn").textContent = playing ? "⏸️" : "▶️";'
+    + '  if(playing){ if(curT>=maxT) curT = minT; lastTs = null; requestAnimationFrame(tick); }'
+    + '}'
+    + 'function onScrub(v){ playing = false; document.getElementById("playBtn").textContent = "▶️"; curT = +v; renderFrame(curT); }'
+    + 'function setSpeed(v, btn){ speedMult = v; document.querySelectorAll(".pb-speed").forEach(function(b){ b.classList.remove("active"); }); btn.classList.add("active"); }'
+    + 'renderFrame(minT);'
     + '<\/script></body></html>';
 }
 
@@ -6099,6 +6217,7 @@ const EXPORT_CONFIG = {
   region:       {file:'الدقة_حسب_المنطقة', sheet:'الدقة حسب المنطقة'},
   coverage:     {file:'تغطية_العملاء', sheet:'التغطية'},
   drop:         {file:'انخفاض_النشاط', sheet:'انخفاض النشاط'},
+  churn:        {file:'عملاء_في_خطر_التوقف', sheet:'خطر التوقف'},
   gap:          {file:'أيام_بدون_نشاط', sheet:'أيام بدون نشاط'},
   churn:        {file:'خطر_فقدان_العملاء', sheet:'خطر الفقدان'},
   scorecard:    {file:'بطاقة_مقارنة_الفروع', sheet:'مقارنة الفروع'},
@@ -6125,6 +6244,41 @@ function exportReport(key){
   const now = new Date();
   const stamp = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
   XLSX.writeFile(wb, `${cfg.file}_${stamp}.xlsx`);
+}
+
+// 🧾 تصدير محاسبي: نفس بيانات جدول التفاصيل الحالي، لكن بأعمدة إنجليزية موحّدة وتواريخ استحقاق محسوبة —
+// عشان تتوافق مع أي برنامج محاسبة/استيراد بيانات (زي Excel قوالب QuickBooks أو أي نظام مشابه)
+function exportDebtAccounting(){
+  if(typeof XLSX === 'undefined'){ alert('تعذر تحميل مكتبة التصدير — تأكد من الاتصال بالإنترنت'); return; }
+  const src = EXPORT_DATA.debtDetail || [];
+  if(!src.length){ alert('لا توجد بيانات للتصدير ضمن الفلتر الحالي'); return; }
+  const rows = src.map(r=>{
+    let dueDate = '';
+    if(r['التاريخ']){
+      const d = new Date(r['التاريخ'] + 'T00:00:00Z');
+      if(!isNaN(d)){
+        d.setUTCDate(d.getUTCDate() + (+r['أيام السماح']||0));
+        dueDate = d.toISOString().slice(0,10);
+      }
+    }
+    return {
+      CustomerCode: r['كود العميل'] || '',
+      CustomerName: r['العميل'] || '',
+      Branch: r['الفرع'] || '',
+      SalesRep: r['المندوب'] || '',
+      InvoiceDate: r['التاريخ'] || '',
+      DueDate: dueDate,
+      Amount: +r['المديونية'] || 0,
+      Status: r['الحالة']==='متجاوز' ? 'Overdue' : 'Current',
+      PaymentType: r['نوع الدفع'] || ''
+    };
+  });
+  const ws = XLSX.utils.json_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'AR_Aging');
+  const now = new Date();
+  const stamp = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+  XLSX.writeFile(wb, `debt_accounting_export_${stamp}.xlsx`);
 }
 
 function exportToExcel(){
