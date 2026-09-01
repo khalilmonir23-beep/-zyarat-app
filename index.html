@@ -1479,7 +1479,7 @@ body.role-field-restricted #fg-branch, body.role-field-restricted #fg-type, body
   <div class="report-card">
     <div class="report-header"><h4>الشرائح العمرية</h4><span class="badge" id="debt-aging-badge">0</span><span class="hint" id="debt-aging-hint" style="display:none">أول 300 عميل فقط للعرض (التصدير يشمل الكل)</span><button class="mini-export-btn" onclick="exportReport('debtAging')">📤 تصدير الكل</button></div>
     <div class="report-scroll"><table class="report-table" id="debt-aging-table">
-      <thead><tr><th>العميل</th><th style="text-align:center">كود العميل</th><th>الفرع</th><th>المندوب</th><th style="text-align:center">تصنيف</th><th style="text-align:center">الالتزام</th><th style="text-align:center">الحالة</th><th style="text-align:center">0-9</th><th style="text-align:center">10-19</th><th style="text-align:center">20-29</th><th style="text-align:center">30-39</th><th style="text-align:center">40-49</th><th style="text-align:center">+50</th><th style="text-align:center">عدد الفواتير</th><th style="text-align:center">إجمالي المديونية</th></tr></thead>
+      <thead><tr><th>الفرع</th><th>المندوب</th><th style="text-align:center">كود العميل</th><th>العميل</th><th style="text-align:center">تصنيف</th><th style="text-align:center">الالتزام</th><th style="text-align:center">الحالة</th><th style="text-align:center">أيام التجاوز</th><th style="text-align:center">0-9</th><th style="text-align:center">10-19</th><th style="text-align:center">20-29</th><th style="text-align:center">30-39</th><th style="text-align:center">40-49</th><th style="text-align:center">+50</th><th style="text-align:center">عدد الفواتير</th><th style="text-align:center">إجمالي المديونية</th></tr></thead>
       <tbody id="debt-aging-tbody"></tbody>
     </table></div>
   </div>
@@ -5973,23 +5973,35 @@ function renderDebtReport(){
   rows.forEach(r=>{
     const key = (r['كود العميل']||'') + '|' + (r['اسم العميل']||'');
     if(!agingByClient[key]){
-      agingByClient[key] = {name:r['اسم العميل'], code:r['كود العميل'], branch:r.الفرع, rep:r['Sales rep'], grade:r['تصنيق العميل'], key, hasOverdue:false, count:0, sum:0, b0:0,b10:0,b20:0,b30:0,b40:0,b50:0};
+      agingByClient[key] = {name:r['اسم العميل'], code:r['كود العميل'], branch:r.الفرع, rep:r['Sales rep'], grade:r['تصنيق العميل'], key, hasOverdue:false, maxOverdueDays:0, count:0, sum:0, b0:0,b10:0,b20:0,b30:0,b40:0,b50:0};
     }
     const c = agingByClient[key];
     c.count++;
     c.sum += (+r.المديونيه||0);
     c[ageBucketKey(r['عمر الفاتوره'])] += (+r.المديونيه||0);
-    if(r.نوع==='متجاوز') c.hasOverdue = true;
+    if(r.نوع==='متجاوز'){
+      c.hasOverdue = true;
+      const liveAge = daysSinceDate(r.التاريخ);
+      const overdueDays = liveAge==null ? 0 : liveAge - (+r['عدد  ايام السماح']||0);
+      if(overdueDays > c.maxOverdueDays) c.maxOverdueDays = overdueDays;
+    }
   });
-  const agingRows = Object.values(agingByClient).sort((a,b)=>b.sum-a.sum);
+  // مرتبة بالفرع ثم المندوب ثم كود العميل ثم اسمه — تسهيلًا للطباعة (كل مندوب وعملاؤه مجمّعين ورا بعض)
+  const agingRows = Object.values(agingByClient).sort((a,b)=>
+    (a.branch||'').localeCompare(b.branch||'','ar') ||
+    (a.rep||'').localeCompare(b.rep||'','ar') ||
+    String(a.code||'').localeCompare(String(b.code||''), undefined, {numeric:true}) ||
+    (a.name||'').localeCompare(b.name||'','ar')
+  );
   const AGING_DISPLAY_CAP = 300;
   document.getElementById('debt-aging-badge').textContent = agingRows.length;
   document.getElementById('debt-aging-hint').style.display = agingRows.length > AGING_DISPLAY_CAP ? '' : 'none';
   document.getElementById('debt-aging-tbody').innerHTML = agingRows.slice(0, AGING_DISPLAY_CAP).map(c=>`
-    <tr><td>${esc(c.name)}</td><td style="text-align:center">${esc(c.code)}</td><td>${esc(c.branch)}</td><td>${esc(c.rep)}</td>
+    <tr><td>${esc(c.branch)}</td><td>${esc(c.rep)}</td><td style="text-align:center">${esc(c.code)}</td><td>${esc(c.name)}</td>
     <td style="text-align:center">${esc(c.grade)}</td>
     <td style="text-align:center">${CLIENT_COMMITMENT[c.key] ? commitmentBadge({'كود العميل':c.code,'اسم العميل':c.name}) : '-'}</td>
     <td style="text-align:center"><span class="pill ${c.hasOverdue?'pill-red':'pill-green'}">${c.hasOverdue?'متجاوز':'منتظم'}</span></td>
+    <td style="text-align:center;color:var(--red);font-weight:700">${c.maxOverdueDays > 0 ? c.maxOverdueDays : '-'}</td>
     <td style="text-align:center">${c.b0 ? c.b0.toLocaleString('ar-IQ') : '-'}</td>
     <td style="text-align:center">${c.b10 ? c.b10.toLocaleString('ar-IQ') : '-'}</td>
     <td style="text-align:center">${c.b20 ? c.b20.toLocaleString('ar-IQ') : '-'}</td>
@@ -5998,11 +6010,11 @@ function renderDebtReport(){
     <td style="text-align:center;color:var(--red)">${c.b50 ? c.b50.toLocaleString('ar-IQ') : '-'}</td>
     <td style="text-align:center">${c.count}</td>
     <td style="text-align:center;font-weight:700">${c.sum.toLocaleString('ar-IQ')}</td></tr>`
-  ).join('') || '<tr><td colspan="15" style="text-align:center;color:var(--text-dim)">لا توجد بيانات ضمن الفلتر الحالي</td></tr>';
+  ).join('') || '<tr><td colspan="16" style="text-align:center;color:var(--text-dim)">لا توجد بيانات ضمن الفلتر الحالي</td></tr>';
 
   EXPORT_DATA.debtAging = agingRows.map(c=>({
-    'العميل':c.name, 'كود العميل':c.code, 'الفرع':c.branch, 'المندوب':c.rep, 'تصنيف':c.grade, 'الحالة':c.hasOverdue?'متجاوز':'منتظم',
-    '0-9':c.b0, '10-19':c.b10, '20-29':c.b20, '30-39':c.b30, '40-49':c.b40, '+50':c.b50, 'عدد الفواتير':c.count, 'إجمالي المديونية':c.sum
+    'الفرع':c.branch, 'المندوب':c.rep, 'كود العميل':c.code, 'العميل':c.name, 'تصنيف':c.grade, 'الحالة':c.hasOverdue?'متجاوز':'منتظم',
+    'أيام التجاوز':c.maxOverdueDays, '0-9':c.b0, '10-19':c.b10, '20-29':c.b20, '30-39':c.b30, '40-49':c.b40, '+50':c.b50, 'عدد الفواتير':c.count, 'إجمالي المديونية':c.sum
   }));
 
   // تحذير مبكر: فواتير باقيلها 4 أيام أو أقل قبل ما تدخل التجاوز — محسوبة حي من تاريخ الفاتورة الفعلي
@@ -6239,11 +6251,30 @@ function exportReport(key){
   const cfg = EXPORT_CONFIG[key];
   if(!rows || rows.length===0){ alert('لا توجد بيانات للتصدير ضمن الفلتر الحالي'); return; }
   const ws = XLSX.utils.json_to_sheet(rows);
+  applyExcelSheetPolish(ws, rows);
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, cfg.sheet);
   const now = new Date();
   const stamp = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
   XLSX.writeFile(wb, `${cfg.file}_${stamp}.xlsx`);
+}
+
+// يجهّز أي شيت إكسل مُصدَّر عشان يبقى "جدول" قابل للفلترة فورًا في إكسل (أسهم فلترة على صف العناوين)
+// وعرض أعمدة مناسب تلقائيًا (بدل ما تتقص الكتابة)، وهامش طباعة معقول لو حد حب يطبعه مباشرة
+function applyExcelSheetPolish(ws, rows){
+  if(!ws['!ref'] || !rows.length) return;
+  ws['!autofilter'] = { ref: ws['!ref'] };
+  const headers = Object.keys(rows[0]);
+  ws['!cols'] = headers.map(h=>{
+    let maxLen = h.length;
+    for(const r of rows){
+      const v = r[h];
+      const len = v==null ? 0 : String(v).length;
+      if(len > maxLen) maxLen = len;
+    }
+    return { wch: Math.min(Math.max(maxLen + 2, 8), 40) };
+  });
+  ws['!margins'] = { left:0.4, right:0.4, top:0.5, bottom:0.5, header:0.3, footer:0.3 };
 }
 
 // 🧾 تصدير محاسبي: نفس بيانات جدول التفاصيل الحالي، لكن بأعمدة إنجليزية موحّدة وتواريخ استحقاق محسوبة —
@@ -6274,6 +6305,7 @@ function exportDebtAccounting(){
     };
   });
   const ws = XLSX.utils.json_to_sheet(rows);
+  applyExcelSheetPolish(ws, rows);
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'AR_Aging');
   const now = new Date();
@@ -6292,6 +6324,7 @@ function exportToExcel(){
     'المسافة (م)': r.distance_m, 'الدقة': r.accuracy, 'سبب الإلغاء': r['سبب الغاء الزيارة']
   }));
   const ws = XLSX.utils.json_to_sheet(rows);
+  applyExcelSheetPolish(ws, rows);
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'الزيارات المفلترة');
   const now = new Date();
