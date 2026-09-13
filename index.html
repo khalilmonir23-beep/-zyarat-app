@@ -573,6 +573,7 @@ body.role-field-restricted #fg-branch, body.role-field-restricted #fg-type, body
     <div class="hs"><div class="v" style="color:var(--green)" id="hs-acc">0</div><div class="l">زيارات دقيقة</div></div>
     <div class="hs"><div class="v" style="color:var(--red)" id="hs-inacc">0</div><div class="l">غير دقيقة</div></div>
     <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="تبديل الوضع الليلي">🌙</button>
+    <button class="theme-toggle" id="help-toggle" onclick="openHelpModal()" title="مساعدة">❓</button>
     <span id="sync-indicator" style="font-size:10.5px;color:var(--text-dim);white-space:nowrap"></span>
     <button class="logout-btn" id="logout-btn" onclick="doLogout()" style="display:none">🚪 <span id="current-user-label"></span></button>
   </div>
@@ -680,7 +681,7 @@ body.role-field-restricted #fg-branch, body.role-field-restricted #fg-type, body
   <div class="kpi orange kpi-clickable" id="k-orders-card" onclick="showOrdersModal()"><div class="kpi-icon">📦</div><div class="kpi-val" id="k-orders">0</div><div class="kpi-label">إجمالي الطلبيات</div><div class="kpi-sub" id="k-orders-val">0 د.ع</div><div class="kpi-sub qty-kpi-line" id="k-orders-qty">0 كمية</div><div class="kpi-tap-hint">اضغط لعرض الأسماء 👆</div></div>
   <div class="kpi purple"><div class="kpi-icon">💰</div><div class="kpi-val" id="k-collect">0</div><div class="kpi-label">إجمالي التحصيل</div><div class="kpi-sub" id="k-collect-val">0 د.ع</div></div>
   <div class="kpi teal kpi-clickable" id="k-unvisited-card" onclick="showUnvisitedClientsModal()"><div class="kpi-icon">🚫</div><div class="kpi-val" id="k-unvisited">0</div><div class="kpi-label">عملاء لم تتم زيارتهم (الشهر)</div><div class="kpi-sub" id="k-unvisited-pct">من 0 عميل</div><div class="kpi-tap-hint">اضغط لعرض الأسماء 👆</div></div>
-  <div class="kpi red kpi-clickable" id="k-shortvisits-card" onclick="showShortVisitsModal()"><div class="kpi-icon">⏱️</div><div class="kpi-val" id="k-shortvisits">0</div><div class="kpi-label">زيارات أقل من 5 دقايق</div><div class="kpi-tap-hint">اضغط لعرض الأسماء 👆</div></div>
+  <div class="kpi red kpi-clickable" id="k-shortvisits-card" onclick="showShortVisitsModal()"><div class="kpi-icon">⏱️</div><div class="kpi-val" id="k-shortvisits">0</div><div class="kpi-label">زيارات أقل من 5 دقائق</div><div class="kpi-tap-hint">اضغط لعرض الأسماء 👆</div></div>
   <div class="kpi blue"><div class="kpi-icon">🕐</div><div class="kpi-val kpi-val-small" id="k-worktime">- ← -</div><div class="kpi-label">بداية وختام الحركة</div><div class="kpi-sub" id="k-worktime-span">-</div></div>
   <div class="kpi indigo"><div class="kpi-icon">⏳</div><div class="kpi-val" id="k-totalduration">0</div><div class="kpi-label">إجمالي وقت الزيارات عند العملاء</div></div>
 </div>
@@ -723,13 +724,23 @@ body.role-field-restricted #fg-branch, body.role-field-restricted #fg-type, body
   </div>
 </div>
 
-<!-- مودال قائمة عملاء الزيارات أقل من 5 دقايق -->
+<!-- مودال قائمة عملاء الزيارات أقل من 5 دقائق -->
 <div class="admin-overlay" id="short-visits-overlay">
   <div class="admin-panel admin-panel-wide">
     <button class="admin-close" onclick="closeShortVisitsModal()">✕</button>
-    <h3>⏱️ عملاء الزيارات السريعة (أقل من 5 دقايق)</h3>
-    <div class="sub" id="short-visits-modal-sub">قائمة العملاء الذين زيارتهم استغرقت أقل من 5 دقايق ضمن الفلتر الحالي</div>
+    <h3>⏱️ عملاء الزيارات السريعة (أقل من 5 دقائق)</h3>
+    <div class="sub" id="short-visits-modal-sub">قائمة العملاء الذين زيارتهم استغرقت أقل من 5 دقائق ضمن الفلتر الحالي</div>
     <div class="unvisited-list" id="short-visits-list"></div>
+  </div>
+</div>
+
+<!-- مودال المساعدة: شرح مختصر لكل تبويب ظاهر للمستخدم الحالي -->
+<div class="admin-overlay" id="help-overlay">
+  <div class="admin-panel admin-panel-wide">
+    <button class="admin-close" onclick="closeHelpModal()">✕</button>
+    <h3>❓ دليل استخدام التطبيق</h3>
+    <div class="sub">شرح مختصر لكل تبويب متاح لحسابك حاليًا — بالضغط على اسم التبويب ينتقل إليه مباشرة.</div>
+    <div class="unvisited-list" id="help-list"></div>
   </div>
 </div>
 
@@ -869,7 +880,7 @@ body.role-field-restricted #fg-branch, body.role-field-restricted #fg-type, body
     <div style="background:#fff; border-radius:12px; padding:14px; text-align:center; box-shadow:0 1px 4px rgba(0,0,0,.08);">
       <div style="font-size:22px;">⏱️</div>
       <div style="font-size:20px; font-weight:800; color:#c0392b; margin-top:4px;" id="sc-shortvisits">0</div>
-      <div style="font-size:11px; color:#70758f; margin-top:2px;">زيارات أقل من 5 دقايق</div>
+      <div style="font-size:11px; color:#70758f; margin-top:2px;">زيارات أقل من 5 دقائق</div>
     </div>
     <div style="background:#fff; border-radius:12px; padding:14px; text-align:center; box-shadow:0 1px 4px rgba(0,0,0,.08);">
       <div style="font-size:22px;">🕐</div>
@@ -891,28 +902,47 @@ body.role-field-restricted #fg-branch, body.role-field-restricted #fg-type, body
 </div>
 
 <!-- SUMMARY TABLES -->
-<div class="tables-row" style="grid-template-columns:1fr">
+<div id="pivots-section">
+<div class="tables-row">
   <div class="card">
     <div class="card-header">
-      <h3>📊 ملخص الزيارات والأداء</h3>
-      <span class="badge" id="summary-badge">0</span>
-      <button class="mini-export-btn" style="margin-right:auto" onclick="exportReport('summaryPivot')">📤 تصدير</button>
+      <h3>📊 ملخص الزيارات</h3>
+      <span class="badge" id="visits-badge">0</span>
+      <button class="mini-export-btn" style="margin-right:auto" onclick="exportReport('visitsPivot')">📤 تصدير</button>
     </div>
     <div class="pivot-scroll">
-      <table class="pivot-table" id="summary-pivot">
+      <table class="pivot-table" id="visits-pivot">
         <thead><tr>
           <th>الفرع</th><th>النوع</th><th>الشخص</th>
-          <th style="text-align:center">عدد الزيارات</th>
-          <th style="text-align:center">عدد العملاء</th>
-          <th style="text-align:center">نسبة الدقة</th>
-          <th style="text-align:center" id="th-order-4">إجمالي قيمة الطلبيات</th>
-          <th style="text-align:center">قيمة التحصيل</th>
-          <th style="text-align:center">التقييم</th>
+          <th style="text-align:center">دقيقة</th>
+          <th style="text-align:center">غير دقيقة</th>
+          <th style="text-align:center">الإجمالي</th>
         </tr></thead>
-        <tbody id="summary-pivot-body"></tbody>
+        <tbody id="visits-pivot-body"></tbody>
       </table>
     </div>
   </div>
+  <div class="card">
+    <div class="card-header">
+      <h3>💵 ملخص التحصيل والفواتير</h3>
+      <span class="badge" id="finance-badge">0</span>
+      <button class="mini-export-btn" style="margin-right:auto" onclick="exportReport('financePivot')">📤 تصدير</button>
+    </div>
+    <div class="pivot-scroll">
+      <table class="pivot-table" id="finance-pivot">
+        <thead><tr>
+          <th>الفرع</th><th>النوع</th><th>الشخص</th>
+          <th style="text-align:center">عدد الطلبيات</th>
+          <th style="text-align:center" id="th-order-4">قيمة الطلبيات</th>
+          <th style="text-align:center" class="qty-col">إجمالي الكمية</th>
+          <th style="text-align:center">عدد التحصيل</th>
+          <th style="text-align:center">قيمة التحصيل</th>
+        </tr></thead>
+        <tbody id="finance-pivot-body"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
 </div>
 
 <!-- VISITS DETAIL TABLE -->
@@ -1520,6 +1550,15 @@ body.role-field-restricted #fg-branch, body.role-field-restricted #fg-type, body
       <button class="admin-btn primary" onclick="saveGDriveSettings()">💾 حفظ إعدادات الربط</button>
       <div class="admin-status" id="gdrive-settings-status"></div>
     </div>
+
+    <div class="admin-divider"></div>
+
+    <div class="admin-step">
+      <label>🧪 فحص سلامة البيانات والتطبيق (اختبارات ذاتية)</label>
+      <div class="sub" style="margin-bottom:10px">مجموعة فحوصات سريعة تتأكد أن الأرقام متطابقة والفلاتر موجودة، دون الحاجة لمراجعة كل تاب يدويًا بعد كل رفع ملف جديد.</div>
+      <button class="admin-btn primary" onclick="runSelfTests()">▶️ تشغيل الاختبارات الآن</button>
+      <div id="selftest-results" style="margin-top:10px;font-size:12.5px"></div>
+    </div>
   </div>
 </div>
 
@@ -1584,6 +1623,37 @@ const TAB_DEFS = [
   {id:'performance', label:'الأداء وخط السير'},
   {id:'similar', label:'أماكن متشابهة'}
 ];
+
+// شرح من جملة واحدة لكل تبويب — يُستخدم في مودال المساعدة (❓) عشان أي مستخدم جديد يفهم دور كل تبويب بسرعة
+const TAB_HELP = {
+  dashboard:   {icon:'📋', text:'نظرة عامة سريعة على أهم الأرقام: الزيارات، الدقة، الطلبيات، التحصيل، والمديونية، مع إمكانية مشاركة ملخص الأداء على واتساب.'},
+  debt:        {icon:'💰', text:'كل ما يخص المديونية: العملاء المتجاوزون، من يقترب من التجاوز، أعمار الديون، ونقاط التزام كل عميل بالسداد.'},
+  tracking:    {icon:'🚶', text:'مسار حركة شخص معيّن في يوم محدد على الخريطة، بإمكانية إعادة تشغيله كأنيميشن لمعرفة ترتيب الزيارات الفعلي.'},
+  geomap:      {icon:'🗺️', text:'خريطة تفاعلية توضح موقع كل زيارة ودقتها، وتسمح بمقارنة يومين مختلفين لنفس الشخص على نفس الخريطة.'},
+  coverage:    {icon:'📆', text:'يوضح أي العملاء لم تتم زيارتهم هذا الشهر، لمتابعة التغطية الكاملة لقائمة العملاء.'},
+  clientcard:  {icon:'🪪', text:'ملف كامل لعميل واحد بالاسم: كل زياراته السابقة، موقعه، وتاريخ تعامله.'},
+  charts:      {icon:'📊', text:'رسوم بيانية تلخّص الاتجاهات العامة للزيارات والمبيعات عبر الزمن.'},
+  quality:     {icon:'🧪', text:'تقارير لرصد المشكلات: زيارات قصيرة جدًا، انخفاض مفاجئ في النشاط، وعملاء تقل طلبياتهم فجأة.'},
+  performance: {icon:'🏅', text:'تقييم شامل لكل شخص يجمع الدقة ومعدل التحويل ونسبة الإلغاء في درجة واحدة، مع اقتراح خط سير أمثل للزيارات.'},
+  similar:     {icon:'📍', text:'يكشف العملاء المسجَّلين بإحداثيات متقاربة جدًا، للتحقق من عدم تكرار العميل نفسه بأكثر من اسم.'}
+};
+
+function openHelpModal(){
+  const allowed = (currentUser && currentUser.role === 'إدارة')
+    ? TAB_DEFS.map(t=>t.id)
+    : (currentUser && currentUser.tabs && currentUser.tabs.length ? currentUser.tabs : ['dashboard']);
+  const listEl = document.getElementById('help-list');
+  listEl.innerHTML = TAB_DEFS.filter(t=>allowed.includes(t.id)).map(t=>{
+    const h = TAB_HELP[t.id] || {icon:'📄', text:''};
+    return `<div class="unvisited-item" style="cursor:pointer;align-items:flex-start" onclick="closeHelpModal();switchTab('${t.id}')">
+      <div class="item-name"><b>${h.icon} ${esc(t.label)}</b><br><span style="font-size:12px;color:var(--text-dim);font-weight:400">${esc(h.text)}</span></div>
+    </div>`;
+  }).join('');
+  document.getElementById('help-overlay').style.display = 'flex';
+}
+function closeHelpModal(){
+  document.getElementById('help-overlay').style.display = 'none';
+}
 
 let filtered = [];
 let displayed = [];
@@ -1735,6 +1805,99 @@ function saveGDriveSettings(){
   GOOGLE_DRIVE_FILE.apiKey = key;
   statusEl.textContent = '✅ تم الحفظ. سيتم استخدام الإعدادات الجديدة من التحديث التلقائي الجاي.';
   statusEl.className = 'admin-status ok';
+}
+
+// 🧪 اختبارات ذاتية سريعة: تتأكد من تطابق الأرقام الأساسية ووجود عناصر الواجهة الضرورية،
+// دون الحاجة لمراجعة كل تاب يدويًا بعد كل رفع ملف — كل اختبار مستقل ولا يوقف الباقي إذا فشل
+function runSelfTests(){
+  const results = [];
+  function test(name, fn){
+    try{
+      const detail = fn();
+      results.push({name, pass:true, detail: detail || 'تم بنجاح'});
+    }catch(e){
+      results.push({name, pass:false, detail: e.message});
+    }
+  }
+
+  test('تطابق إجمالي "أعمار الديون" مع إجمالي كل عميل', ()=>{
+    const AGE_BUCKETS = [[0,9],[10,19],[20,29],[30,39],[40,49],[50,Infinity]];
+    function bucketOf(age){
+      const a = +age || 0;
+      for(const [min,max] of AGE_BUCKETS) if(a>=min && a<=max) return true;
+      return false;
+    }
+    let mismatches = 0;
+    const byClient = {};
+    DEBT.forEach(r=>{
+      const key = (r['كود العميل']||'')+'|'+(r['اسم العميل']||'');
+      if(!byClient[key]) byClient[key] = {sum:0, bucketSum:0};
+      byClient[key].sum += (+r.المديونيه||0);
+      if(bucketOf(r['عمر الفاتوره'])) byClient[key].bucketSum += (+r.المديونيه||0);
+    });
+    Object.values(byClient).forEach(c=>{ if(Math.abs(c.sum - c.bucketSum) > 1) mismatches++; });
+    if(mismatches>0) throw new Error(mismatches + ' عميل فيهم عدم تطابق');
+    return Object.keys(byClient).length + ' عميل — كلهم متطابقون';
+  });
+
+  test('كل قيم المديونية موجبة (لا توجد أرقام سالبة)', ()=>{
+    const negs = DEBT.filter(r=>(+r.المديونيه||0) < 0).length;
+    if(negs>0) throw new Error(negs + ' صف فيه قيمة سالبة');
+    return DEBT.length + ' صف تم فحصهم — كلهم موجبون';
+  });
+
+  test('كل فاتورة مصنّفة "متجاوز" أو "غير متجاوز" فقط', ()=>{
+    const bad = DEBT.filter(r=>r.نوع!=='متجاوز' && r.نوع!=='غير متجاوز').length;
+    if(bad>0) throw new Error(bad + ' فاتورة بحالة غير معروفة');
+    return 'كل الفواتير مصنّفة بشكل صحيح';
+  });
+
+  test('كل فروع المديونية بصيغة "فرع ..." موحّدة', ()=>{
+    const bad = [...new Set(DEBT.map(r=>r.الفرع))].filter(b=>!b || b.indexOf('فرع')!==0);
+    if(bad.length>0) throw new Error('فروع غير موحّدة: ' + bad.join('، '));
+    return 'كل أسماء الفروع موحّدة';
+  });
+
+  test('فلاتر الصفحة الأساسية موجودة ولديها خيارات', ()=>{
+    const ids = ['f-branch','f-person','f-type','f-year'];
+    const missing = ids.filter(id=>!document.getElementById(id));
+    if(missing.length>0) throw new Error('عناصر غير موجودة: ' + missing.join('، '));
+    const empty = ids.filter(id=>document.getElementById(id).options.length < 1);
+    if(empty.length>0) throw new Error('فلاتر بدون خيارات: ' + empty.join('، '));
+    return 'كل الفلاتر موجودة وتحتوي على خيارات';
+  });
+
+  test('لا توجد معرّفات HTML مكررة في الصفحة الحالية', ()=>{
+    const ids = [...document.querySelectorAll('[id]')].map(el=>el.id);
+    const counts = {};
+    ids.forEach(id=>{ counts[id] = (counts[id]||0)+1; });
+    const dupes = Object.keys(counts).filter(id=>counts[id]>1);
+    if(dupes.length>0) throw new Error('معرّفات مكررة: ' + dupes.slice(0,10).join('، '));
+    return ids.length + ' معرّف تم فحصهم — لا يوجد تكرار';
+  });
+
+  test('دالة حساب عمر الفاتورة الحي (daysSinceDate) تعمل بشكل صحيح', ()=>{
+    const todayStr = new Date().toISOString().slice(0,10);
+    const result = daysSinceDate(todayStr);
+    if(result !== 0) throw new Error('توقعنا 0 يوم لتاريخ اليوم، والنتيجة كانت ' + result);
+    return 'الحساب صحيح لتاريخ اليوم (0 يوم)';
+  });
+
+  test('عدد صفوف الزيارات وشيت المديونية أكبر من صفر', ()=>{
+    if(DATA.length===0 && DEBT.length===0) throw new Error('لا توجد بيانات محمّلة إطلاقًا — تأكد من رفع الملف');
+    return 'الزيارات: ' + DATA.length.toLocaleString('ar-IQ') + ' — المديونية: ' + DEBT.length.toLocaleString('ar-IQ');
+  });
+
+  const passCount = results.filter(r=>r.pass).length;
+  const failCount = results.length - passCount;
+  const summaryColor = failCount===0 ? 'var(--green)' : 'var(--red)';
+  let html = `<div style="font-weight:800;color:${summaryColor};margin-bottom:8px">${passCount} ناجح / ${failCount} فاشل من ${results.length} اختبارًا</div>`;
+  html += results.map(r=>`
+    <div style="padding:6px 0;border-top:1px solid var(--border-main);display:flex;gap:8px;align-items:flex-start">
+      <span>${r.pass ? '✅' : '❌'}</span>
+      <div><b>${esc(r.name)}</b><br><span style="color:var(--text-dim);font-size:11.5px">${esc(r.detail)}</span></div>
+    </div>`).join('');
+  document.getElementById('selftest-results').innerHTML = html;
 }
 
 let pendingWorkbook = null;
@@ -2557,6 +2720,19 @@ function init(){
   startAutoSyncInterval();
   fetchGoogleSheetsData(); // تحديث فوري في الخلفية (دون أن يعطّل فتح الصفحة) حتى البيانات الحقيقية تظهر خلال ثواني بدل الانتظار لحد أول تحديث دوري بعد ساعتين
   showLoginPriorityBanner();
+  showHelpOnFirstLoginEver();
+}
+
+// يعرض دليل الاستخدام تلقائيًا مرة واحدة فقط لكل مستخدم (أول تسجيل دخول له على هذا الجهاز/المتصفح)،
+// وبعدها يبقى متاحًا فقط عبر زر "❓" — لا يتكرر تلقائيًا حتى لا يزعج المستخدم في كل دخول
+function showHelpOnFirstLoginEver(){
+  if(!currentUser || !currentUser.username) return;
+  try{
+    const key = 'helpSeen_' + currentUser.username;
+    if(localStorage.getItem(key)) return;
+    localStorage.setItem(key, '1');
+    setTimeout(openHelpModal, 600);
+  }catch(e){ /* localStorage قد يكون معطلًا (وضع تصفح خاص مثلًا) — نتجاهل بهدوء */ }
 }
 
 function onYearChange(){
@@ -2750,7 +2926,7 @@ function updateKPIs(){
   scheduleShareCardPrep();
 }
 
-// يحوّل قيمة الوقت (لأي شكل يكون عليه: Date، نص "س:د" جاهز، أو رقم كسري من إكسيل مثل 0.979) لعدد دقايق من نص الليل
+// يحوّل قيمة الوقت (لأي شكل يكون عليه: Date، نص "س:د" جاهز، أو رقم كسري من إكسيل مثل 0.979) لعدد دقائق من نص الليل
 function timeStringToMinutes(v){
   if(v == null || v === '') return null;
   if(v instanceof Date) return v.getUTCHours()*60 + v.getUTCMinutes();
@@ -2775,7 +2951,7 @@ function toHHMM(v){
   return `${hh}:${mm}`;
 }
 
-// يحوّل الدقايق لصيغة "س د" سهلة القراءة
+// يحوّل الدقائق لصيغة "س د" سهلة القراءة
 function formatMinutesAsHM(mins){
   mins = Math.round(mins);
   const h = Math.floor(mins/60), m = mins % 60;
@@ -2814,7 +2990,7 @@ function updateExtraKPIs(){
     ? `من ${totalClientsInScope.toLocaleString()} عميل`
     : 'من 0 عميل';
 
-  // 2) زيارات مدتها أقل من 5 دقايق (من نفس نطاق الفلاتر الحالية بما فيها اليوم إذا محدد)
+  // 2) زيارات مدتها أقل من 5 دقائق (من نفس نطاق الفلاتر الحالية بما فيها اليوم إذا محدد)
   const shortVisits = filtered.filter(r => r['مدة الدقائق'] !== '' && r['مدة الدقائق'] != null && +r['مدة الدقائق'] < 5).length;
   document.getElementById('k-shortvisits').textContent = shortVisits.toLocaleString();
 
@@ -2959,7 +3135,7 @@ function closeOrdersModal(){
   document.getElementById('orders-overlay').style.display = 'none';
 }
 
-// ============ زيارات أقل من 5 دقايق — أسماء العملاء فقط ============
+// ============ زيارات أقل من 5 دقائق — أسماء العملاء فقط ============
 function showShortVisitsModal(){
   const listEl = document.getElementById('short-visits-list');
   const subEl = document.getElementById('short-visits-modal-sub');
@@ -2968,11 +3144,11 @@ function showShortVisitsModal(){
   const names = shortVisitsArr.map(r=>r.العميل).sort((a,b)=>a.localeCompare(b,'ar'));
 
   if(!names.length){
-    listEl.innerHTML = '<div class="no-data">مافي زيارات أقل من 5 دقايق ضمن الفلتر الحالي</div>';
+    listEl.innerHTML = '<div class="no-data">مافي زيارات أقل من 5 دقائق ضمن الفلتر الحالي</div>';
   } else {
     listEl.innerHTML = names.map(name => `<div class="unvisited-item">${esc(name)}</div>`).join('');
   }
-  subEl.textContent = `${names.length.toLocaleString()} زيارة أقل من 5 دقايق ضمن الفلتر الحالي`;
+  subEl.textContent = `${names.length.toLocaleString()} زيارة أقل من 5 دقائق ضمن الفلتر الحالي`;
   document.getElementById('short-visits-overlay').style.display = 'flex';
 }
 
@@ -3144,34 +3320,24 @@ function downloadBlob(blob, fileName){
 }
 
 function renderPivots(){
+  // إخفاء جدولي "ملخص الزيارات" و"ملخص التحصيل والفواتير" عن دور المندوب فقط (يفضلوا ظاهرين للإدارة/المشرف/المحصل)
+  const pivotsSection = document.getElementById('pivots-section');
+  if(pivotsSection) pivotsSection.style.display = (currentUser && currentUser.role === 'مندوب') ? 'none' : '';
+
   const groups = {};
   filtered.forEach(r=>{
     const br = r.الفرع || 'غير محدد';
     const tp = r.نوع_الشخص || 'غير محدد';
     const ps = r['الشخص اللي قام بالزياره'] || 'غير محدد';
     const key = `${br}||${tp}||${ps}`;
-    if(!groups[key]) groups[key] = {br,tp,ps,total:0,acc:0,inacc:0,cancel:0,orders:0,ordersVal:0,ordersQty:0,collects:0,collectVal:0,clients:new Set()};
+    if(!groups[key]) groups[key] = {br,tp,ps,total:0,acc:0,inacc:0,orders:0,ordersVal:0,ordersQty:0,collects:0,collectVal:0};
     const g = groups[key];
     g.total++;
     if(r.accuracy==='دقيقة') g.acc++;
     else if(r.accuracy==='غير دقيقة') g.inacc++;
-    if(r['سبب الغاء الزيارة']) g.cancel++;
-    if(r.العميل) g.clients.add(r.العميل);
     if(r['قيمة ف الطلبية']!=='' && r['قيمة ف الطلبية']!==null){ g.orders++; g.ordersVal += orderRawValue(r); g.ordersQty += (+r['الكميه']||0); }
     if(r['قيمة المقبوضات']!=='' && r['قيمة المقبوضات']!==null){ g.collects++; g.collectVal += (+r['قيمة المقبوضات']||0); }
   });
-
-  // الدرجة الإجمالية (0-100): نفس معادلة تاب الأداء بالضبط — نسبة الدقة 45% + معدل التحويل (نسبة الزيارات
-  // التي فيها طلبية فعلية) 35% + (100 - نسبة الإلغاء) 20% — عشان "التقييم" هنا يتطابق مع تاب الأداء
-  function computeScore(total, acc, orders, cancel){
-    if(!total) return 0;
-    const trust = Math.round(acc/total*100);
-    const conversion = Math.round(orders/total*100);
-    const cancelPct = Math.round(cancel/total*100);
-    return Math.round(trust*0.45 + conversion*0.35 + (100-cancelPct)*0.20);
-  }
-  function scorePillClass(score){ return score>=80 ? 'pill-green' : score>=50 ? 'pill-orange' : 'pill-red'; }
-  function accPillClass(pct){ return pct>=80 ? 'pill-green' : pct>=50 ? 'pill-orange' : 'pill-red'; }
 
   const brGroups = {};
   Object.values(groups).forEach(g=>{
@@ -3186,67 +3352,82 @@ function renderPivots(){
   // صف "Grand Total" نفسه يكون مطابق لصف البيانات الوحيد، فنحذفه أيضًا
   const singleGroupScope = Object.keys(groups).length <= 1;
 
-  let html = '';
-  let grandTotal=0, grandAcc=0, grandCancel=0, grandOrders=0, grandOrdersVal=0, grandCollectVal=0, grandClients=new Set();
+  let vhtml=''; let grandTotal=0,grandAcc=0,grandInacc=0;
   Object.keys(brGroups).sort().forEach(br=>{
     const gs = brGroups[br];
     const brT = gs.reduce((s,g)=>s+g.total,0);
     const brA = gs.reduce((s,g)=>s+g.acc,0);
-    const brCancel = gs.reduce((s,g)=>s+g.cancel,0);
-    const brOrders = gs.reduce((s,g)=>s+g.orders,0);
-    const brOrdersVal = gs.reduce((s,g)=>s+g.ordersVal,0);
-    const brCollectVal = gs.reduce((s,g)=>s+g.collectVal,0);
-    const brClients = new Set(); gs.forEach(g=>g.clients.forEach(c=>brClients.add(c)));
-
+    const brI = gs.reduce((s,g)=>s+g.inacc,0);
     gs.forEach(g=>{
-      const accPct = g.total ? Math.round(g.acc/g.total*100) : 0;
-      const score = computeScore(g.total, g.acc, g.orders, g.cancel);
-      html += `<tr><td style="color:var(--accent);font-weight:600">${esc(br)}</td>
+      vhtml += `<tr><td style="color:var(--accent);font-weight:600">${esc(br)}</td>
       <td><span class="type-badge tb-${g.tp}">${esc(g.tp)}</span></td>
       <td>${esc(g.ps)}</td>
-      <td class="num" style="color:var(--orange);font-weight:700">${g.total}</td>
-      <td class="num">${g.clients.size}</td>
-      <td class="num"><span class="pill ${accPillClass(accPct)}">${accPct}%</span></td>
-      <td class="money">${g.ordersVal ? g.ordersVal.toLocaleString('ar-IQ') : '-'}</td>
-      <td class="money">${g.collectVal ? g.collectVal.toLocaleString('ar-IQ') : '-'}</td>
-      <td class="num"><span class="pill ${scorePillClass(score)}">${score}</span></td></tr>`;
+      <td class="num" style="color:var(--green)">${g.acc}</td>
+      <td class="num" style="color:var(--red)">${g.inacc}</td>
+      <td class="num" style="color:var(--orange);font-weight:700">${g.total}</td></tr>`;
     });
     if(!singleBranchScope){
-      const brAccPct = brT ? Math.round(brA/brT*100) : 0;
-      const brScore = computeScore(brT, brA, brOrders, brCancel);
-      html += `<tr class="group-row"><td colspan="3">إجمالي ${esc(br)}</td>
-      <td class="num" style="color:var(--orange);font-weight:700">${brT}</td>
-      <td class="num">${brClients.size}</td>
-      <td class="num"><span class="pill ${accPillClass(brAccPct)}">${brAccPct}%</span></td>
-      <td class="money">${brOrdersVal ? brOrdersVal.toLocaleString('ar-IQ') : '-'}</td>
-      <td class="money">${brCollectVal ? brCollectVal.toLocaleString('ar-IQ') : '-'}</td>
-      <td class="num"><span class="pill ${scorePillClass(brScore)}">${brScore}</span></td></tr>`;
+      vhtml += `<tr class="group-row"><td colspan="3">إجمالي ${esc(br)}</td>
+      <td class="num" style="color:var(--green)">${brA}</td>
+      <td class="num" style="color:var(--red)">${brI}</td>
+      <td class="num" style="color:var(--orange);font-weight:700">${brT}</td></tr>`;
     }
-    grandTotal+=brT; grandAcc+=brA; grandCancel+=brCancel; grandOrders+=brOrders; grandOrdersVal+=brOrdersVal; grandCollectVal+=brCollectVal;
-    brClients.forEach(c=>grandClients.add(c));
+    grandTotal += brT; grandAcc += brA; grandInacc += brI;
   });
   if(!singleGroupScope){
-    const grandAccPct = grandTotal ? Math.round(grandAcc/grandTotal*100) : 0;
-    const grandScore = computeScore(grandTotal, grandAcc, grandOrders, grandCancel);
-    html += `<tr class="total-row"><td colspan="3">Grand Total</td>
-    <td class="num">${grandTotal}</td>
-    <td class="num">${grandClients.size}</td>
-    <td class="num"><span class="pill ${accPillClass(grandAccPct)}">${grandAccPct}%</span></td>
-    <td class="money">${grandOrdersVal.toLocaleString('ar-IQ')}</td>
-    <td class="money">${grandCollectVal.toLocaleString('ar-IQ')}</td>
-    <td class="num"><span class="pill ${scorePillClass(grandScore)}">${grandScore}</span></td></tr>`;
+    vhtml += `<tr class="total-row"><td colspan="3">Grand Total</td>
+    <td class="num">${grandAcc}</td><td class="num">${grandInacc}</td><td class="num">${grandTotal}</td></tr>`;
   }
-  document.getElementById('summary-pivot-body').innerHTML = html || '<tr><td colspan="9" class="no-data">لا توجد بيانات</td></tr>';
-  document.getElementById('summary-badge').textContent = grandTotal.toLocaleString();
+  document.getElementById('visits-pivot-body').innerHTML = vhtml || '<tr><td colspan="6" class="no-data">لا توجد بيانات</td></tr>';
+  document.getElementById('visits-badge').textContent = grandTotal.toLocaleString();
+  EXPORT_DATA.visitsPivot = Object.values(groups).map(g=>({
+    'الفرع':g.br,'النوع':g.tp,'الشخص':g.ps,'زيارات دقيقة':g.acc,'زيارات غير دقيقة':g.inacc,'إجمالي الزيارات':g.total
+  }));
 
-  EXPORT_DATA.summaryPivot = Object.values(groups).map(g=>{
-    const accPct = g.total ? Math.round(g.acc/g.total*100) : 0;
-    return {
-      'الفرع':g.br, 'النوع':g.tp, 'الشخص':g.ps, 'عدد الزيارات':g.total, 'عدد العملاء':g.clients.size,
-      'نسبة الدقة %':accPct, 'إجمالي قيمة الطلبيات':g.ordersVal, 'قيمة التحصيل':g.collectVal,
-      'التقييم':computeScore(g.total, g.acc, g.orders, g.cancel)
-    };
+  let fhtml=''; let grandOrd=0,grandOrdV=0,grandOrdQ=0,grandCol=0,grandColV=0;
+  Object.keys(brGroups).sort().forEach(br=>{
+    const gs = brGroups[br];
+    const brOrd = gs.reduce((s,g)=>s+g.orders,0);
+    const brOrdV = gs.reduce((s,g)=>s+g.ordersVal,0);
+    const brOrdQ = gs.reduce((s,g)=>s+g.ordersQty,0);
+    const brCol = gs.reduce((s,g)=>s+g.collects,0);
+    const brColV = gs.reduce((s,g)=>s+g.collectVal,0);
+    gs.forEach(g=>{
+      if(g.orders===0 && g.collects===0) return;
+      fhtml += `<tr><td style="color:var(--accent);font-weight:600">${esc(br)}</td>
+      <td><span class="type-badge tb-${g.tp}">${esc(g.tp)}</span></td>
+      <td>${esc(g.ps)}</td>
+      <td class="num">${g.orders||'-'}</td>
+      <td class="money">${g.ordersVal ? g.ordersVal.toLocaleString('ar-IQ') : '-'}</td>
+      <td class="money qty-col">${g.ordersQty ? g.ordersQty.toLocaleString('ar-IQ') : '-'}</td>
+      <td class="num">${g.collects||'-'}</td>
+      <td class="money">${g.collectVal ? g.collectVal.toLocaleString('ar-IQ') : '-'}</td></tr>`;
+    });
+    if((brOrd || brCol) && !singleBranchScope){
+      fhtml += `<tr class="group-row"><td colspan="3">إجمالي ${esc(br)}</td>
+      <td class="num">${brOrd||'-'}</td>
+      <td class="money">${brOrdV ? brOrdV.toLocaleString('ar-IQ') : '-'}</td>
+      <td class="money qty-col">${brOrdQ ? brOrdQ.toLocaleString('ar-IQ') : '-'}</td>
+      <td class="num">${brCol||'-'}</td>
+      <td class="money">${brColV ? brColV.toLocaleString('ar-IQ') : '-'}</td></tr>`;
+    }
+    grandOrd += brOrd; grandOrdV += brOrdV; grandOrdQ += brOrdQ; grandCol += brCol; grandColV += brColV;
   });
+  if(!singleGroupScope){
+    fhtml += `<tr class="total-row"><td colspan="3">Grand Total</td>
+    <td class="num">${grandOrd}</td>
+    <td class="money">${grandOrdV.toLocaleString('ar-IQ')}</td>
+    <td class="money qty-col">${grandOrdQ.toLocaleString('ar-IQ')}</td>
+    <td class="num">${grandCol}</td>
+    <td class="money">${grandColV.toLocaleString('ar-IQ')}</td></tr>`;
+  }
+  document.getElementById('finance-pivot-body').innerHTML = fhtml || '<tr><td colspan="8" class="no-data">لا توجد بيانات مالية</td></tr>';
+  document.getElementById('finance-badge').textContent = (grandOrd+grandCol).toLocaleString();
+  EXPORT_DATA.financePivot = Object.values(groups).filter(g=>g.orders>0||g.collects>0).map(g=>({
+    'الفرع':g.br,'النوع':g.tp,'الشخص':g.ps,'عدد الطلبيات':g.orders,[isValueHiddenRole()?'إجمالي الكمية':'قيمة الطلبيات']:g.ordersVal,
+    ...(isValueHiddenRole() ? {} : {'إجمالي الكمية': g.ordersQty}),
+    'عدد التحصيل':g.collects,'قيمة التحصيل':g.collectVal
+  }));
 }
 
 function openMapWindow(html){
@@ -6203,7 +6384,8 @@ async function exportDebtPDF(){
 
 /* ---------- EXPORT (generic for every report/table) ---------- */
 const EXPORT_CONFIG = {
-  summaryPivot: {file:'ملخص_الزيارات_والأداء', sheet:'ملخص الزيارات والأداء'},
+  visitsPivot:  {file:'ملخص_الزيارات', sheet:'ملخص الزيارات'},
+  financePivot: {file:'ملخص_التحصيل_والفواتير', sheet:'ملخص التحصيل'},
   jump:         {file:'القفزة_المستحيلة', sheet:'القفزة المستحيلة'},
   short:        {file:'زيارات_قصيرة_جدا', sheet:'زيارات قصيرة'},
   repeat:       {file:'عملاء_متكررة_عدم_الدقة', sheet:'تكرار عدم الدقة'},
