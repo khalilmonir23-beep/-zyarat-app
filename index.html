@@ -1742,11 +1742,12 @@ function stopHeartbeat(){
 }
 // إشارة أخيرة أفضل جهد وقت إغلاق التاب (sendBeacon مصمم خصيصًا لهذه الحالة، بعكس fetch العادي
 // اللي غالبًا لا يُكمل الإرسال وقت إغلاق الصفحة) — مش مضمونة 100% لكنها تحسّن الدقة
-window.addEventListener('beforeunload', ()=>{
-  if(currentUser && currentUser.username && navigator.sendBeacon){
-    navigator.sendBeacon(`${LOGIN_API_URL}?action=heartbeat&username=${encodeURIComponent(currentUser.username)}`);
-  }
-});
+// ⏸️ موقوفة مؤقتًا مع نبضة الحياة (نفس سبب البطء) — راجع الملاحظة عند startHeartbeat()
+// window.addEventListener('beforeunload', ()=>{
+//   if(currentUser && currentUser.username && navigator.sendBeacon){
+//     navigator.sendBeacon(`${LOGIN_API_URL}?action=heartbeat&username=${encodeURIComponent(currentUser.username)}`);
+//   }
+// });
 
 // يجلب سجل الدخول من الـ Apps Script ويعرضه في لوحة الإدارة — يحتاج إضافة action=getLoginLog على السكريبت أولًا
 async function loadLoginLog(){
@@ -2796,7 +2797,7 @@ function init(){
   fetchGoogleSheetsData(); // تحديث فوري في الخلفية (دون أن يعطّل فتح الصفحة) حتى البيانات الحقيقية تظهر خلال ثواني بدل الانتظار لحد أول تحديث دوري بعد ساعتين
   showLoginPriorityBanner();
   showHelpOnFirstLoginEver();
-  startHeartbeat();
+  // startHeartbeat(); // ⏸️ موقوفة مؤقتًا: كانت بتبطّئ الملف والدخول لأن كل نبضة كانت بتقرأ شيت "سجل الدخول" بالكامل من السيرفر — هترجع بعد تحسين كود الـ Apps Script
 }
 
 // يعرض دليل الاستخدام تلقائيًا مرة واحدة فقط لكل مستخدم (أول تسجيل دخول له على هذا الجهاز/المتصفح)،
