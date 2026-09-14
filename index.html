@@ -6248,6 +6248,7 @@ function renderDebtReport(){
   document.getElementById('debt-aging-hint').style.display = agingRows.length > AGING_DISPLAY_CAP ? '' : 'none';
   document.getElementById('debt-aging-tbody').innerHTML = agingRows.slice(0, AGING_DISPLAY_CAP).map(c=>{
     const status = invoiceStatusText(c);
+    const invoiceAge = c.oldestDate ? daysSinceDate(c.oldestDate) : null; // عمر الفاتورة الفعلي = تاريخ اليوم - تاريخ الفاتورة (دائمًا موجب)
     return `<tr><td>${esc(c.branch)}</td><td>${esc(c.rep)}</td><td style="text-align:center">${esc(c.code)}</td><td>${esc(c.name)}</td>
     <td style="text-align:center">${esc(c.grade)}</td>
     <td style="text-align:center"><span class="pill ${c.hasOverdue?'pill-red':'pill-green'}">${c.hasOverdue?'متجاوز':'منتظم'}</span></td>
@@ -6260,16 +6261,17 @@ function renderDebtReport(){
     <td style="text-align:center">${c.count}</td>
     <td style="text-align:center;font-weight:700">${c.sum.toLocaleString('ar-IQ')}</td>
     <td style="text-align:center">${esc(c.oldestDate) || '-'}</td>
-    <td style="text-align:center;font-weight:700;color:${status==='-'?'inherit':(status.remaining<0?'var(--red)':status.remaining===0?'var(--orange)':'var(--green)')}">${status==='-' ? '-' : status.remaining}</td>
+    <td style="text-align:center;font-weight:700">${invoiceAge==null ? '-' : invoiceAge}</td>
     <td style="text-align:center">${status==='-' ? '-' : `<span class="pill ${status.cls}">${esc(status.text)}</span>`}</td></tr>`;
   }).join('') || '<tr><td colspan="17" style="text-align:center;color:var(--text-dim)">لا توجد بيانات ضمن الفلتر الحالي</td></tr>';
 
   EXPORT_DATA.debtAging = agingRows.map(c=>{
     const status = invoiceStatusText(c);
+    const invoiceAge = c.oldestDate ? daysSinceDate(c.oldestDate) : null;
     return {
       'الفرع':c.branch, 'المندوب':c.rep, 'كود العميل':c.code, 'العميل':c.name, 'تصنيف':c.grade, 'الحالة':c.hasOverdue?'متجاوز':'منتظم',
       '0-9':c.b0, '10-19':c.b10, '20-29':c.b20, '30-39':c.b30, '40-49':c.b40, '+50':c.b50, 'عدد الفواتير':c.count, 'إجمالي المديونية':c.sum,
-      'تاريخ أقدم فاتورة':c.oldestDate||'', 'عدد الأيام':status==='-' ? '' : status.remaining, 'موقف الفاتورة':status==='-' ? '' : status.text
+      'تاريخ أقدم فاتورة':c.oldestDate||'', 'عدد الأيام':invoiceAge==null ? '' : invoiceAge, 'موقف الفاتورة':status==='-' ? '' : status.text
     };
   });
 
