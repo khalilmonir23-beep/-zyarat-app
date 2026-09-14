@@ -1492,7 +1492,7 @@ body.role-field-restricted #fg-branch, body.role-field-restricted #fg-type, body
   <div class="report-card">
     <div class="report-header"><h4>الشرائح العمرية</h4><span class="badge" id="debt-aging-badge">0</span><span class="hint" id="debt-aging-hint" style="display:none">أول 300 عميل فقط للعرض (التصدير يشمل الكل)</span><button class="mini-export-btn" onclick="exportReport('debtAging')">📤 تصدير الكل</button></div>
     <div class="report-scroll"><table class="report-table" id="debt-aging-table">
-      <thead><tr><th>الفرع</th><th>المندوب</th><th style="text-align:center">كود العميل</th><th>العميل</th><th style="text-align:center">تصنيف</th><th style="text-align:center">الالتزام</th><th style="text-align:center">الحالة</th><th style="text-align:center">أيام التجاوز</th><th style="text-align:center">0-9</th><th style="text-align:center">10-19</th><th style="text-align:center">20-29</th><th style="text-align:center">30-39</th><th style="text-align:center">40-49</th><th style="text-align:center">+50</th><th style="text-align:center">عدد الفواتير</th><th style="text-align:center">إجمالي المديونية</th></tr></thead>
+      <thead><tr><th>الفرع</th><th>المندوب</th><th style="text-align:center">كود العميل</th><th>العميل</th><th style="text-align:center">تصنيف</th><th style="text-align:center">الحالة</th><th style="text-align:center">0-9</th><th style="text-align:center">10-19</th><th style="text-align:center">20-29</th><th style="text-align:center">30-39</th><th style="text-align:center">40-49</th><th style="text-align:center">+50</th><th style="text-align:center">عدد الفواتير</th><th style="text-align:center">إجمالي المديونية</th><th style="text-align:center">تاريخ أقدم فاتورة</th><th style="text-align:center">موقف الفاتورة</th></tr></thead>
       <tbody id="debt-aging-tbody"></tbody>
     </table></div>
   </div>
@@ -6136,19 +6136,29 @@ function renderDebtReport(){
   rows.forEach(r=>{
     const key = (r['كود العميل']||'') + '|' + (r['اسم العميل']||'');
     if(!agingByClient[key]){
-      agingByClient[key] = {name:r['اسم العميل'], code:r['كود العميل'], branch:r.الفرع, rep:r['Sales rep'], grade:r['تصنيق العميل'], key, hasOverdue:false, maxOverdueDays:0, count:0, sum:0, b0:0,b10:0,b20:0,b30:0,b40:0,b50:0};
+      agingByClient[key] = {name:r['اسم العميل'], code:r['كود العميل'], branch:r.الفرع, rep:r['Sales rep'], grade:r['تصنيق العميل'], key, hasOverdue:false, count:0, sum:0, b0:0,b10:0,b20:0,b30:0,b40:0,b50:0, oldestDate:null, oldestAllowedDays:0};
     }
     const c = agingByClient[key];
     c.count++;
     c.sum += (+r.المديونيه||0);
     c[ageBucketKey(r['عمر الفاتوره'])] += (+r.المديونيه||0);
-    if(r.نوع==='متجاوز'){
-      c.hasOverdue = true;
-      const liveAge = daysSinceDate(r.التاريخ);
-      const overdueDays = liveAge==null ? 0 : liveAge - (+r['عدد  ايام السماح']||0);
-      if(overdueDays > c.maxOverdueDays) c.maxOverdueDays = overdueDays;
+    if(r.نوع==='متجاوز') c.hasOverdue = true;
+    // نتتبّع أقدم فاتورة (بالتاريخ الفعلي) عند هذا العميل — عشان عمودي "تاريخ أقدم فاتورة" و"موقف الفاتورة"
+    if(r.التاريخ && (!c.oldestDate || r.التاريخ < c.oldestDate)){
+      c.oldestDate = r.التاريخ;
+      c.oldestAllowedDays = +r['عدد  ايام السماح'] || 0;
     }
   });
+  // موقف أقدم فاتورة الآن، محسوب حيًا من تاريخها الفعلي — نفس منطق "قرب التجاوز" في باقي التقرير
+  function invoiceStatusText(c){
+    if(!c.oldestDate) return '-';
+    const liveAge = daysSinceDate(c.oldestDate);
+    if(liveAge==null) return '-';
+    const remaining = c.oldestAllowedDays - liveAge;
+    if(remaining < 0) return {text:`متجاوز ${Math.abs(remaining)} يوم`, cls:'pill-red'};
+    if(remaining === 0) return {text:'مستحقة اليوم', cls:'pill-orange'};
+    return {text:`متبقٍ ${remaining} يوم`, cls:'pill-green'};
+  }
   // مرتبة بالفرع ثم المندوب ثم كود العميل ثم اسمه — تسهيلًا للطباعة (كل مندوب وعملاؤه مجمّعين ورا بعض)
   const agingRows = Object.values(agingByClient).sort((a,b)=>
     (a.branch||'').localeCompare(b.branch||'','ar') ||
@@ -6159,12 +6169,11 @@ function renderDebtReport(){
   const AGING_DISPLAY_CAP = 300;
   document.getElementById('debt-aging-badge').textContent = agingRows.length;
   document.getElementById('debt-aging-hint').style.display = agingRows.length > AGING_DISPLAY_CAP ? '' : 'none';
-  document.getElementById('debt-aging-tbody').innerHTML = agingRows.slice(0, AGING_DISPLAY_CAP).map(c=>`
-    <tr><td>${esc(c.branch)}</td><td>${esc(c.rep)}</td><td style="text-align:center">${esc(c.code)}</td><td>${esc(c.name)}</td>
+  document.getElementById('debt-aging-tbody').innerHTML = agingRows.slice(0, AGING_DISPLAY_CAP).map(c=>{
+    const status = invoiceStatusText(c);
+    return `<tr><td>${esc(c.branch)}</td><td>${esc(c.rep)}</td><td style="text-align:center">${esc(c.code)}</td><td>${esc(c.name)}</td>
     <td style="text-align:center">${esc(c.grade)}</td>
-    <td style="text-align:center">${CLIENT_COMMITMENT[c.key] ? commitmentBadge({'كود العميل':c.code,'اسم العميل':c.name}) : '-'}</td>
     <td style="text-align:center"><span class="pill ${c.hasOverdue?'pill-red':'pill-green'}">${c.hasOverdue?'متجاوز':'منتظم'}</span></td>
-    <td style="text-align:center;color:var(--red);font-weight:700">${c.maxOverdueDays > 0 ? c.maxOverdueDays : '-'}</td>
     <td style="text-align:center">${c.b0 ? c.b0.toLocaleString('ar-IQ') : '-'}</td>
     <td style="text-align:center">${c.b10 ? c.b10.toLocaleString('ar-IQ') : '-'}</td>
     <td style="text-align:center">${c.b20 ? c.b20.toLocaleString('ar-IQ') : '-'}</td>
@@ -6172,13 +6181,19 @@ function renderDebtReport(){
     <td style="text-align:center">${c.b40 ? c.b40.toLocaleString('ar-IQ') : '-'}</td>
     <td style="text-align:center;color:var(--red)">${c.b50 ? c.b50.toLocaleString('ar-IQ') : '-'}</td>
     <td style="text-align:center">${c.count}</td>
-    <td style="text-align:center;font-weight:700">${c.sum.toLocaleString('ar-IQ')}</td></tr>`
-  ).join('') || '<tr><td colspan="16" style="text-align:center;color:var(--text-dim)">لا توجد بيانات ضمن الفلتر الحالي</td></tr>';
+    <td style="text-align:center;font-weight:700">${c.sum.toLocaleString('ar-IQ')}</td>
+    <td style="text-align:center">${esc(c.oldestDate) || '-'}</td>
+    <td style="text-align:center">${status==='-' ? '-' : `<span class="pill ${status.cls}">${esc(status.text)}</span>`}</td></tr>`;
+  }).join('') || '<tr><td colspan="16" style="text-align:center;color:var(--text-dim)">لا توجد بيانات ضمن الفلتر الحالي</td></tr>';
 
-  EXPORT_DATA.debtAging = agingRows.map(c=>({
-    'الفرع':c.branch, 'المندوب':c.rep, 'كود العميل':c.code, 'العميل':c.name, 'تصنيف':c.grade, 'الحالة':c.hasOverdue?'متجاوز':'منتظم',
-    'أيام التجاوز':c.maxOverdueDays, '0-9':c.b0, '10-19':c.b10, '20-29':c.b20, '30-39':c.b30, '40-49':c.b40, '+50':c.b50, 'عدد الفواتير':c.count, 'إجمالي المديونية':c.sum
-  }));
+  EXPORT_DATA.debtAging = agingRows.map(c=>{
+    const status = invoiceStatusText(c);
+    return {
+      'الفرع':c.branch, 'المندوب':c.rep, 'كود العميل':c.code, 'العميل':c.name, 'تصنيف':c.grade, 'الحالة':c.hasOverdue?'متجاوز':'منتظم',
+      '0-9':c.b0, '10-19':c.b10, '20-29':c.b20, '30-39':c.b30, '40-49':c.b40, '+50':c.b50, 'عدد الفواتير':c.count, 'إجمالي المديونية':c.sum,
+      'تاريخ أقدم فاتورة':c.oldestDate||'', 'موقف الفاتورة':status==='-' ? '' : status.text
+    };
+  });
 
   // تحذير مبكر: فواتير باقيلها 4 أيام أو أقل قبل ما تدخل التجاوز — محسوبة حي من تاريخ الفاتورة الفعلي
   // مقارنة بتاريخ اليوم (بدلًا من عمود "عمر الفاتورة" الجاهز الذي يكون قديمًا إذا تأخر رفع الملف)
