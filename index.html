@@ -1492,7 +1492,7 @@ body.role-field-restricted #fg-branch, body.role-field-restricted #fg-type, body
   <div class="report-card">
     <div class="report-header"><h4>الشرائح العمرية</h4><span class="badge" id="debt-aging-badge">0</span><span class="hint" id="debt-aging-hint" style="display:none">أول 300 عميل فقط للعرض (التصدير يشمل الكل)</span><button class="mini-export-btn" onclick="exportReport('debtAging')">📤 تصدير الكل</button></div>
     <div class="report-scroll"><table class="report-table" id="debt-aging-table">
-      <thead><tr><th>الفرع</th><th>المندوب</th><th style="text-align:center">كود العميل</th><th>العميل</th><th style="text-align:center">تصنيف</th><th style="text-align:center">الحالة</th><th style="text-align:center">0-9</th><th style="text-align:center">10-19</th><th style="text-align:center">20-29</th><th style="text-align:center">30-39</th><th style="text-align:center">40-49</th><th style="text-align:center">+50</th><th style="text-align:center">عدد الفواتير</th><th style="text-align:center">إجمالي المديونية</th><th style="text-align:center">تاريخ أقدم فاتورة</th><th style="text-align:center">موقف الفاتورة</th></tr></thead>
+      <thead><tr><th>الفرع</th><th>المندوب</th><th style="text-align:center">كود العميل</th><th>العميل</th><th style="text-align:center">تصنيف</th><th style="text-align:center">الحالة</th><th style="text-align:center">0-9</th><th style="text-align:center">10-19</th><th style="text-align:center">20-29</th><th style="text-align:center">30-39</th><th style="text-align:center">40-49</th><th style="text-align:center">+50</th><th style="text-align:center">عدد الفواتير</th><th style="text-align:center">إجمالي المديونية</th><th style="text-align:center">تاريخ أقدم فاتورة</th><th style="text-align:center">عدد الأيام</th><th style="text-align:center">موقف الفاتورة</th></tr></thead>
       <tbody id="debt-aging-tbody"></tbody>
     </table></div>
   </div>
@@ -6232,9 +6232,9 @@ function renderDebtReport(){
     const liveAge = daysSinceDate(c.oldestDate);
     if(liveAge==null) return '-';
     const remaining = c.oldestAllowedDays - liveAge;
-    if(remaining < 0) return {text:`متجاوز ${Math.abs(remaining)} يوم`, cls:'pill-red'};
-    if(remaining === 0) return {text:'مستحقة اليوم', cls:'pill-orange'};
-    return {text:`متبقٍ ${remaining} يوم`, cls:'pill-green'};
+    if(remaining < 0) return {remaining, text:`متجاوز ${Math.abs(remaining)} يوم`, cls:'pill-red'};
+    if(remaining === 0) return {remaining, text:'مستحقة اليوم', cls:'pill-orange'};
+    return {remaining, text:`متبقٍ ${remaining} يوم`, cls:'pill-green'};
   }
   // مرتبة بالفرع ثم المندوب ثم كود العميل ثم اسمه — تسهيلًا للطباعة (كل مندوب وعملاؤه مجمّعين ورا بعض)
   const agingRows = Object.values(agingByClient).sort((a,b)=>
@@ -6260,15 +6260,16 @@ function renderDebtReport(){
     <td style="text-align:center">${c.count}</td>
     <td style="text-align:center;font-weight:700">${c.sum.toLocaleString('ar-IQ')}</td>
     <td style="text-align:center">${esc(c.oldestDate) || '-'}</td>
+    <td style="text-align:center;font-weight:700;color:${status==='-'?'inherit':(status.remaining<0?'var(--red)':status.remaining===0?'var(--orange)':'var(--green)')}">${status==='-' ? '-' : status.remaining}</td>
     <td style="text-align:center">${status==='-' ? '-' : `<span class="pill ${status.cls}">${esc(status.text)}</span>`}</td></tr>`;
-  }).join('') || '<tr><td colspan="16" style="text-align:center;color:var(--text-dim)">لا توجد بيانات ضمن الفلتر الحالي</td></tr>';
+  }).join('') || '<tr><td colspan="17" style="text-align:center;color:var(--text-dim)">لا توجد بيانات ضمن الفلتر الحالي</td></tr>';
 
   EXPORT_DATA.debtAging = agingRows.map(c=>{
     const status = invoiceStatusText(c);
     return {
       'الفرع':c.branch, 'المندوب':c.rep, 'كود العميل':c.code, 'العميل':c.name, 'تصنيف':c.grade, 'الحالة':c.hasOverdue?'متجاوز':'منتظم',
       '0-9':c.b0, '10-19':c.b10, '20-29':c.b20, '30-39':c.b30, '40-49':c.b40, '+50':c.b50, 'عدد الفواتير':c.count, 'إجمالي المديونية':c.sum,
-      'تاريخ أقدم فاتورة':c.oldestDate||'', 'موقف الفاتورة':status==='-' ? '' : status.text
+      'تاريخ أقدم فاتورة':c.oldestDate||'', 'عدد الأيام':status==='-' ? '' : status.remaining, 'موقف الفاتورة':status==='-' ? '' : status.text
     };
   });
 
