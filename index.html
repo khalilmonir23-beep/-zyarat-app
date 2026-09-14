@@ -1559,6 +1559,21 @@ body.role-field-restricted #fg-branch, body.role-field-restricted #fg-type, body
       <button class="admin-btn primary" onclick="runSelfTests()">▶️ تشغيل الاختبارات الآن</button>
       <div id="selftest-results" style="margin-top:10px;font-size:12.5px"></div>
     </div>
+
+    <div class="admin-divider"></div>
+
+    <div class="admin-step">
+      <label>🕓 سجل الدخول (من دخل ولمدة كم)</label>
+      <div class="sub" style="margin-bottom:10px">يحتاج إضافة بسيطة على الـ Apps Script أولًا (منطق التسجيل يُضاف هناك، وليس هنا) — بعدها يظهر السجل مباشرة من هذا الزر.</div>
+      <button class="admin-btn primary" onclick="loadLoginLog()">🔄 تحديث السجل</button>
+      <div id="loginlog-status" style="margin-top:6px;font-size:11.5px;color:var(--text-dim)"></div>
+      <div class="report-scroll" style="margin-top:10px;max-height:320px">
+        <table class="report-table" id="loginlog-table" style="display:none">
+          <thead><tr><th>اسم المستخدم</th><th style="text-align:center">وقت الدخول</th><th style="text-align:center">آخر نشاط</th><th style="text-align:center">المدة التقريبية</th></tr></thead>
+          <tbody id="loginlog-tbody"></tbody>
+        </table>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1706,8 +1721,68 @@ async function doLogin(){
 }
 
 function doLogout(){
+  stopHeartbeat();
   try{ sessionStorage.removeItem('visits_dashboard_user'); }catch(e){}
   location.reload();
+}
+
+// 🕓 سجل الدخول: نبضة حياة كل دقيقتين طول ما الصفحة مفتوحة، عشان الإدارة تقدر تعرف تقريبًا "آخر نشاط" لكل
+// مستخدم من غير الاعتماد على زر خروج صريح (أغلب الناس بتقفل التاب مباشرة من غير ما تضغط خروج)
+let heartbeatInterval = null;
+function startHeartbeat(){
+  if(heartbeatInterval || !currentUser || !currentUser.username) return;
+  const ping = () => {
+    fetch(`${LOGIN_API_URL}?action=heartbeat&username=${encodeURIComponent(currentUser.username)}`).catch(()=>{});
+  };
+  ping(); // نبضة فورية عند فتح الجلسة
+  heartbeatInterval = setInterval(ping, 120000); // كل دقيقتين
+}
+function stopHeartbeat(){
+  if(heartbeatInterval){ clearInterval(heartbeatInterval); heartbeatInterval = null; }
+}
+// إشارة أخيرة أفضل جهد وقت إغلاق التاب (sendBeacon مصمم خصيصًا لهذه الحالة، بعكس fetch العادي
+// اللي غالبًا لا يُكمل الإرسال وقت إغلاق الصفحة) — مش مضمونة 100% لكنها تحسّن الدقة
+window.addEventListener('beforeunload', ()=>{
+  if(currentUser && currentUser.username && navigator.sendBeacon){
+    navigator.sendBeacon(`${LOGIN_API_URL}?action=heartbeat&username=${encodeURIComponent(currentUser.username)}`);
+  }
+});
+
+// يجلب سجل الدخول من الـ Apps Script ويعرضه في لوحة الإدارة — يحتاج إضافة action=getLoginLog على السكريبت أولًا
+async function loadLoginLog(){
+  const statusEl = document.getElementById('loginlog-status');
+  const tableEl = document.getElementById('loginlog-table');
+  statusEl.textContent = 'جارٍ التحميل...';
+  try{
+    const res = await fetch(`${LOGIN_API_URL}?action=getLoginLog`);
+    const result = await res.json();
+    if(!result.success || !Array.isArray(result.rows)){
+      throw new Error(result.error || 'لم يُرجع السيرفر بيانات صالحة — تأكد من إضافة الكود المطلوب على الـ Apps Script أولًا');
+    }
+    if(!result.rows.length){
+      statusEl.textContent = 'السجل فارغ حتى الآن.';
+      tableEl.style.display = 'none';
+      return;
+    }
+    const fmtDuration = (loginTime, lastActivity) => {
+      const start = new Date(loginTime), end = new Date(lastActivity);
+      const mins = Math.max(0, Math.round((end - start) / 60000));
+      if(mins < 1) return 'أقل من دقيقة';
+      const h = Math.floor(mins / 60), m = mins % 60;
+      return h > 0 ? `${h} ساعة و${m} دقيقة` : `${m} دقيقة`;
+    };
+    document.getElementById('loginlog-tbody').innerHTML = result.rows
+      .sort((a,b)=> new Date(b.loginTime) - new Date(a.loginTime))
+      .map(r=>`<tr><td>${esc(r.username)}</td>
+        <td style="text-align:center">${esc(r.loginTime)}</td>
+        <td style="text-align:center">${esc(r.lastActivity)}</td>
+        <td style="text-align:center">${fmtDuration(r.loginTime, r.lastActivity)}</td></tr>`).join('');
+    tableEl.style.display = '';
+    statusEl.textContent = `تم تحميل ${result.rows.length.toLocaleString('ar-IQ')} سجل.`;
+  }catch(err){
+    statusEl.textContent = '⚠️ ' + err.message;
+    tableEl.style.display = 'none';
+  }
 }
 
 function startSession(user){
@@ -2721,6 +2796,7 @@ function init(){
   fetchGoogleSheetsData(); // تحديث فوري في الخلفية (دون أن يعطّل فتح الصفحة) حتى البيانات الحقيقية تظهر خلال ثواني بدل الانتظار لحد أول تحديث دوري بعد ساعتين
   showLoginPriorityBanner();
   showHelpOnFirstLoginEver();
+  startHeartbeat();
 }
 
 // يعرض دليل الاستخدام تلقائيًا مرة واحدة فقط لكل مستخدم (أول تسجيل دخول له على هذا الجهاز/المتصفح)،
