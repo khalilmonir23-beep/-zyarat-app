@@ -704,6 +704,7 @@ body.role-field-restricted #fg-branch, body.role-field-restricted #fg-type, body
   <div class="kpi purple"><div class="kpi-icon">💰</div><div class="kpi-val" id="k-collect">0</div><div class="kpi-label">إجمالي التحصيل</div><div class="kpi-sub" id="k-collect-val">0 د.ع</div></div>
   <div class="kpi teal kpi-clickable" id="k-unvisited-card" onclick="showUnvisitedClientsModal()"><div class="kpi-icon">🚫</div><div class="kpi-val" id="k-unvisited">0</div><div class="kpi-label">عملاء لم تتم زيارتهم (الشهر)</div><div class="kpi-sub" id="k-unvisited-pct">من 0 عميل</div><div class="kpi-tap-hint">اضغط لعرض الأسماء 👆</div></div>
   <div class="kpi red kpi-clickable" id="k-shortvisits-card" onclick="showShortVisitsModal()"><div class="kpi-icon">⏱️</div><div class="kpi-val" id="k-shortvisits">0</div><div class="kpi-label">زيارات أقل من 5 دقائق</div><div class="kpi-tap-hint">اضغط لعرض الأسماء 👆</div></div>
+  <div class="kpi teal kpi-clickable" id="k-route-card" onclick="showRouteModal()"><div class="kpi-icon">🧭</div><div class="kpi-val" id="k-route-total">0</div><div class="kpi-label">عملاء خط السير</div><div class="kpi-sub" id="k-route-visited">0 زاروا (دقيقة)</div><div class="kpi-sub" id="k-route-orders">0 عمل طلبية</div><div class="kpi-tap-hint">اضغط لعرض التفاصيل 👆</div></div>
   <div class="kpi blue"><div class="kpi-icon">🕐</div><div class="kpi-val kpi-val-small" id="k-worktime">- ← -</div><div class="kpi-label">بداية وختام الحركة</div><div class="kpi-sub" id="k-worktime-span">-</div></div>
   <div class="kpi indigo"><div class="kpi-icon">⏳</div><div class="kpi-val" id="k-totalduration">0</div><div class="kpi-label">إجمالي وقت الزيارات عند العملاء</div></div>
 </div>
@@ -776,6 +777,22 @@ body.role-field-restricted #fg-branch, body.role-field-restricted #fg-type, body
       <table class="overdue-table">
         <thead><tr><th>اسم العميل</th><th style="text-align:center">قيمة التجاوز</th><th style="text-align:center">عدد الزيارات</th><th style="text-align:center">كام يوم متجاوز</th></tr></thead>
         <tbody id="overdue-list"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- مودال خط السير: كل عملاء خط سير المندوب/الفرع المحدد + تصنيفهم وموقفهم من المديونية والمنطقة + اتصال/كارت العميل -->
+<div class="admin-overlay" id="route-overlay">
+  <div class="admin-panel admin-panel-wide">
+    <button class="admin-close" onclick="closeRouteModal()">✕</button>
+    <h3>🧭 خط السير</h3>
+    <div class="sub" id="route-modal-sub">كل عملاء خط السير ضمن الفلتر الحالي</div>
+    <input class="search-box" type="text" id="route-search-box" placeholder="🔍 دور باسم العميل..." oninput="renderRouteTable()" style="width:100%;margin:10px 0 4px">
+    <div class="unvisited-list">
+      <table class="overdue-table">
+        <thead><tr><th>العميل</th><th style="text-align:center">تصنيف</th><th style="text-align:center">المنطقة</th><th style="text-align:center">حالة الزيارة</th><th style="text-align:center">المديونية</th><th style="text-align:center">إجراء</th></tr></thead>
+        <tbody id="route-list"></tbody>
       </table>
     </div>
   </div>
@@ -856,71 +873,9 @@ body.role-field-restricted #fg-branch, body.role-field-restricted #fg-type, body
     <div style="display:flex; justify-content:space-between; padding:6px 0; font-size:14px; color:#2b2e3d; border-top:1px solid #eef0f5;"><span style="color:#70758f;">الفترة</span><b id="sc-period">-</b></div>
     <div style="display:flex; justify-content:space-between; padding:6px 0; font-size:14px; color:#2b2e3d; border-top:1px solid #eef0f5;"><span style="color:#70758f;">تاريخ الإرسال</span><b id="sc-date">-</b></div>
   </div>
-  <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-    <div style="background:#fff; border-radius:12px; padding:14px; text-align:center; box-shadow:0 1px 4px rgba(0,0,0,.08);">
-      <div style="font-size:22px;">📋</div>
-      <div style="font-size:22px; font-weight:800; color:#1d2333; margin-top:4px;" id="sc-total">0</div>
-      <div style="font-size:11px; color:#70758f; margin-top:2px;">إجمالي الزيارات</div>
-      <div style="font-size:11px; color:#1d2333; margin-top:2px; font-weight:700;" id="sc-total-clients">0 عميل</div>
-    </div>
-    <div style="background:#fff; border-radius:12px; padding:14px; text-align:center; box-shadow:0 1px 4px rgba(0,0,0,.08);">
-      <div style="font-size:22px;">✅</div>
-      <div style="font-size:22px; font-weight:800; color:#1e8e5a; margin-top:4px;" id="sc-acc">0</div>
-      <div style="font-size:11px; color:#70758f; margin-top:2px;">زيارات دقيقة (<span id="sc-acc-pct">0%</span>)</div>
-    </div>
-    <div style="background:#fff; border-radius:12px; padding:14px; text-align:center; box-shadow:0 1px 4px rgba(0,0,0,.08);">
-      <div style="font-size:22px;">❌</div>
-      <div style="font-size:22px; font-weight:800; color:#c0392b; margin-top:4px;" id="sc-inacc">0</div>
-      <div style="font-size:11px; color:#70758f; margin-top:2px;">زيارات غير دقيقة (<span id="sc-inacc-pct">0%</span>)</div>
-    </div>
-    <div style="background:#fff; border-radius:12px; padding:14px; text-align:center; box-shadow:0 1px 4px rgba(0,0,0,.08);">
-      <div style="font-size:22px;">📦</div>
-      <div style="font-size:22px; font-weight:800; color:#c9770a; margin-top:4px;" id="sc-orders">0</div>
-      <div style="font-size:11px; color:#70758f; margin-top:2px;">إجمالي الطلبيات</div>
-      <div style="font-size:11px; color:#c9770a; margin-top:2px; font-weight:700;" id="sc-orders-val">0</div>
-      <div class="qty-kpi-line" style="font-size:11px; color:#c9770a; margin-top:2px; font-weight:700;" id="sc-orders-qty">0</div>
-    </div>
-    <div style="grid-column:1/-1; background:#fff; border-radius:12px; padding:14px; text-align:center; box-shadow:0 1px 4px rgba(0,0,0,.08);">
-      <div style="font-size:22px;">💰</div>
-      <div style="font-size:22px; font-weight:800; color:#6b3fa0; margin-top:4px;" id="sc-collect">0</div>
-      <div style="font-size:11px; color:#70758f; margin-top:2px;">إجمالي التحصيل</div>
-      <div style="font-size:11px; color:#6b3fa0; margin-top:2px; font-weight:700;" id="sc-collect-count">0 عملية تحصيل</div>
-    </div>
-    <div style="grid-column:1/-1; background:#fff; border-radius:12px; padding:14px; text-align:center; box-shadow:0 1px 4px rgba(0,0,0,.08);">
-      <div style="font-size:22px;">💰</div>
-      <div style="font-size:20px; font-weight:800; color:#1d2333; margin-top:4px;" id="sc-debt-total">0</div>
-      <div style="font-size:11px; color:#70758f; margin-top:2px;">إجمالي المديونية</div>
-      <div style="font-size:11px; color:#c0392b; margin-top:2px; font-weight:700;" id="sc-debt-overdue">متجاوز: 0 د.ع</div>
-      <div style="font-size:11px; color:#c0392b; margin-top:2px; font-weight:700;" id="sc-debt-overdue-pct">النسبة: 0%</div>
-      <div style="font-size:11px; color:#70758f; margin-top:2px;" id="sc-debt-clients">0 عميل • 0 متجاوز</div>
-    </div>
-    <div style="background:#fff; border-radius:12px; padding:14px; text-align:center; box-shadow:0 1px 4px rgba(0,0,0,.08);">
-      <div style="font-size:22px;">🚫</div>
-      <div style="font-size:20px; font-weight:800; color:#00897b; margin-top:4px;" id="sc-unvisited">0</div>
-      <div style="font-size:11px; color:#70758f; margin-top:2px;">عملاء لم تتم زيارتهم (<span id="sc-unvisited-pct">من 0</span>)</div>
-    </div>
-    <div style="background:#fff; border-radius:12px; padding:14px; text-align:center; box-shadow:0 1px 4px rgba(0,0,0,.08);">
-      <div style="font-size:22px;">⏱️</div>
-      <div style="font-size:20px; font-weight:800; color:#c0392b; margin-top:4px;" id="sc-shortvisits">0</div>
-      <div style="font-size:11px; color:#70758f; margin-top:2px;">زيارات أقل من 5 دقائق</div>
-    </div>
-    <div style="background:#fff; border-radius:12px; padding:14px; text-align:center; box-shadow:0 1px 4px rgba(0,0,0,.08);">
-      <div style="font-size:22px;">🕐</div>
-      <div style="font-size:16px; font-weight:800; color:#1d4fa3; margin-top:4px;" id="sc-worktime">- ← -</div>
-      <div style="font-size:11px; color:#70758f; margin-top:2px;">بداية وختام الحركة</div>
-      <div style="font-size:11px; color:#1d4fa3; margin-top:2px; font-weight:700;" id="sc-worktime-span">-</div>
-    </div>
-    <div style="background:#fff; border-radius:12px; padding:14px; text-align:center; box-shadow:0 1px 4px rgba(0,0,0,.08);">
-      <div style="font-size:22px;">⏳</div>
-      <div style="font-size:20px; font-weight:800; color:#3f51b5; margin-top:4px;" id="sc-totalduration">0</div>
-      <div style="font-size:11px; color:#70758f; margin-top:2px;">إجمالي وقت الزيارات</div>
-    </div>
-    <div style="grid-column:1/-1; background:#fff; border-radius:12px; padding:14px; text-align:center; box-shadow:0 1px 4px rgba(0,0,0,.08);">
-      <div style="font-size:22px;">🔁</div>
-      <div style="font-size:20px; font-weight:800; color:#c0392b; margin-top:4px;" id="sc-dupclients">0</div>
-      <div style="font-size:11px; color:#70758f; margin-top:2px;">عملاء تم زيارتهم أكثر من مرة</div>
-    </div>
-  </div>
+  <!-- الشبكة دي بتتبني ديناميكيًا من كروت KPI الفعلية الظاهرة فوق في اللوحة (buildShareCardKPIGrid) —
+       أي KPI جديدة تتضاف لـ.kpi-row تبان هنا تلقائيًا من غير أي تعديل يدوي في القالب ده -->
+  <div id="sc-kpi-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;"></div>
 </div>
 
 <!-- SUMMARY TABLES -->
@@ -2562,6 +2517,7 @@ function applyWorkbookData(wb, opts){
       'المنطقه سيستم': r['المنطقه سيستم'] || '',
       'الفرع': stripBranchPrefix(r['الفرع']),
       'تصنيف العميل': r['تصنيف العميل'] || '',
+      'سعر العميل': r['سعر العميل'] != null ? r['سعر العميل'] : '',
       'موبايل': r['موبايل'] != null ? String(r['موبايل']).trim() : '',
       lng_client: r['احداثيات 1'] != null ? parseFloat(r['احداثيات 1']) : '',
       lat_client: r['احداثيات 2'] != null ? parseFloat(r['احداثيات 2']) : ''
@@ -2587,7 +2543,7 @@ function applyWorkbookData(wb, opts){
           'عمر الفاتوره': r['عمر الفاتوره'] != null ? +r['عمر الفاتوره'] : null,
           نقدي: r['نقدي'] || '',
           'التاريخ': dateParts ? fmtDateParts(dateParts) : '',
-          'تصنيق العميل': r['تصنيق العميل'] || '',
+          'تصنيق العميل': r['طبيعة التسعير'] || r['تصنيق العميل'] || '',
           'عدد  ايام السماح': r['عدد  ايام السماح'] != null ? +r['عدد  ايام السماح'] : null,
           المديونيه: Math.abs(rawDebt), // بالموجب لتسهيل القراءة كما طُلب — القيمة الأصلية دايمًا سالبة في الملف
           المحصل: r['المحصل'] != null ? String(r['المحصل']).trim() : ''
@@ -3244,6 +3200,7 @@ function updateKPIs(){
 
   updateExtraKPIs();
   updateDebtDashboardKPI();
+  updateRouteKPI();
   scheduleShareCardPrep();
 }
 
@@ -3504,6 +3461,113 @@ function closeShortVisitsModal(){
   document.getElementById('short-visits-overlay').style.display = 'none';
 }
 
+// ============ خط السير — كل عملاء المندوب/الفرع المحدد: تصنيفهم، موقفهم من المديونية، حالة الزيارة ============
+let ROUTE_CLIENTS_LIST = [];
+
+function updateRouteKPI(){
+  const branch = document.getElementById('f-branch').value;
+  const person = document.getElementById('f-person').value;
+  const year = document.getElementById('f-year').value;
+  const month = document.getElementById('f-month').value;
+
+  // نفس نطاق عملاء "خط السير" المستخدم في حساب العملاء غير المزارين
+  let clientsScope = CLIENTS.filter(c => c.المندوب && c.المندوب !== 'حذف');
+  if(branch) clientsScope = clientsScope.filter(c => c.الفرع === branch);
+  if(person) clientsScope = clientsScope.filter(c => c.المندوب === person);
+
+  const visitsScope = DATA.filter(r=>{
+    if(branch && r.الفرع !== branch) return false;
+    if(person && r['الشخص اللي قام بالزياره'] !== person) return false;
+    if(year && String(r.year) !== String(year)) return false;
+    if(month && r.month != +month) return false;
+    return true;
+  });
+
+  // عمود "زار" في الكارت يعتمد فقط على الزيارات الدقيقة (باتفاق)؛ الزيارة غير الدقيقة تُعرض في الجدول كتنبيه منفصل بس مش محسوبة كـ"زار"
+  const accurateVisitedNames = new Set(visitsScope.filter(r=>r.accuracy==='دقيقة' && r.العميل).map(r=>r.العميل));
+  const anyVisitedNames = new Set(visitsScope.map(r=>r.العميل).filter(Boolean));
+  const orderedNames = new Set(visitsScope.filter(r=>r.العميل && r['قيمة ف الطلبية'] !== '' && r['قيمة ف الطلبية'] !== null).map(r=>r.العميل));
+
+  // مديونية كل عميل (من كل شيت المديونية — الفواتير المفتوحة حالية دائمًا، مش مقيّدة بفلتر السنة/الشهر)
+  const debtByClient = {};
+  DEBT.forEach(r=>{
+    const name = r['اسم العميل'];
+    if(!name) return;
+    if(!debtByClient[name]) debtByClient[name] = {sum:0, overdue:false, grade:''};
+    debtByClient[name].sum += (+r.المديونيه || 0);
+    if(r.نوع === 'متجاوز') debtByClient[name].overdue = true;
+    if(!debtByClient[name].grade && r['تصنيق العميل']) debtByClient[name].grade = r['تصنيق العميل'];
+  });
+
+  ROUTE_CLIENTS_LIST = clientsScope.map(c=>{
+    const name = c['اسم العميل'];
+    const debt = debtByClient[name];
+    return {
+      name,
+      grade: c['سعر العميل'] || '',
+      region: c['المنطقه سيستم'] || 'غير محدد',
+      visitedAccurate: accurateVisitedNames.has(name),
+      visitedAny: anyVisitedNames.has(name),
+      ordered: orderedNames.has(name),
+      hasDebt: !!debt,
+      debtSum: debt ? debt.sum : 0,
+      debtOverdue: debt ? debt.overdue : false
+    };
+  }).filter(c=>c.name).sort((a,b)=>a.name.localeCompare(b.name,'ar'));
+
+  const totalClients = ROUTE_CLIENTS_LIST.length;
+  const visitedCount = ROUTE_CLIENTS_LIST.filter(c=>c.visitedAccurate).length;
+  const orderedCount = ROUTE_CLIENTS_LIST.filter(c=>c.ordered).length;
+
+  document.getElementById('k-route-total').textContent = totalClients.toLocaleString('ar-IQ');
+  document.getElementById('k-route-visited').textContent = visitedCount.toLocaleString('ar-IQ') + ' زاروا (دقيقة)';
+  document.getElementById('k-route-orders').textContent = orderedCount.toLocaleString('ar-IQ') + ' عمل طلبية';
+}
+
+function showRouteModal(){
+  document.getElementById('route-search-box').value = '';
+  document.getElementById('route-modal-sub').textContent = `${ROUTE_CLIENTS_LIST.length.toLocaleString('ar-IQ')} عميل ضمن خط السير الحالي`;
+  renderRouteTable();
+  document.getElementById('route-overlay').style.display = 'flex';
+}
+
+function closeRouteModal(){
+  document.getElementById('route-overlay').style.display = 'none';
+}
+
+// بحث ذكي: يطابق الحرف/الحروف في أي مكان من اسم العميل، مش بس أول الاسم
+function renderRouteTable(){
+  const raw = document.getElementById('route-search-box').value.trim();
+  const term = raw.toLocaleLowerCase('ar');
+  const tbody = document.getElementById('route-list');
+  const rows = term ? ROUTE_CLIENTS_LIST.filter(c => c.name.toLocaleLowerCase('ar').includes(term)) : ROUTE_CLIENTS_LIST;
+
+  if(!rows.length){
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-dim)">لا يوجد عملاء مطابقين</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = rows.map(c=>{
+    const visitBadge = c.visitedAccurate
+      ? `<span style="color:var(--green);font-weight:700">✅ زار (دقيقة)</span>`
+      : (c.visitedAny ? `<span style="color:var(--orange);font-weight:700">⚠️ زار (غير دقيقة)</span>` : `<span style="color:var(--red);font-weight:700">🚫 لم يُزَر</span>`);
+    const debtBadge = !c.hasDebt
+      ? `<span style="color:var(--text-dim)">لا يوجد</span>`
+      : (c.debtOverdue
+          ? `<span style="color:var(--red);font-weight:700">⚠️ متجاوز — ${c.debtSum.toLocaleString('ar-IQ')}</span>`
+          : `<span style="color:var(--green)">✅ سليم — ${c.debtSum.toLocaleString('ar-IQ')}</span>`);
+    const safeName = c.name.replace(/'/g,"\\'");
+    return `<tr>
+      <td class="oc-name">${esc(c.name)}</td>
+      <td style="text-align:center">${esc(c.grade)||'-'}</td>
+      <td style="text-align:center">${esc(c.region)}</td>
+      <td style="text-align:center">${visitBadge}</td>
+      <td style="text-align:center">${debtBadge}</td>
+      <td style="text-align:center;white-space:nowrap">${callButtonHtml(c.name)} <span style="cursor:pointer;text-decoration:underline dotted;color:var(--accent)" onclick="closeRouteModal();openClientCardByName('${safeName}')">🪪 كارت العميل</span></td>
+    </tr>`;
+  }).join('');
+}
+
 let shareCardFile = null;
 let shareCardPrepTimer = null;
 
@@ -3552,31 +3616,50 @@ function fillShareCardFields(){
   document.getElementById('sc-period').textContent = periodText;
   document.getElementById('sc-date').textContent = new Date().toLocaleDateString('ar-EG', {year:'numeric', month:'long', day:'numeric'});
 
-  document.getElementById('sc-total').textContent = document.getElementById('k-total').textContent;
-  document.getElementById('sc-total-clients').textContent = document.getElementById('k-total-clients').textContent;
-  document.getElementById('sc-acc').textContent = document.getElementById('k-acc').textContent;
-  document.getElementById('sc-acc-pct').textContent = document.getElementById('k-acc-pct').textContent;
-  document.getElementById('sc-inacc').textContent = document.getElementById('k-inacc').textContent;
-  document.getElementById('sc-inacc-pct').textContent = document.getElementById('k-inacc-pct').textContent;
-  document.getElementById('sc-orders').textContent = document.getElementById('k-orders').textContent;
-  document.getElementById('sc-orders-val').textContent = document.getElementById('k-orders-val').textContent;
-  document.getElementById('sc-orders-qty').textContent = document.getElementById('k-orders-qty').textContent;
-  document.getElementById('sc-collect').textContent = document.getElementById('k-collect-val').textContent;
-  document.getElementById('sc-collect-count').textContent = document.getElementById('k-collect').textContent + ' عملية تحصيل';
-  document.getElementById('sc-unvisited').textContent = document.getElementById('k-unvisited').textContent;
-  document.getElementById('sc-unvisited-pct').textContent = document.getElementById('k-unvisited-pct').textContent;
-  document.getElementById('sc-shortvisits').textContent = document.getElementById('k-shortvisits').textContent;
-  document.getElementById('sc-worktime').textContent = document.getElementById('k-worktime').textContent;
-  document.getElementById('sc-worktime-span').textContent = document.getElementById('k-worktime-span').textContent;
-  document.getElementById('sc-totalduration').textContent = document.getElementById('k-totalduration').textContent;
-  document.getElementById('sc-dupclients').textContent = computeDuplicateClientsCount();
-  // أي KPI جديدة تتضاف في لوحة القيادة لازم تتحط هنا أيضًا حتى تبان في صورة المشاركة على واتساب
-  document.getElementById('sc-debt-total').textContent = document.getElementById('k-debt-total').textContent;
-  document.getElementById('sc-debt-overdue').textContent = document.getElementById('k-debt-overdue-val').textContent;
-  document.getElementById('sc-debt-overdue-pct').textContent = document.getElementById('k-debt-overdue-pct').textContent;
-  document.getElementById('sc-debt-clients').textContent = document.getElementById('k-debt-clients').textContent;
+  buildShareCardKPIGrid();
 
   return personName;
+}
+
+// ألوان كل صنف KPI (نفس أسماء الأصناف المستخدمة في class="kpi ..." بلوحة القيادة)
+const KPI_SHARE_COLOR_MAP = {red:'#c0392b', blue:'#1d4fa3', green:'#1e8e5a', orange:'#c9770a', purple:'#6b3fa0', teal:'#00897b', indigo:'#3f51b5', gold:'#c9a227'};
+
+// يبني شبكة كروت صورة المشاركة تلقائيًا من كل كروت KPI الظاهرة فعليًا فوق في لوحة القيادة (.kpi-row .kpi) —
+// بالطريقة دي أي KPI جديدة تتضاف مستقبلًا (زي كارت خط السير) تبان في الصورة من غير ما حد يفتكر يعدّل هنا يدويًا
+function buildShareCardKPIGrid(){
+  const grid = document.getElementById('sc-kpi-grid');
+  if(!grid) return;
+  const cards = Array.from(document.querySelectorAll('.kpi-row .kpi'));
+  const cardsHtml = cards.map(kpiEl=>{
+    const colorClass = ['red','blue','green','orange','purple','teal','indigo','gold'].find(c => kpiEl.classList.contains(c));
+    const color = KPI_SHARE_COLOR_MAP[colorClass] || '#1d2333';
+    const icon = kpiEl.querySelector('.kpi-icon');
+    const val = kpiEl.querySelector('.kpi-val');
+    const label = kpiEl.querySelector('.kpi-label');
+    if(!val || !label) return ''; // كارت غير متوقع الشكل — نتجاهله بدل ما نكسر الصورة
+    // نأخذ بس الـ subs الظاهرة فعليًا حاليًا (مش مستبعدة بـ display:none زي qty-kpi-line لغير الإدارة)
+    const subs = Array.from(kpiEl.querySelectorAll('.kpi-sub, .qty-kpi-line'))
+      .filter(el => window.getComputedStyle(el).display !== 'none')
+      .map(el => el.textContent.trim())
+      .filter(Boolean);
+    const span = subs.length >= 2 ? 'grid-column:1/-1; ' : '';
+    const subsHtml = subs.map(s => `<div style="font-size:11px; color:${esc(color)}; margin-top:2px; font-weight:700;">${esc(s)}</div>`).join('');
+    return `<div style="${span}background:#fff; border-radius:12px; padding:14px; text-align:center; box-shadow:0 1px 4px rgba(0,0,0,.08);">
+      <div style="font-size:22px;">${icon ? esc(icon.textContent.trim()) : ''}</div>
+      <div style="font-size:20px; font-weight:800; color:${esc(color)}; margin-top:4px;">${esc(val.textContent.trim())}</div>
+      <div style="font-size:11px; color:#70758f; margin-top:2px;">${esc(label.textContent.trim())}</div>
+      ${subsHtml}
+    </div>`;
+  }).join('');
+
+  // كارت "عملاء تم زيارتهم أكثر من مرة" محسوب خصيصًا لصورة المشاركة، مافيش له كارت مقابل ظاهر فوق في اللوحة
+  const dupHtml = `<div style="grid-column:1/-1; background:#fff; border-radius:12px; padding:14px; text-align:center; box-shadow:0 1px 4px rgba(0,0,0,.08);">
+    <div style="font-size:22px;">🔁</div>
+    <div style="font-size:20px; font-weight:800; color:#c0392b; margin-top:4px;">${computeDuplicateClientsCount().toLocaleString('ar-IQ')}</div>
+    <div style="font-size:11px; color:#70758f; margin-top:2px;">عملاء تم زيارتهم أكثر من مرة</div>
+  </div>`;
+
+  grid.innerHTML = cardsHtml + dupHtml;
 }
 
 // تحويل dataURL لـ Blob بشكل متزامن (بدون Promise) — أسرع من canvas.toBlob ومفيدة لتقليل التأخير قبل المشاركة
