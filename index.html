@@ -3556,14 +3556,13 @@ function renderRouteTable(){
       : (c.debtOverdue
           ? `<span style="color:var(--red);font-weight:700">⚠️ متجاوز — ${c.debtSum.toLocaleString('ar-IQ')}</span>`
           : `<span style="color:var(--green)">✅ سليم — ${c.debtSum.toLocaleString('ar-IQ')}</span>`);
-    const safeName = c.name.replace(/'/g,"\\'");
     return `<tr>
       <td class="oc-name">${esc(c.name)}</td>
       <td style="text-align:center">${esc(c.grade)||'-'}</td>
       <td style="text-align:center">${esc(c.region)}</td>
       <td style="text-align:center">${visitBadge}</td>
       <td style="text-align:center">${debtBadge}</td>
-      <td style="text-align:center;white-space:nowrap">${callButtonHtml(c.name)} <span style="cursor:pointer;text-decoration:underline dotted;color:var(--accent)" onclick="closeRouteModal();openClientCardByName('${safeName}')">🪪 كارت العميل</span></td>
+      <td style="text-align:center;white-space:nowrap">${callButtonHtml(c.name)}</td>
     </tr>`;
   }).join('');
 }
@@ -3630,36 +3629,42 @@ function buildShareCardKPIGrid(){
   const grid = document.getElementById('sc-kpi-grid');
   if(!grid) return;
   const cards = Array.from(document.querySelectorAll('.kpi-row .kpi'));
-  const cardsHtml = cards.map(kpiEl=>{
+  const halfCards = [], fullCards = [];
+  cards.forEach(kpiEl=>{
     const colorClass = ['red','blue','green','orange','purple','teal','indigo','gold'].find(c => kpiEl.classList.contains(c));
     const color = KPI_SHARE_COLOR_MAP[colorClass] || '#1d2333';
     const icon = kpiEl.querySelector('.kpi-icon');
     const val = kpiEl.querySelector('.kpi-val');
     const label = kpiEl.querySelector('.kpi-label');
-    if(!val || !label) return ''; // كارت غير متوقع الشكل — نتجاهله بدل ما نكسر الصورة
+    if(!val || !label) return; // كارت غير متوقع الشكل — نتجاهله بدل ما نكسر الصورة
     // نأخذ بس الـ subs الظاهرة فعليًا حاليًا (مش مستبعدة بـ display:none زي qty-kpi-line لغير الإدارة)
     const subs = Array.from(kpiEl.querySelectorAll('.kpi-sub, .qty-kpi-line'))
       .filter(el => window.getComputedStyle(el).display !== 'none')
       .map(el => el.textContent.trim())
       .filter(Boolean);
-    const span = subs.length >= 2 ? 'grid-column:1/-1; ' : '';
+    const isFull = subs.length >= 2;
     const subsHtml = subs.map(s => `<div style="font-size:11px; color:${esc(color)}; margin-top:2px; font-weight:700;">${esc(s)}</div>`).join('');
-    return `<div style="${span}background:#fff; border-radius:12px; padding:14px; text-align:center; box-shadow:0 1px 4px rgba(0,0,0,.08);">
+    // ارتفاع ثابت + محتوى متمركز رأسيًا حتى الكروت كلها تبان متساوية ومنظمة مهما اختلف عدد أسطرها
+    const minHeight = isFull ? 108 : 96;
+    const span = isFull ? 'grid-column:1/-1; ' : '';
+    const html = `<div style="${span}min-height:${minHeight}px; display:flex; flex-direction:column; justify-content:center; background:#fff; border-radius:12px; padding:14px; text-align:center; box-shadow:0 1px 4px rgba(0,0,0,.08);">
       <div style="font-size:22px;">${icon ? esc(icon.textContent.trim()) : ''}</div>
       <div style="font-size:20px; font-weight:800; color:${esc(color)}; margin-top:4px;">${esc(val.textContent.trim())}</div>
       <div style="font-size:11px; color:#70758f; margin-top:2px;">${esc(label.textContent.trim())}</div>
       ${subsHtml}
     </div>`;
-  }).join('');
+    (isFull ? fullCards : halfCards).push(html);
+  });
 
   // كارت "عملاء تم زيارتهم أكثر من مرة" محسوب خصيصًا لصورة المشاركة، مافيش له كارت مقابل ظاهر فوق في اللوحة
-  const dupHtml = `<div style="grid-column:1/-1; background:#fff; border-radius:12px; padding:14px; text-align:center; box-shadow:0 1px 4px rgba(0,0,0,.08);">
+  const dupHtml = `<div style="grid-column:1/-1; min-height:96px; display:flex; flex-direction:column; justify-content:center; background:#fff; border-radius:12px; padding:14px; text-align:center; box-shadow:0 1px 4px rgba(0,0,0,.08);">
     <div style="font-size:22px;">🔁</div>
     <div style="font-size:20px; font-weight:800; color:#c0392b; margin-top:4px;">${computeDuplicateClientsCount().toLocaleString('ar-IQ')}</div>
     <div style="font-size:11px; color:#70758f; margin-top:2px;">عملاء تم زيارتهم أكثر من مرة</div>
   </div>`;
 
-  grid.innerHTML = cardsHtml + dupHtml;
+  // ترتيب ثابت دايمًا: كل الكروت الصغيرة (عمود واحد) مع بعض فوق كتلة واحدة منظمة، وبعدها الكروت الكبيرة (تفاصيل أكتر) تحت كل واحد بعرض كامل
+  grid.innerHTML = halfCards.join('') + fullCards.join('') + dupHtml;
 }
 
 // تحويل dataURL لـ Blob بشكل متزامن (بدون Promise) — أسرع من canvas.toBlob ومفيدة لتقليل التأخير قبل المشاركة
@@ -4100,11 +4105,13 @@ function toggleMobileFocusMode(){
 })();
 
 // 👉👈 التنقل بالسحب بين التابات على الموبايل — يتنقل فقط بين التابات المتاحة فعليًا لهذا المستخدم
-let swipeStartX = null, swipeStartY = null;
+let swipeStartX = null, swipeStartY = null, swipeInsideOverlay = false;
 document.addEventListener('touchstart', e=>{
   if(!isMobileView() || e.touches.length !== 1) return;
   swipeStartX = e.touches[0].clientX;
   swipeStartY = e.touches[0].clientY;
+  // لو السحب بدأ جوه أي مودال/بوب أب مفتوح (زي جدول خط السير القابل للتمرير أفقيًا)، منسيبش سحب اليسار/اليمين يتحول لتنقل بين التابات
+  swipeInsideOverlay = !!e.target.closest('.admin-overlay');
 }, {passive:true});
 document.addEventListener('touchend', e=>{
   if(!isMobileView() || swipeStartX==null) return;
@@ -4112,6 +4119,7 @@ document.addEventListener('touchend', e=>{
   const endY = e.changedTouches[0].clientY;
   const dx = endX - swipeStartX, dy = endY - swipeStartY;
   swipeStartX = null; swipeStartY = null;
+  if(swipeInsideOverlay){ swipeInsideOverlay = false; return; }
   // نتجاهل السحب الرأسي (تمرير عادي للصفحة) ونطلب مسافة أفقية معقولة عشان ميتفعلش بالغلط
   if(Math.abs(dx) < 70 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
   const allowed = (currentUser && currentUser.role === 'إدارة')
