@@ -1018,6 +1018,10 @@ body.role-field-restricted #fg-branch, body.role-field-restricted #fg-type, body
 <div class="tab-content" id="tab-geomap">
   <div class="route-controls" style="flex-wrap:wrap">
     <div class="filter-group">
+      <label>حالة الزيارة</label>
+      <select id="geo-visit-status"><option value="">الكل</option><option value="visited">تمت زيارته</option><option value="unvisited">لم تتم زيارته</option></select>
+    </div>
+    <div class="filter-group">
       <label>المنطقة</label>
       <select id="geo-region"><option value="">كل المناطق</option></select>
     </div>
@@ -5865,16 +5869,53 @@ function convexHull(points){
   return lower.concat(upper);
 }
 
-function populateGeoMapSelectors(){
+// يحسب حالة كل عملاء الشخص المحدد (بدون تقييد بمنطقة) ضمن فترة السنة/الشهر الحالية — يُستخدم لتغذية فلتر "حالة الزيارة" ديناميكيًا مع المناطق
+function computeGeoAllClientsWithStatus(){
   const person = document.getElementById('f-person').value;
+  if(!person) return [];
+  const year = document.getElementById('f-year').value;
+  const month = document.getElementById('f-month').value;
+  const visitsInPeriod = filtered.filter(r=>{
+    if(r['الشخص اللي قام بالزياره']!==person) return false;
+    if(year && String(r.year)!==String(year)) return false;
+    if(month && String(r.month)!==String(month)) return false;
+    return true;
+  });
+  const clientsScope = CLIENTS.filter(c=> c.المندوب===person && c.المندوب!=='حذف' && c.lat_client!=='' && c.lat_client!=null);
+  const byClient = {};
+  visitsInPeriod.forEach(r=>{
+    if(!r.العميل) return;
+    if(!byClient[r.العميل]) byClient[r.العميل] = [];
+    byClient[r.العميل].push(r);
+  });
+  return clientsScope.map(c=>{
+    const visits = byClient[c['اسم العميل']] || [];
+    const hasOrder = v => (v['قيمة ف الطلبية']!=='' && v['قيمة ف الطلبية']!=null);
+    let status;
+    if(visits.length===0) status='gray';
+    else if(visits.some(v => v.accuracy==='دقيقة' && hasOrder(v))) status='green';
+    else if(visits.some(v => v.accuracy==='دقيقة')) status='yellow';
+    else status='red';
+    return {name:c['اسم العميل'], region:c['المنطقه سيستم']||'غير محدد', status};
+  });
+}
+
+function populateGeoMapSelectors(){
   const regionSel = document.getElementById('geo-region');
+  const visitStatusSel = document.getElementById('geo-visit-status');
   const prevRegion = regionSel.value;
-  const regions = person
-    ? [...new Set(CLIENTS.filter(c=>c.المندوب===person && c.المندوب!=='حذف').map(c=>c['المنطقه سيستم']).filter(Boolean))].sort()
-    : [];
+
+  const allWithStatus = computeGeoAllClientsWithStatus();
+  // فلتر "حالة الزيارة" ديناميكي مع المناطق: قائمة المناطق بتتغير حسب اختيارك (تمت/لم تتم/الكل)
+  const statusFiltered = visitStatusSel.value === 'visited' ? allWithStatus.filter(c=>c.status!=='gray')
+    : visitStatusSel.value === 'unvisited' ? allWithStatus.filter(c=>c.status==='gray')
+    : allWithStatus;
+  const regions = [...new Set(statusFiltered.map(c=>c.region).filter(Boolean))].sort();
+
   regionSel.innerHTML = '<option value="">كل المناطق</option>' + regions.map(r=>`<option value="${r}">${r}</option>`).join('');
   regionSel.value = regions.includes(prevRegion) ? prevRegion : '';
   regionSel.onchange = renderGeoPerfMap;
+  visitStatusSel.onchange = populateGeoMapSelectors;
   renderGeoPerfMap();
 }
 
@@ -5882,6 +5923,7 @@ function computeGeoPerfPayload(){
   const person = document.getElementById('f-person').value;
   if(!person) return {error:'اختر شخص (مندوب) من فلتر "الشخص" التي فوق الصفحة'};
   const region = document.getElementById('geo-region').value;
+  const visitStatusFilter = document.getElementById('geo-visit-status').value;
 
   const year = document.getElementById('f-year').value;
   const month = document.getElementById('f-month').value;
@@ -5891,7 +5933,8 @@ function computeGeoPerfPayload(){
     if(month && String(r.month)!==String(month)) return false;
     return true;
   });
-  const periodLabel = (year?year:'كل السنوات') + (month?(' - شهر '+month):' - كل الشهور') + (region?(' - منطقة '+region):'');
+  const periodLabel = (year?year:'كل السنوات') + (month?(' - شهر '+month):' - كل الشهور') + (region?(' - منطقة '+region):'')
+    + (visitStatusFilter==='visited' ? ' - تمت زيارته' : visitStatusFilter==='unvisited' ? ' - لم تتم زيارته' : '');
 
   let clientsScope = CLIENTS.filter(c=> c.المندوب===person && c.المندوب!=='حذف' && c.lat_client!=='' && c.lat_client!=null);
   if(region) clientsScope = clientsScope.filter(c=>c['المنطقه سيستم']===region);
@@ -5904,21 +5947,32 @@ function computeGeoPerfPayload(){
     byClient[r.العميل].push(r);
   });
 
-  let greenN=0, yellowN=0, redN=0, grayN=0;
-  const payload = clientsScope.map(c=>{
+  let payload = clientsScope.map(c=>{
     const visits = byClient[c['اسم العميل']] || [];
     let status;
     const hasOrder = v => (v['قيمة ف الطلبية']!=='' && v['قيمة ف الطلبية']!=null);
     const accurateWithOrder = visits.some(v => v.accuracy==='دقيقة' && hasOrder(v));
     const accurateVisit = visits.some(v => v.accuracy==='دقيقة');
-    if(visits.length===0){ status='gray'; grayN++; }
-    else if(accurateWithOrder){ status='green'; greenN++; }
-    else if(accurateVisit){ status='yellow'; yellowN++; }
-    else { status='red'; redN++; }
+    if(visits.length===0){ status='gray'; }
+    else if(accurateWithOrder){ status='green'; }
+    else if(accurateVisit){ status='yellow'; }
+    else { status='red'; }
     return {
       lat:c.lat_client, lng:c.lng_client, name:c['اسم العميل']||'',
       region:c['المنطقه سيستم']||'غير محدد', status, visitCount: visits.length
     };
+  });
+
+  // فلتر "حالة الزيارة": تمت زيارته = عنده أي زيارة (مش لازم تكون دقيقة) · لم تتم زيارته = صفر زيارات إطلاقًا
+  if(visitStatusFilter==='visited') payload = payload.filter(p=>p.status!=='gray');
+  else if(visitStatusFilter==='unvisited') payload = payload.filter(p=>p.status==='gray');
+
+  let greenN=0, yellowN=0, redN=0, grayN=0;
+  payload.forEach(p=>{
+    if(p.status==='green') greenN++;
+    else if(p.status==='yellow') yellowN++;
+    else if(p.status==='red') redN++;
+    else grayN++;
   });
 
   return {person, periodLabel, payload, greenN, yellowN, redN, grayN};
