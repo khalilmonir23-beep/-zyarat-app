@@ -698,10 +698,10 @@ body.role-field-restricted #fg-branch, body.role-field-restricted #fg-type, body
 <div class="kpi-row">
   <div class="kpi red kpi-clickable" id="k-debt-card" onclick="showOverdueClientsModal()"><div class="kpi-icon">💰</div><div class="kpi-val" id="k-debt-total">0</div><div class="kpi-label">إجمالي المديونية</div><div class="kpi-sub" id="k-debt-overdue-val" style="color:var(--red)">متجاوز: 0 د.ع</div><div class="kpi-sub" id="k-debt-overdue-pct">النسبة: 0%</div><div class="kpi-sub" id="k-debt-clients">0 عميل • 0 متجاوز</div><div class="kpi-tap-hint">اضغط لعرض العملاء المتجاوزين 👆</div></div>
   <div class="kpi blue kpi-clickable" id="k-total-card" onclick="showTotalVisitsModal()"><div class="kpi-icon">📋</div><div class="kpi-val" id="k-total">0</div><div class="kpi-label">إجمالي الزيارات</div><div class="kpi-sub" id="k-total-clients">0 عميل</div><div class="kpi-tap-hint">اضغط لعرض الأسماء 👆</div></div>
-  <div class="kpi green" id="k-acc-card"><div class="kpi-icon">✅</div><div class="kpi-val" id="k-acc">0</div><div class="kpi-label">زيارات دقيقة</div><div class="kpi-sub" id="k-acc-pct">0%</div></div>
-  <div class="kpi red"><div class="kpi-icon">❌</div><div class="kpi-val" id="k-inacc">0</div><div class="kpi-label">زيارات غير دقيقة</div><div class="kpi-sub" id="k-inacc-pct">0%</div></div>
+  <div class="kpi green kpi-clickable" id="k-acc-card" onclick="showAccurateVisitsModal()"><div class="kpi-icon">✅</div><div class="kpi-val" id="k-acc">0</div><div class="kpi-label">زيارات دقيقة</div><div class="kpi-sub" id="k-acc-pct">0%</div><div class="kpi-tap-hint">اضغط لعرض الأسماء 👆</div></div>
+  <div class="kpi red kpi-clickable" id="k-inacc-card" onclick="showInaccurateVisitsModal()"><div class="kpi-icon">❌</div><div class="kpi-val" id="k-inacc">0</div><div class="kpi-label">زيارات غير دقيقة</div><div class="kpi-sub" id="k-inacc-pct">0%</div><div class="kpi-tap-hint">اضغط لعرض الأسماء 👆</div></div>
   <div class="kpi orange kpi-clickable" id="k-orders-card" onclick="showOrdersModal()"><div class="kpi-icon">📦</div><div class="kpi-val" id="k-orders">0</div><div class="kpi-label">إجمالي الطلبيات</div><div class="kpi-sub" id="k-orders-val">0 د.ع</div><div class="kpi-sub qty-kpi-line" id="k-orders-qty">0 كمية</div><div class="kpi-tap-hint">اضغط لعرض الأسماء 👆</div></div>
-  <div class="kpi purple"><div class="kpi-icon">💰</div><div class="kpi-val" id="k-collect">0</div><div class="kpi-label">إجمالي التحصيل</div><div class="kpi-sub" id="k-collect-val">0 د.ع</div></div>
+  <div class="kpi purple kpi-clickable" id="k-collect-card" onclick="showCollectModal()"><div class="kpi-icon">💰</div><div class="kpi-val" id="k-collect">0</div><div class="kpi-label">إجمالي التحصيل</div><div class="kpi-sub" id="k-collect-val">0 د.ع</div><div class="kpi-tap-hint">اضغط لعرض الأسماء 👆</div></div>
   <div class="kpi teal kpi-clickable" id="k-unvisited-card" onclick="showUnvisitedClientsModal()"><div class="kpi-icon">🚫</div><div class="kpi-val" id="k-unvisited">0</div><div class="kpi-label">عملاء لم تتم زيارتهم (الشهر)</div><div class="kpi-sub" id="k-unvisited-pct">من 0 عميل</div><div class="kpi-tap-hint">اضغط لعرض الأسماء 👆</div></div>
   <div class="kpi red kpi-clickable" id="k-shortvisits-card" onclick="showShortVisitsModal()"><div class="kpi-icon">⏱️</div><div class="kpi-val" id="k-shortvisits">0</div><div class="kpi-label">زيارات أقل من 5 دقائق</div><div class="kpi-tap-hint">اضغط لعرض الأسماء 👆</div></div>
   <div class="kpi teal kpi-clickable" id="k-route-card" onclick="showRouteModal()"><div class="kpi-icon">🧭</div><div class="kpi-val" id="k-route-total">0</div><div class="kpi-label">عملاء خط السير</div><div class="kpi-sub" id="k-route-visited">0 زاروا (دقيقة)</div><div class="kpi-sub" id="k-route-orders">0 عمل طلبية</div><div class="kpi-tap-hint">اضغط لعرض التفاصيل 👆</div></div>
@@ -744,6 +744,36 @@ body.role-field-restricted #fg-branch, body.role-field-restricted #fg-type, body
     <h3>📦 عملاء الطلبيات</h3>
     <div class="sub" id="orders-modal-sub">العملاء الذين أُجريت لهم طلبيات وكميتها ضمن الفلتر الحالي</div>
     <div class="unvisited-list" id="orders-list"></div>
+  </div>
+</div>
+
+<!-- مودال قائمة عملاء الزيارات الدقيقة -->
+<div class="admin-overlay" id="accurate-visits-overlay">
+  <div class="admin-panel admin-panel-wide">
+    <button class="admin-close" onclick="closeAccurateVisitsModal()">✕</button>
+    <h3>✅ عملاء الزيارات الدقيقة</h3>
+    <div class="sub" id="accurate-visits-modal-sub">عدد الزيارات الدقيقة لكل عميل ضمن الفلتر الحالي</div>
+    <div class="unvisited-list" id="accurate-visits-list"></div>
+  </div>
+</div>
+
+<!-- مودال قائمة عملاء الزيارات غير الدقيقة -->
+<div class="admin-overlay" id="inaccurate-visits-overlay">
+  <div class="admin-panel admin-panel-wide">
+    <button class="admin-close" onclick="closeInaccurateVisitsModal()">✕</button>
+    <h3>❌ عملاء الزيارات غير الدقيقة</h3>
+    <div class="sub" id="inaccurate-visits-modal-sub">عدد الزيارات غير الدقيقة لكل عميل ضمن الفلتر الحالي</div>
+    <div class="unvisited-list" id="inaccurate-visits-list"></div>
+  </div>
+</div>
+
+<!-- مودال قائمة عملاء التحصيل (قيمة التحصيل لكل عميل) -->
+<div class="admin-overlay" id="collect-overlay">
+  <div class="admin-panel admin-panel-wide">
+    <button class="admin-close" onclick="closeCollectModal()">✕</button>
+    <h3>💰 عملاء التحصيل</h3>
+    <div class="sub" id="collect-modal-sub">عدد عمليات التحصيل وقيمتها لكل عميل ضمن الفلتر الحالي</div>
+    <div class="unvisited-list" id="collect-list"></div>
   </div>
 </div>
 
@@ -3442,6 +3472,100 @@ function showOrdersModal(){
 
 function closeOrdersModal(){
   document.getElementById('orders-overlay').style.display = 'none';
+}
+
+// ============ زيارات دقيقة — عدد الزيارات الدقيقة لكل عميل ============
+function showAccurateVisitsModal(){
+  const listEl = document.getElementById('accurate-visits-list');
+  const subEl = document.getElementById('accurate-visits-modal-sub');
+
+  const arr = filtered.filter(r=>r.accuracy==='دقيقة' && r.العميل);
+  const byClient = {};
+  arr.forEach(r=>{
+    if(!byClient[r.العميل]) byClient[r.العميل] = { visits:0 };
+    byClient[r.العميل].visits++;
+  });
+  const rows = Object.keys(byClient).map(name => ({ name, ...byClient[name] })).sort((a,b)=>b.visits - a.visits);
+
+  if(!rows.length){
+    listEl.innerHTML = '<div class="no-data">مافي زيارات دقيقة ضمن الفلتر الحالي</div>';
+  } else {
+    listEl.innerHTML = rows.map(row => `
+      <div class="unvisited-item two-col">
+        <span class="item-name">${esc(row.name)}</span>
+        <span class="item-badges"><span class="item-badge">${row.visits.toLocaleString()} زيارة دقيقة</span></span>
+      </div>`).join('');
+  }
+  subEl.textContent = `${rows.length.toLocaleString()} عميل ضمن الفلتر الحالي`;
+  document.getElementById('accurate-visits-overlay').style.display = 'flex';
+}
+
+function closeAccurateVisitsModal(){
+  document.getElementById('accurate-visits-overlay').style.display = 'none';
+}
+
+// ============ زيارات غير دقيقة — عدد الزيارات غير الدقيقة لكل عميل ============
+function showInaccurateVisitsModal(){
+  const listEl = document.getElementById('inaccurate-visits-list');
+  const subEl = document.getElementById('inaccurate-visits-modal-sub');
+
+  const arr = filtered.filter(r=>r.accuracy==='غير دقيقة' && r.العميل);
+  const byClient = {};
+  arr.forEach(r=>{
+    if(!byClient[r.العميل]) byClient[r.العميل] = { visits:0 };
+    byClient[r.العميل].visits++;
+  });
+  const rows = Object.keys(byClient).map(name => ({ name, ...byClient[name] })).sort((a,b)=>b.visits - a.visits);
+
+  if(!rows.length){
+    listEl.innerHTML = '<div class="no-data">مافي زيارات غير دقيقة ضمن الفلتر الحالي</div>';
+  } else {
+    listEl.innerHTML = rows.map(row => `
+      <div class="unvisited-item two-col">
+        <span class="item-name">${esc(row.name)}</span>
+        <span class="item-badges"><span class="item-badge">${row.visits.toLocaleString()} زيارة غير دقيقة</span></span>
+      </div>`).join('');
+  }
+  subEl.textContent = `${rows.length.toLocaleString()} عميل ضمن الفلتر الحالي`;
+  document.getElementById('inaccurate-visits-overlay').style.display = 'flex';
+}
+
+function closeInaccurateVisitsModal(){
+  document.getElementById('inaccurate-visits-overlay').style.display = 'none';
+}
+
+// ============ إجمالي التحصيل — عدد عمليات التحصيل وقيمتها لكل عميل ============
+function showCollectModal(){
+  const listEl = document.getElementById('collect-list');
+  const subEl = document.getElementById('collect-modal-sub');
+
+  const arr = filtered.filter(r=>r['قيمة المقبوضات'] !== '' && r['قيمة المقبوضات'] !== null && r.العميل);
+  const byClient = {};
+  arr.forEach(r=>{
+    if(!byClient[r.العميل]) byClient[r.العميل] = { count:0, val:0 };
+    byClient[r.العميل].count++;
+    byClient[r.العميل].val += (+r['قيمة المقبوضات'] || 0);
+  });
+  const rows = Object.keys(byClient).map(name => ({ name, ...byClient[name] })).sort((a,b)=>b.val - a.val);
+
+  if(!rows.length){
+    listEl.innerHTML = '<div class="no-data">مافي عمليات تحصيل ضمن الفلتر الحالي</div>';
+  } else {
+    listEl.innerHTML = rows.map(row => `
+      <div class="unvisited-item two-col">
+        <span class="item-name">${esc(row.name)}</span>
+        <span class="item-badges">
+          <span class="item-badge">${row.count.toLocaleString()} تحصيل</span>
+          <span class="item-badge">${row.val.toLocaleString('ar-IQ')} د.ع</span>
+        </span>
+      </div>`).join('');
+  }
+  subEl.textContent = `${rows.length.toLocaleString()} عميل ضمن الفلتر الحالي`;
+  document.getElementById('collect-overlay').style.display = 'flex';
+}
+
+function closeCollectModal(){
+  document.getElementById('collect-overlay').style.display = 'none';
 }
 
 // ============ زيارات أقل من 5 دقائق — أسماء العملاء فقط ============
