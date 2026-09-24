@@ -6238,12 +6238,17 @@ function openGeoPerfMapFull(){
   openMapWindow(html);
 }
 
+// يورّث فلتري "الشخص" و"اليوم" اللي فوق الصفحة تلقائيًا (لو محددين) بدل ما تختارهم تاني هنا —
+// وتقدر برضه تغيّرهم هنا لوحدهم لفحص شخص/يوم مختلف من غير ما تغيّر فلتر باقي الصفحة
 function populateTrackSelectors(){
   const persons = [...new Set(filtered.map(r=>r['الشخص اللي قام بالزياره']).filter(Boolean))].sort();
   const sel = document.getElementById('track-person');
   const prevVal = sel.value;
   sel.innerHTML = '<option value="">اختر شخص</option>' + persons.map(p=>`<option value="${p}">${p}</option>`).join('');
-  sel.value = persons.includes(prevVal) ? prevVal : '';
+  const globalPerson = document.getElementById('f-person').value;
+  if(prevVal && persons.includes(prevVal)) sel.value = prevVal;
+  else if(globalPerson && persons.includes(globalPerson)) sel.value = globalPerson;
+  else sel.value = '';
   sel.onchange = onTrackPersonChange;
   onTrackPersonChange();
 }
@@ -6251,6 +6256,7 @@ function populateTrackSelectors(){
 function onTrackPersonChange(){
   const person = document.getElementById('track-person').value;
   const daySel = document.getElementById('track-day');
+  const prevDay = daySel.value;
   if(!person){
     daySel.innerHTML = '<option value="">اختر يوم</option>';
     document.getElementById('track-kpis').style.display = 'none';
@@ -6260,6 +6266,18 @@ function onTrackPersonChange(){
   daySel.innerHTML = '<option value="">اختر يوم</option>' + dates.map(d=>`<option value="${d}">${d}</option>`).join('');
   daySel.onchange = buildTrackView; // عرض إجماليات اليوم تلقائيًا فور اختيار اليوم
   document.getElementById('track-kpis').style.display = 'none';
+
+  // نفس فكرة توريث الشخص: لو فلتر "اليوم" فوق الصفحة محدد على يوم معين، نجيبه هنا تلقائيًا بدل التكرار
+  const year = document.getElementById('f-year').value;
+  const month = document.getElementById('f-month').value;
+  let globalDate = '';
+  if(year && month && selectedDay){
+    globalDate = `${year}-${String(+month).padStart(2,'0')}-${String(+selectedDay).padStart(2,'0')}`;
+  }
+  if(prevDay && dates.includes(prevDay)) daySel.value = prevDay;
+  else if(globalDate && dates.includes(globalDate)) daySel.value = globalDate;
+  else daySel.value = '';
+  if(daySel.value) buildTrackView(); // اليوم اتحدد تلقائيًا — نعرض التفاصيل على طول من غير ما تضغط تاني
 
   const dayOptionsHtml = '<option value="">اختر يوم</option>' + dates.map(d=>`<option value="${d}">${d}</option>`).join('');
   const cmpA = document.getElementById('cmp-day-a'), cmpB = document.getElementById('cmp-day-b');
