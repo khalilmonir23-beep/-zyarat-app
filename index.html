@@ -110,6 +110,14 @@ body.dark{
 }
 
 body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Arial,sans-serif;background:var(--bg-page);color:var(--text-primary);min-height:100vh;transition:background .2s,color .2s;overflow-x:hidden;-webkit-tap-highlight-color:transparent}
+/* تحوّل ناعم بين الوضع الفاتح والغامق بدل التغيير الفجائي لكل عناصر الصفحة */
+@media (prefers-reduced-motion: no-preference){
+  body, .kpi, .report-card, .admin-panel, .admin-overlay, select, input, button, .tab-btn, .tab-bar,
+  .visits-table tr, table.report-table tr, table.pivot-table tr, table.overdue-table tr,
+  .client-info-card, .header, .filters, .login-card, .card{
+    transition: background-color .25s ease, color .25s ease, border-color .25s ease, box-shadow .25s ease;
+  }
+}
 ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--scrollbar-track)}::-webkit-scrollbar-thumb{background:var(--scrollbar-thumb);border-radius:3px}
 
 /* HEADER */
@@ -146,6 +154,14 @@ select:focus,input:focus{outline:none;border-color:var(--accent)}
 
 /* كارت KPI قابل للضغط (عملاء لم تتم زيارتهم) */
 .kpi-clickable{cursor:pointer}
+@media (prefers-reduced-motion: no-preference){
+  @keyframes kpiPulseGlow{
+    0%,100%{box-shadow:var(--shadow)}
+    50%{box-shadow:var(--shadow), 0 0 0 5px color-mix(in srgb, var(--accent) 22%, transparent)}
+  }
+  .kpi-clickable{animation:kpiPulseGlow 3s ease-in-out infinite}
+  .kpi-clickable:hover{animation-play-state:paused}
+}
 
 /* عمود "الكمية" الإضافي يظهر فقط للإدارة (التي ترى قيمة الطلبية والكمية معًا)؛ المندوب/المشرف أصلًا يريان الكمية بدل القيمة في نفس العمود */
 .qty-col{display:none !important}
@@ -257,6 +273,27 @@ body.mobile-focus-mode .filters, body.mobile-focus-mode .tab-bar{display:none !i
 .tab-btn.active{background:var(--bg-card);color:var(--accent);border-bottom:2px solid var(--accent)}
 .tab-content{display:none}
 .tab-content.active{display:block}
+@media (prefers-reduced-motion: no-preference){
+  @keyframes tabFadeIn{from{opacity:0}to{opacity:1}}
+  .tab-content.active{animation:tabFadeIn .25s ease-out both}
+
+  @keyframes kpiEnter{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+  .kpi-row .kpi{animation:kpiEnter .45s ease-out both}
+  .kpi-row .kpi:nth-child(1){animation-delay:.02s}
+  .kpi-row .kpi:nth-child(2){animation-delay:.05s}
+  .kpi-row .kpi:nth-child(3){animation-delay:.08s}
+  .kpi-row .kpi:nth-child(4){animation-delay:.11s}
+  .kpi-row .kpi:nth-child(5){animation-delay:.14s}
+  .kpi-row .kpi:nth-child(6){animation-delay:.17s}
+  .kpi-row .kpi:nth-child(7){animation-delay:.20s}
+  .kpi-row .kpi:nth-child(8){animation-delay:.23s}
+  .kpi-row .kpi:nth-child(9){animation-delay:.26s}
+  .kpi-row .kpi:nth-child(10){animation-delay:.29s}
+  .kpi-row .kpi:nth-child(11){animation-delay:.32s}
+  .kpi-row .kpi:nth-child(12){animation-delay:.35s}
+  .kpi-row .kpi:nth-child(13){animation-delay:.38s}
+  .kpi-row .kpi:nth-child(14){animation-delay:.41s}
+}
 
 /* REPORT SECTIONS */
 .section-title{padding:18px 30px 6px;font-size:15px;font-weight:700;color:var(--text-heading);display:flex;align-items:center;gap:8px}
@@ -321,6 +358,12 @@ body.role-field-restricted #fg-branch, body.role-field-restricted #fg-type, body
 .client-info-item .l{font-size:11px;color:var(--text-dim)}
 .client-info-item .v{font-size:15px;font-weight:700;color:var(--text-heading);margin-top:2px}
 #client-card-map{height:640px;border-radius:12px;margin:0 30px 20px;border:1px solid var(--border-main)}
+@media (prefers-reduced-motion: no-preference){
+  @keyframes markerPop{from{opacity:0;transform:scale(0)}to{opacity:1;transform:scale(1)}}
+  .geo-marker{transform-box:fill-box; transform-origin:center; animation:markerPop .35s ease-out both}
+  @keyframes markerPulseRed{0%,100%{filter:drop-shadow(0 0 0 rgba(192,57,57,.7))}50%{filter:drop-shadow(0 0 6px rgba(192,57,57,.95))}}
+  .geo-marker-red{animation:markerPop .35s ease-out both, markerPulseRed 1.8s ease-in-out .4s infinite}
+}
 #geo-perf-map{height:640px;border-radius:12px;margin:0 30px 20px;border:1px solid var(--border-main)}
 
 .cc-legend{display:flex;gap:16px;margin:0 30px 16px;font-size:12px;color:var(--text-dim);flex-wrap:wrap}
@@ -337,6 +380,11 @@ body.role-field-restricted #fg-branch, body.role-field-restricted #fg-type, body
 
 /* ADMIN PANEL (hidden - 5 clicks to reveal) */
 .admin-overlay{display:none;position:fixed;inset:0;background:rgba(10,12,20,.55);z-index:2000;align-items:center;justify-content:center}
+@media (prefers-reduced-motion: no-preference){
+  .admin-overlay .admin-panel, #login-overlay .login-card{transition:transform .22s ease, opacity .22s ease}
+  .admin-overlay .admin-panel.pop-enter, .admin-overlay .admin-panel.pop-exit,
+  #login-overlay .login-card.pop-enter, #login-overlay .login-card.pop-exit{opacity:0; transform:scale(.94) translateY(10px)}
+}
 .admin-panel{background:var(--bg-card);border:1px solid var(--border-main);border-radius:14px;padding:26px;width:420px;max-width:92vw;box-shadow:0 10px 40px rgba(0,0,0,.35);position:relative}
 /* لوحة الإعدادات (رفع ملف/سجل دخول/اختبارات) أعرض بكتير وبعرض عمودين، عشان تقل الحاجة للسكرول لتحت */
 .admin-panel-settings{width:920px;max-width:95vw;max-height:88vh;overflow-y:auto}
@@ -441,24 +489,27 @@ body.role-field-restricted #fg-branch, body.role-field-restricted #fg-type, body
   table.report-table, table.pivot-table{font-size:11px}
 
   /* تحويل كل جداول التقارير والملخصات (غير فقط جدول الزيارات) لكروت رأسية سهلة القراءة بإصبع واحد على الموبايل */
-  table.report-table thead, table.pivot-table thead, .visits-table thead{display:none}
+  table.report-table thead, table.pivot-table thead, table.overdue-table thead, .visits-table thead{display:none}
   table.report-table, table.report-table tbody, table.report-table tr, table.report-table td,
   table.pivot-table, table.pivot-table tbody, table.pivot-table tr, table.pivot-table td,
+  table.overdue-table, table.overdue-table tbody, table.overdue-table tr, table.overdue-table td,
   .visits-table, .visits-table tbody, .visits-table tr, .visits-table td{display:block; width:100%; min-width:0}
   .visits-table{font-size:13px}
-  table.report-table tr, table.pivot-table tr, .visits-table tr{
+  table.report-table tr, table.pivot-table tr, table.overdue-table tr, .visits-table tr{
     margin:0 0 10px; padding:10px 12px; border-radius:12px;
     border:1px solid var(--border-main); background:var(--bg-card);
     box-shadow:0 1px 4px rgba(0,0,0,.08);
   }
-  table.report-table td, table.pivot-table td, .visits-table td{
+  table.report-table td, table.pivot-table td, table.overdue-table td, .visits-table td{
     display:flex; justify-content:space-between; align-items:center; gap:12px;
     padding:7px 2px; border-bottom:1px solid var(--border-main); white-space:normal; text-align:left;
   }
-  table.report-table td:last-child, table.pivot-table td:last-child, .visits-table td:last-child{border-bottom:none}
-  table.report-table td::before, table.pivot-table td::before, .visits-table td::before{
+  table.report-table td:last-child, table.pivot-table td:last-child, table.overdue-table td:last-child, .visits-table td:last-child{border-bottom:none}
+  table.report-table td::before, table.pivot-table td::before, table.overdue-table td::before, .visits-table td::before{
     content:attr(data-label); font-weight:700; color:var(--text-dim); font-size:11.5px; flex-shrink:0;
   }
+  table.overdue-table td[colspan]{display:block; text-align:center}
+  table.overdue-table td[colspan]::before{content:none}
   .visits-table td[data-label="#"]{display:none}
   body.role-admin table.report-table td.qty-col, body.role-admin table.pivot-table td.qty-col, body.role-admin .visits-table td.qty-col{
     display:flex !important;
@@ -803,6 +854,7 @@ body.role-field-restricted #fg-branch, body.role-field-restricted #fg-type, body
     <button class="admin-close" onclick="closeOverdueClientsModal()">✕</button>
     <h3>⏰ العملاء المتجاوزين في المديونية</h3>
     <div class="sub" id="overdue-modal-sub">قيمة التجاوز وعدد الزيارات لكل عميل ضمن الفلتر الحالي</div>
+    <input class="search-box" type="text" id="overdue-search-box" placeholder="🔍 دور باسم العميل..." oninput="renderOverdueClientsTable()" style="width:100%;margin:10px 0 4px">
     <div class="unvisited-list">
       <table class="overdue-table">
         <thead><tr><th>اسم العميل</th><th style="text-align:center">قيمة التجاوز</th><th style="text-align:center">عدد الزيارات</th><th style="text-align:center">كام يوم متجاوز</th></tr></thead>
@@ -1780,10 +1832,10 @@ function openHelpModal(){
       <div class="item-name"><b>${h.icon} ${esc(t.label)}</b><br><span style="font-size:12px;color:var(--text-dim);font-weight:400">${esc(h.text)}</span></div>
     </div>`;
   }).join('');
-  document.getElementById('help-overlay').style.display = 'flex';
+  openOverlay('help-overlay');
 }
 function closeHelpModal(){
-  document.getElementById('help-overlay').style.display = 'none';
+  closeOverlay('help-overlay');
 }
 
 let filtered = [];
@@ -1942,15 +1994,15 @@ function showPermPreview(idx){
     const has = allowed.includes(t.id);
     return `<div class="unvisited-item" style="opacity:${has?1:0.4}">${has?'✅':'🚫'} ${esc(t.label)}</div>`;
   }).join('');
-  document.getElementById('perm-preview-overlay').style.display = 'flex';
+  openOverlay('perm-preview-overlay');
 }
 function closePermPreview(){
-  document.getElementById('perm-preview-overlay').style.display = 'none';
+  closeOverlay('perm-preview-overlay');
 }
 
 function startSession(user){
   currentUser = user;
-  document.getElementById('login-overlay').style.display = 'none';
+  closeOverlay('login-overlay');
   document.getElementById('loading').style.display = 'flex';
   document.getElementById('logout-btn').style.display = 'inline-flex';
   document.getElementById('current-user-label').textContent = user.username;
@@ -2020,12 +2072,12 @@ document.getElementById('secret-trigger').addEventListener('click', function(){
   }
 });
 function openAdminPanel(){
-  document.getElementById('admin-overlay').style.display = 'flex';
+  openOverlay('admin-overlay');
   document.getElementById('settings-gdrive-id').value = GOOGLE_DRIVE_FILE.id;
   document.getElementById('settings-gdrive-key').value = GOOGLE_DRIVE_FILE.apiKey;
 }
 function closeAdminPanel(){
-  document.getElementById('admin-overlay').style.display = 'none';
+  closeOverlay('admin-overlay');
 }
 
 function saveGDriveSettings(){
@@ -3153,6 +3205,50 @@ function autoLabelTables(){
   });
 }
 
+// ============ أنيميشن الأرقام: عداد تصاعدي/تنازلي ناعم لأرقام كروت KPI بدل التغيير الفجائي ============
+const prefersReducedMotion = () => window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+function animateKpiNumber(elId, newVal){
+  const el = document.getElementById(elId);
+  if(!el) return;
+  const endVal = +newVal || 0;
+  if(prefersReducedMotion()){ el.textContent = endVal.toLocaleString('ar-IQ'); el.dataset.rawval = endVal; return; }
+  const startVal = parseFloat(el.dataset.rawval || '0') || 0;
+  if(startVal === endVal){ el.textContent = endVal.toLocaleString('ar-IQ'); el.dataset.rawval = endVal; return; }
+  const duration = 500;
+  const startTime = performance.now();
+  if(el._kpiAnimFrame) cancelAnimationFrame(el._kpiAnimFrame);
+  function tick(now){
+    const progress = Math.min((now - startTime) / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+    const current = Math.round(startVal + (endVal - startVal) * eased);
+    el.textContent = current.toLocaleString('ar-IQ');
+    if(progress < 1){ el._kpiAnimFrame = requestAnimationFrame(tick); }
+    else { el.dataset.rawval = endVal; el._kpiAnimFrame = null; }
+  }
+  el._kpiAnimFrame = requestAnimationFrame(tick);
+}
+
+// ============ فتح/قفل أي مودال (admin-overlay) بحركة تكبير + fade ناعمة بدل الظهور/الاختفاء الفجائي ============
+function openOverlay(id){
+  const el = document.getElementById(id);
+  if(!el) return;
+  const panel = el.querySelector('.admin-panel, .login-card') || el;
+  el.style.display = 'flex';
+  if(!prefersReducedMotion()){
+    panel.classList.add('pop-enter');
+    void panel.offsetWidth; // إجبار إعادة الحساب حتى تبدأ الحركة من "مقفول" في كل مرة
+    panel.classList.remove('pop-enter');
+  }
+}
+function closeOverlay(id){
+  const el = document.getElementById(id);
+  if(!el) return;
+  const panel = el.querySelector('.admin-panel, .login-card') || el;
+  if(prefersReducedMotion()){ el.style.display = 'none'; return; }
+  panel.classList.add('pop-exit');
+  setTimeout(()=>{ el.style.display = 'none'; panel.classList.remove('pop-exit'); }, 200);
+}
+
 function applyFilters(){
   const branch = document.getElementById('f-branch').value;
   const type = document.getElementById('f-type').value;
@@ -3211,20 +3307,20 @@ function updateKPIs(){
   const ordersQty = ordersArr.reduce((s,r)=>s+(+r['الكميه']||0),0);
   const collectVal = collectArr.reduce((s,r)=>s+(+r['قيمة المقبوضات']||0),0);
 
-  document.getElementById('k-total').textContent = total.toLocaleString();
+  animateKpiNumber('k-total', total);
   const uniqueClients = new Set(filtered.map(r=>r.العميل).filter(Boolean)).size;
   document.getElementById('k-total-clients').textContent = uniqueClients.toLocaleString() + ' عميل';
-  document.getElementById('k-acc').textContent = accCount.toLocaleString();
-  document.getElementById('k-inacc').textContent = inaccCount.toLocaleString();
+  animateKpiNumber('k-acc', accCount);
+  animateKpiNumber('k-inacc', inaccCount);
   document.getElementById('k-acc-pct').textContent = total ? Math.round(accCount/total*100)+'%' : '0%';
   document.getElementById('k-inacc-pct').textContent = total ? Math.round(inaccCount/total*100)+'%' : '0%';
   applyPerfColor('k-acc-card', total ? Math.round(accCount/total*100) : null);
-  document.getElementById('k-orders').textContent = ordersArr.length.toLocaleString();
+  animateKpiNumber('k-orders', ordersArr.length);
   document.getElementById('k-orders-val').textContent = isValueHiddenRole()
     ? ordersVal.toLocaleString('ar-IQ') + ' باله'
     : ordersVal.toLocaleString('ar-IQ') + ' د.ع';
   document.getElementById('k-orders-qty').textContent = ordersQty.toLocaleString('ar-IQ') + ' كمية';
-  document.getElementById('k-collect').textContent = collectArr.length.toLocaleString();
+  animateKpiNumber('k-collect', collectArr.length);
   document.getElementById('k-collect-val').textContent = collectVal.toLocaleString('ar-IQ') + ' د.ع';
 
   // header stats reflect current filter too (fully dynamic across every element)
@@ -3291,7 +3387,8 @@ function updateExtraKPIs(){
     if(month && r.month != +month) return false;
     return true;
   });
-  const visitedClientNames = new Set(visitsScope.map(r=>r.العميل).filter(Boolean));
+  // "لم تتم زيارته" هنا معناها: مفيش أي زيارة دقيقة له ضمن النطاق (الزيارة غير الدقيقة ماتحسبش "تمت زيارته")
+  const visitedClientNames = new Set(visitsScope.filter(r=>r.accuracy==='دقيقة').map(r=>r.العميل).filter(Boolean));
   const totalClientsInScope = clientsScope.length;
   const unvisitedClients = clientsScope.filter(c => !visitedClientNames.has(c['اسم العميل']));
   const unvisitedCount = unvisitedClients.length;
@@ -3306,14 +3403,14 @@ function updateExtraKPIs(){
     lastVisitDate: lastVisitByClient[c['اسم العميل']] || null
   })).filter(c=>c.name).sort((a,b)=>a.name.localeCompare(b.name,'ar'));
 
-  document.getElementById('k-unvisited').textContent = unvisitedCount.toLocaleString();
+  animateKpiNumber('k-unvisited', unvisitedCount);
   document.getElementById('k-unvisited-pct').textContent = totalClientsInScope
     ? `من ${totalClientsInScope.toLocaleString()} عميل`
     : 'من 0 عميل';
 
   // 2) زيارات مدتها أقل من 5 دقائق (من نفس نطاق الفلاتر الحالية بما فيها اليوم إذا محدد)
   const shortVisits = filtered.filter(r => r['مدة الدقائق'] !== '' && r['مدة الدقائق'] != null && +r['مدة الدقائق'] < 5).length;
-  document.getElementById('k-shortvisits').textContent = shortVisits.toLocaleString();
+  animateKpiNumber('k-shortvisits', shortVisits);
 
   // 3) بداية الحركة (وقت دخول أول زيارة دقيقة زمنيًا) وختامها (وقت خروج آخر زيارة دقيقة زمنيًا)
   //    ملحوظة: بعض دفعات البيانات يحدث فيها وقت الدخول/الخروج كرقم إكسيل خام (كسر من اليوم) غير نص "س:د" جاهز،
@@ -3399,11 +3496,11 @@ function showUnvisitedClientsModal(){
     }).join('');
   }
   subEl.textContent = `${UNVISITED_CLIENTS_LIST.length.toLocaleString()} عميل ما زالوا بحاجة إلى زيارة ضمن الفلتر الحالي`;
-  document.getElementById('unvisited-overlay').style.display = 'flex';
+  openOverlay('unvisited-overlay');
 }
 
 function closeUnvisitedClientsModal(){
-  document.getElementById('unvisited-overlay').style.display = 'none';
+  closeOverlay('unvisited-overlay');
 }
 
 // ============ إجمالي الزيارات — عدد الزيارات + كمية المبيعات لكل عميل ============
@@ -3433,11 +3530,11 @@ function showTotalVisitsModal(){
       </div>`).join('');
   }
   subEl.textContent = `${rows.length.toLocaleString()} عميل ضمن الفلتر الحالي`;
-  document.getElementById('total-visits-overlay').style.display = 'flex';
+  openOverlay('total-visits-overlay');
 }
 
 function closeTotalVisitsModal(){
-  document.getElementById('total-visits-overlay').style.display = 'none';
+  closeOverlay('total-visits-overlay');
 }
 
 // ============ إجمالي الطلبيات — العملاء الذين أُجريت لهم طلبيات + الكمية ============
@@ -3467,11 +3564,11 @@ function showOrdersModal(){
       </div>`).join('');
   }
   subEl.textContent = `${rows.length.toLocaleString()} عميل ضمن الفلتر الحالي`;
-  document.getElementById('orders-overlay').style.display = 'flex';
+  openOverlay('orders-overlay');
 }
 
 function closeOrdersModal(){
-  document.getElementById('orders-overlay').style.display = 'none';
+  closeOverlay('orders-overlay');
 }
 
 // ============ زيارات دقيقة — عدد الزيارات الدقيقة لكل عميل ============
@@ -3497,11 +3594,11 @@ function showAccurateVisitsModal(){
       </div>`).join('');
   }
   subEl.textContent = `${rows.length.toLocaleString()} عميل ضمن الفلتر الحالي`;
-  document.getElementById('accurate-visits-overlay').style.display = 'flex';
+  openOverlay('accurate-visits-overlay');
 }
 
 function closeAccurateVisitsModal(){
-  document.getElementById('accurate-visits-overlay').style.display = 'none';
+  closeOverlay('accurate-visits-overlay');
 }
 
 // ============ زيارات غير دقيقة — عدد الزيارات غير الدقيقة لكل عميل ============
@@ -3527,11 +3624,11 @@ function showInaccurateVisitsModal(){
       </div>`).join('');
   }
   subEl.textContent = `${rows.length.toLocaleString()} عميل ضمن الفلتر الحالي`;
-  document.getElementById('inaccurate-visits-overlay').style.display = 'flex';
+  openOverlay('inaccurate-visits-overlay');
 }
 
 function closeInaccurateVisitsModal(){
-  document.getElementById('inaccurate-visits-overlay').style.display = 'none';
+  closeOverlay('inaccurate-visits-overlay');
 }
 
 // ============ إجمالي التحصيل — عدد عمليات التحصيل وقيمتها لكل عميل ============
@@ -3561,11 +3658,11 @@ function showCollectModal(){
       </div>`).join('');
   }
   subEl.textContent = `${rows.length.toLocaleString()} عميل ضمن الفلتر الحالي`;
-  document.getElementById('collect-overlay').style.display = 'flex';
+  openOverlay('collect-overlay');
 }
 
 function closeCollectModal(){
-  document.getElementById('collect-overlay').style.display = 'none';
+  closeOverlay('collect-overlay');
 }
 
 // ============ زيارات أقل من 5 دقائق — أسماء العملاء فقط ============
@@ -3582,11 +3679,11 @@ function showShortVisitsModal(){
     listEl.innerHTML = names.map(name => `<div class="unvisited-item">${esc(name)}</div>`).join('');
   }
   subEl.textContent = `${names.length.toLocaleString()} زيارة أقل من 5 دقائق ضمن الفلتر الحالي`;
-  document.getElementById('short-visits-overlay').style.display = 'flex';
+  openOverlay('short-visits-overlay');
 }
 
 function closeShortVisitsModal(){
-  document.getElementById('short-visits-overlay').style.display = 'none';
+  closeOverlay('short-visits-overlay');
 }
 
 // ============ خط السير — كل عملاء المندوب/الفرع المحدد: تصنيفهم، موقفهم من المديونية، حالة الزيارة ============
@@ -3647,7 +3744,7 @@ function updateRouteKPI(){
   const visitedCount = ROUTE_CLIENTS_LIST.filter(c=>c.visitedAccurate).length;
   const orderedCount = ROUTE_CLIENTS_LIST.filter(c=>c.ordered).length;
 
-  document.getElementById('k-route-total').textContent = totalClients.toLocaleString('ar-IQ');
+  animateKpiNumber('k-route-total', totalClients);
   document.getElementById('k-route-visited').textContent = visitedCount.toLocaleString('ar-IQ') + ' زاروا (دقيقة)';
   document.getElementById('k-route-orders').textContent = orderedCount.toLocaleString('ar-IQ') + ' عمل طلبية';
 }
@@ -3656,11 +3753,11 @@ function showRouteModal(){
   document.getElementById('route-search-box').value = '';
   document.getElementById('route-modal-sub').textContent = `${ROUTE_CLIENTS_LIST.length.toLocaleString('ar-IQ')} عميل ضمن خط السير الحالي`;
   renderRouteTable();
-  document.getElementById('route-overlay').style.display = 'flex';
+  openOverlay('route-overlay');
 }
 
 function closeRouteModal(){
-  document.getElementById('route-overlay').style.display = 'none';
+  closeOverlay('route-overlay');
 }
 
 // بحث ذكي: يطابق الحرف/الحروف في أي مكان من اسم العميل، مش بس أول الاسم
@@ -3685,12 +3782,12 @@ function renderRouteTable(){
           ? `<span style="color:var(--red);font-weight:700">⚠️ متجاوز — ${c.debtSum.toLocaleString('ar-IQ')}</span>`
           : `<span style="color:var(--green)">✅ سليم — ${c.debtSum.toLocaleString('ar-IQ')}</span>`);
     return `<tr>
-      <td class="oc-name">${esc(c.name)}</td>
-      <td style="text-align:center">${esc(c.grade)||'-'}</td>
-      <td style="text-align:center">${esc(c.region)}</td>
-      <td style="text-align:center">${visitBadge}</td>
-      <td style="text-align:center">${debtBadge}</td>
-      <td style="text-align:center;white-space:nowrap">${callButtonHtml(c.name)}</td>
+      <td class="oc-name" data-label="العميل">${esc(c.name)}</td>
+      <td style="text-align:center" data-label="تصنيف">${esc(c.grade)||'-'}</td>
+      <td style="text-align:center" data-label="المنطقة">${esc(c.region)}</td>
+      <td style="text-align:center" data-label="حالة الزيارة">${visitBadge}</td>
+      <td style="text-align:center" data-label="المديونية">${debtBadge}</td>
+      <td style="text-align:center;white-space:nowrap" data-label="إجراء">${callButtonHtml(c.name)}</td>
     </tr>`;
   }).join('');
 }
@@ -6134,15 +6231,19 @@ function renderGeoPerfMap(){
     }
   });
 
-  // نقاط العملاء
+  // نقاط العملاء — كل نقطة تظهر بحركة "قفزة" بسيطة عند الرسم، والنقط الحمراء (زيارة غير دقيقة) تنبض باستمرار للفت الانتباه
   const colors = {green:'#1e8e5a', yellow:'#e0b83a', red:'#c0392b', gray:'#95a5a6'};
-  payload.forEach(p=>{
+  payload.forEach((p,idx)=>{
     bounds.push([p.lat,p.lng]);
-    const m = L.circleMarker([p.lat,p.lng], {radius:8, color:'#fff', weight:1.5, fillColor:colors[p.status], fillOpacity:0.9}).addTo(layerGroup);
+    const m = L.circleMarker([p.lat,p.lng], {radius:8, color:'#fff', weight:1.5, fillColor:colors[p.status], fillOpacity:0.9, className:'geo-marker geo-marker-'+p.status}).addTo(layerGroup);
     const extra = p.status==='gray' ? '' : ('<br>عدد الزيارات: '+p.visitCount);
     m.bindPopup('<b>'+esc(p.name)+'</b><br>المنطقة: '+esc(p.region)+extra);
     m.bindTooltip(esc(p.name), {permanent:false, direction:'top', offset:[0,-8]});
     map._clientMarkers.push(m);
+    if(!prefersReducedMotion()){
+      const el = m.getElement && m.getElement();
+      if(el) el.style.animationDelay = Math.min(idx * 25, 900) + 'ms';
+    }
   });
   if(bounds.length) map.fitBounds(bounds, {padding:[30,30]});
   setTimeout(()=>map.invalidateSize(), 60);
@@ -6610,7 +6711,7 @@ function updateDebtDashboardKPI(){
   const pct = total ? Math.round(overdueVal/total*100) : 0;
   const allClients = new Set(rows.map(r=>(r['كود العميل']||'')+'|'+(r['اسم العميل']||'')).filter(k=>k!=='|'));
   const overdueClients = new Set(overdueRows.map(r=>(r['كود العميل']||'')+'|'+(r['اسم العميل']||'')).filter(k=>k!=='|'));
-  document.getElementById('k-debt-total').textContent = total.toLocaleString('ar-IQ');
+  animateKpiNumber('k-debt-total', total);
   document.getElementById('k-debt-overdue-val').textContent = 'متجاوز: ' + overdueVal.toLocaleString('ar-IQ') + ' د.ع';
   document.getElementById('k-debt-overdue-pct').textContent = 'النسبة: ' + pct + '%';
   document.getElementById('k-debt-clients').textContent = allClients.size.toLocaleString('ar-IQ') + ' عميل • ' + overdueClients.size.toLocaleString('ar-IQ') + ' متجاوز';
@@ -6634,6 +6735,8 @@ function updateDebtRiskClientSet(){
   });
 }
 
+let OVERDUE_CLIENTS_LIST = [];
+
 function showOverdueClientsModal(){
   const rows = getDebtScope().filter(r=>r.نوع==='متجاوز');
   // تجميع لكل عميل: قيمة التجاوز (مجموع فواتيره المتجاوزة فقط) + أسوأ عدد أيام تجاوز + عدد زياراته (من شيت الزيارات، بالمطابقة بالاسم)
@@ -6645,24 +6748,31 @@ function showOverdueClientsModal(){
     const overdueDays = (+r['عمر الفاتوره']||0) - (+r['عدد  ايام السماح']||0);
     if(overdueDays > byClient[key].maxOverdueDays) byClient[key].maxOverdueDays = overdueDays;
   });
-  const list = Object.values(byClient).map(c=>{
+  OVERDUE_CLIENTS_LIST = Object.values(byClient).map(c=>{
     const visitsCount = DATA.filter(v=>v.العميل === c.name).length;
     return {...c, visitsCount};
   }).sort((a,b)=>b.sum-a.sum);
 
+  document.getElementById('overdue-search-box').value = '';
   document.getElementById('overdue-modal-sub').textContent =
-    `${list.length.toLocaleString('ar-IQ')} عميل متجاوز ضمن الفلتر الحالي — عدد الزيارات معتمد على مطابقة اسم العميل بين شيت المديونية وشيت الزيارات (ممكن يظهر صفر إذا الاسم مسجّل بصيغة مختلفة قليل من بين الشيتين)`;
-  document.getElementById('overdue-list').innerHTML = list.map(c=>`
-    <tr><td class="oc-name">${callButtonHtml(c.name)}${esc(c.name)}${clientGrade(c.name)?` <span style="color:var(--text-dim);font-size:11px">(${esc(clientGrade(c.name))})</span>`:''}</td>
-    <td style="text-align:center;color:var(--red);font-weight:700">${c.sum.toLocaleString('ar-IQ')}</td>
-    <td style="text-align:center">${c.visitsCount.toLocaleString('ar-IQ')}</td>
-    <td style="text-align:center;color:var(--red);font-weight:700">${c.maxOverdueDays.toLocaleString('ar-IQ')}</td></tr>`
-  ).join('') || '<tr><td colspan="4" style="text-align:center;color:var(--text-dim)">لا يوجد عملاء متجاوزين ضمن الفلتر الحالي</td></tr>';
+    `${OVERDUE_CLIENTS_LIST.length.toLocaleString('ar-IQ')} عميل متجاوز ضمن الفلتر الحالي — عدد الزيارات معتمد على مطابقة اسم العميل بين شيت المديونية وشيت الزيارات (ممكن يظهر صفر إذا الاسم مسجّل بصيغة مختلفة قليل من بين الشيتين)`;
+  renderOverdueClientsTable();
+  openOverlay('overdue-overlay');
+}
 
-  document.getElementById('overdue-overlay').style.display = 'flex';
+// بحث ذكي: يطابق الحرف/الحروف في أي مكان من اسم العميل، مش بس أول الاسم
+function renderOverdueClientsTable(){
+  const term = document.getElementById('overdue-search-box').value.trim().toLocaleLowerCase('ar');
+  const list = term ? OVERDUE_CLIENTS_LIST.filter(c => (c.name||'').toLocaleLowerCase('ar').includes(term)) : OVERDUE_CLIENTS_LIST;
+  document.getElementById('overdue-list').innerHTML = list.map(c=>`
+    <tr><td class="oc-name" data-label="اسم العميل">${callButtonHtml(c.name)}${esc(c.name)}${clientGrade(c.name)?` <span style="color:var(--text-dim);font-size:11px">(${esc(clientGrade(c.name))})</span>`:''}</td>
+    <td style="text-align:center;color:var(--red);font-weight:700" data-label="قيمة التجاوز">${c.sum.toLocaleString('ar-IQ')}</td>
+    <td style="text-align:center" data-label="عدد الزيارات">${c.visitsCount.toLocaleString('ar-IQ')}</td>
+    <td style="text-align:center;color:var(--red);font-weight:700" data-label="كام يوم متجاوز">${c.maxOverdueDays.toLocaleString('ar-IQ')}</td></tr>`
+  ).join('') || `<tr><td colspan="4" style="text-align:center;color:var(--text-dim)">${term ? 'لا يوجد عملاء مطابقين' : 'لا يوجد عملاء متجاوزين ضمن الفلتر الحالي'}</td></tr>`;
 }
 function closeOverdueClientsModal(){
-  document.getElementById('overdue-overlay').style.display = 'none';
+  closeOverlay('overdue-overlay');
 }
 
 /* ---------- تاب المديونية ---------- */
