@@ -1776,9 +1776,9 @@ function orderRawValue(r){
 // نص جاهز للعرض المباشر في الجداول
 function orderDisplayValue(r){
   if(isValueHiddenRole()){
-    return (r['الكميه']!=='' && r['الكميه']!=null) ? (+r['الكميه']).toLocaleString('ar-IQ') : '-';
+    return (r['الكميه']!=='' && r['الكميه']!=null) ? (+r['الكميه']).toLocaleString('en-US') : '-';
   }
-  return (r['قيمة ف الطلبية']!=='' && r['قيمة ف الطلبية']!=null) ? (+r['قيمة ف الطلبية']).toLocaleString('ar-IQ') : '-';
+  return (r['قيمة ف الطلبية']!=='' && r['قيمة ف الطلبية']!=null) ? (+r['قيمة ف الطلبية']).toLocaleString('en-US') : '-';
 }
 // تُحدِّث عناوين الأعمدة في كل الجداول التي فيها عمود قيمة/كمية الطلبية حسب دور المستخدم الحالي
 function updateOrderColumnLabels(){
@@ -1947,7 +1947,7 @@ async function loadLoginLog(){
         <td style="text-align:center">${esc(r.lastActivity)}</td>
         <td style="text-align:center">${fmtDuration(r.loginTime, r.lastActivity)}</td></tr>`).join('');
     tableEl.style.display = '';
-    statusEl.textContent = `تم تحميل ${result.rows.length.toLocaleString('ar-IQ')} سجل.`;
+    statusEl.textContent = `تم تحميل ${result.rows.length.toLocaleString('en-US')} سجل.`;
   }catch(err){
     statusEl.textContent = '⚠️ ' + err.message;
     tableEl.style.display = 'none';
@@ -1973,7 +1973,7 @@ function loadUserManagement(){
     <td style="text-align:center"><button class="mini-export-btn" onclick="showPermPreview(${idx})">👁️ معاينة</button></td></tr>`;
   }).join('');
   table.style.display = '';
-  statusEl.textContent = `تم تحميل ${USERS.length.toLocaleString('ar-IQ')} مستخدم — أي تعديل هنا مؤقت لهذه الجلسة فقط ولن يُحفظ في الملف الأصلي.`;
+  statusEl.textContent = `تم تحميل ${USERS.length.toLocaleString('en-US')} مستخدم — أي تعديل هنا مؤقت لهذه الجلسة فقط ولن يُحفظ في الملف الأصلي.`;
 }
 
 function toggleUserTab(idx, tabId, checked){
@@ -2175,7 +2175,7 @@ function runSelfTests(){
 
   test('عدد صفوف الزيارات وشيت المديونية أكبر من صفر', ()=>{
     if(DATA.length===0 && DEBT.length===0) throw new Error('لا توجد بيانات محمّلة إطلاقًا — تأكد من رفع الملف');
-    return 'الزيارات: ' + DATA.length.toLocaleString('ar-IQ') + ' — المديونية: ' + DEBT.length.toLocaleString('ar-IQ');
+    return 'الزيارات: ' + DATA.length.toLocaleString('en-US') + ' — المديونية: ' + DEBT.length.toLocaleString('en-US');
   });
 
   const passCount = results.filter(r=>r.pass).length;
@@ -2734,7 +2734,7 @@ function processExcelUpload(){
       resetAndRebuild();
       if(result.dataUpdated){
         const usersNote = result.usersUpdated ? ' | تم تحديث بيانات الدخول أيضًا' : '';
-        showAdminStatus(`تم تحديث التقرير بنجاح — ${result.count.toLocaleString()} زيارة${usersNote}${result.sampleDiag}`, 'ok');
+        showAdminStatus(`تم تحديث التقرير بنجاح — ${result.count.toLocaleString('en-US')} زيارة${usersNote}${result.sampleDiag}`, 'ok');
       } else if(result.usersUpdated){
         showAdminStatus('تم تحديث بيانات الدخول والصلاحيات بنجاح — بيانات الزيارات والعملاء لم تتغيّر', 'ok');
       } else {
@@ -3021,8 +3021,8 @@ function showLoginPriorityBanner(){
   if(!overdueClients && !nearOverdueCount){ banner.style.display = 'none'; return; }
 
   const parts = [];
-  if(overdueClients) parts.push(`${overdueClients.toLocaleString('ar-IQ')} عميل متجاوز`);
-  if(nearOverdueCount) parts.push(`${nearOverdueCount.toLocaleString('ar-IQ')} فاتورة شارفت على الدخول في التجاوز`);
+  if(overdueClients) parts.push(`${overdueClients.toLocaleString('en-US')} عميل متجاوز`);
+  if(nearOverdueCount) parts.push(`${nearOverdueCount.toLocaleString('en-US')} فاتورة شارفت على الدخول في التجاوز`);
   document.getElementById('priority-banner-text').textContent = 'عندك ' + parts.join(' و') + ' — اضغط هنا لعرض التفاصيل';
   banner.style.display = 'flex';
 
@@ -3057,9 +3057,9 @@ function init(){
   const total = DATA.length;
   const acc = DATA.filter(r=>r.accuracy==='دقيقة').length;
   const inacc = DATA.filter(r=>r.accuracy==='غير دقيقة').length;
-  document.getElementById('hs-total').textContent = total.toLocaleString();
-  document.getElementById('hs-acc').textContent = acc.toLocaleString();
-  document.getElementById('hs-inacc').textContent = inacc.toLocaleString();
+  document.getElementById('hs-total').textContent = total.toLocaleString('en-US');
+  document.getElementById('hs-acc').textContent = acc.toLocaleString('en-US');
+  document.getElementById('hs-inacc').textContent = inacc.toLocaleString('en-US');
 
   // نتجنب إعادة نفس الحساب مرتين على التحميل: applyRoleRestrictions أصلًا تستدعي applyFilters()
   // (عبر onMonthChange) للمندوب والمشرف، فغير محتاجين نكررها تاني إلا إذا ما اتنداتش هناك (دور الإدارة أو لا يوجد بيانات شهر)
@@ -3211,9 +3211,9 @@ function animateKpiNumber(elId, newVal){
   const el = document.getElementById(elId);
   if(!el) return;
   const endVal = +newVal || 0;
-  if(prefersReducedMotion()){ el.textContent = endVal.toLocaleString('ar-IQ'); el.dataset.rawval = endVal; return; }
+  if(prefersReducedMotion()){ el.textContent = endVal.toLocaleString('en-US'); el.dataset.rawval = endVal; return; }
   const startVal = parseFloat(el.dataset.rawval || '0') || 0;
-  if(startVal === endVal){ el.textContent = endVal.toLocaleString('ar-IQ'); el.dataset.rawval = endVal; return; }
+  if(startVal === endVal){ el.textContent = endVal.toLocaleString('en-US'); el.dataset.rawval = endVal; return; }
   const duration = 500;
   const startTime = performance.now();
   if(el._kpiAnimFrame) cancelAnimationFrame(el._kpiAnimFrame);
@@ -3221,7 +3221,7 @@ function animateKpiNumber(elId, newVal){
     const progress = Math.min((now - startTime) / duration, 1);
     const eased = 1 - Math.pow(1 - progress, 3); // ease-out cubic
     const current = Math.round(startVal + (endVal - startVal) * eased);
-    el.textContent = current.toLocaleString('ar-IQ');
+    el.textContent = current.toLocaleString('en-US');
     if(progress < 1){ el._kpiAnimFrame = requestAnimationFrame(tick); }
     else { el.dataset.rawval = endVal; el._kpiAnimFrame = null; }
   }
@@ -3269,7 +3269,7 @@ function applyFilters(){
   });
 
   currentPage = 1;
-  document.getElementById('filter-info').textContent = filtered.length.toLocaleString() + ' نتيجة';
+  document.getElementById('filter-info').textContent = filtered.length.toLocaleString('en-US') + ' نتيجة';
   updateKPIs();
   renderPivots();
   renderTable();
@@ -3309,7 +3309,7 @@ function updateKPIs(){
 
   animateKpiNumber('k-total', total);
   const uniqueClients = new Set(filtered.map(r=>r.العميل).filter(Boolean)).size;
-  document.getElementById('k-total-clients').textContent = uniqueClients.toLocaleString() + ' عميل';
+  document.getElementById('k-total-clients').textContent = uniqueClients.toLocaleString('en-US') + ' عميل';
   animateKpiNumber('k-acc', accCount);
   animateKpiNumber('k-inacc', inaccCount);
   document.getElementById('k-acc-pct').textContent = total ? Math.round(accCount/total*100)+'%' : '0%';
@@ -3317,16 +3317,16 @@ function updateKPIs(){
   applyPerfColor('k-acc-card', total ? Math.round(accCount/total*100) : null);
   animateKpiNumber('k-orders', ordersArr.length);
   document.getElementById('k-orders-val').textContent = isValueHiddenRole()
-    ? ordersVal.toLocaleString('ar-IQ') + ' باله'
-    : ordersVal.toLocaleString('ar-IQ') + ' د.ع';
-  document.getElementById('k-orders-qty').textContent = ordersQty.toLocaleString('ar-IQ') + ' كمية';
+    ? ordersVal.toLocaleString('en-US') + ' باله'
+    : ordersVal.toLocaleString('en-US') + ' د.ع';
+  document.getElementById('k-orders-qty').textContent = ordersQty.toLocaleString('en-US') + ' كمية';
   animateKpiNumber('k-collect', collectArr.length);
-  document.getElementById('k-collect-val').textContent = collectVal.toLocaleString('ar-IQ') + ' د.ع';
+  document.getElementById('k-collect-val').textContent = collectVal.toLocaleString('en-US') + ' د.ع';
 
   // header stats reflect current filter too (fully dynamic across every element)
-  document.getElementById('hs-total').textContent = total.toLocaleString();
-  document.getElementById('hs-acc').textContent = accCount.toLocaleString();
-  document.getElementById('hs-inacc').textContent = inaccCount.toLocaleString();
+  document.getElementById('hs-total').textContent = total.toLocaleString('en-US');
+  document.getElementById('hs-acc').textContent = accCount.toLocaleString('en-US');
+  document.getElementById('hs-inacc').textContent = inaccCount.toLocaleString('en-US');
 
   updateExtraKPIs();
   updateDebtDashboardKPI();
@@ -3405,7 +3405,7 @@ function updateExtraKPIs(){
 
   animateKpiNumber('k-unvisited', unvisitedCount);
   document.getElementById('k-unvisited-pct').textContent = totalClientsInScope
-    ? `من ${totalClientsInScope.toLocaleString()} عميل`
+    ? `من ${totalClientsInScope.toLocaleString('en-US')} عميل`
     : 'من 0 عميل';
 
   // 2) زيارات مدتها أقل من 5 دقائق (من نفس نطاق الفلاتر الحالية بما فيها اليوم إذا محدد)
@@ -3495,7 +3495,7 @@ function showUnvisitedClientsModal(){
           <span style="color:var(--text-dim);font-size:11px;float:left">${daysAgoText(c.lastVisitDate)}</span></div>`).join('');
     }).join('');
   }
-  subEl.textContent = `${UNVISITED_CLIENTS_LIST.length.toLocaleString()} عميل ما زالوا بحاجة إلى زيارة ضمن الفلتر الحالي`;
+  subEl.textContent = `${UNVISITED_CLIENTS_LIST.length.toLocaleString('en-US')} عميل ما زالوا بحاجة إلى زيارة ضمن الفلتر الحالي`;
   openOverlay('unvisited-overlay');
 }
 
@@ -3524,12 +3524,12 @@ function showTotalVisitsModal(){
       <div class="unvisited-item two-col">
         <span class="item-name">${esc(row.name)}</span>
         <span class="item-badges">
-          <span class="item-badge">${row.visits.toLocaleString()} زيارة</span>
-          <span class="item-badge">${row.qty.toLocaleString('ar-IQ')} كمية</span>
+          <span class="item-badge">${row.visits.toLocaleString('en-US')} زيارة</span>
+          <span class="item-badge">${row.qty.toLocaleString('en-US')} كمية</span>
         </span>
       </div>`).join('');
   }
-  subEl.textContent = `${rows.length.toLocaleString()} عميل ضمن الفلتر الحالي`;
+  subEl.textContent = `${rows.length.toLocaleString('en-US')} عميل ضمن الفلتر الحالي`;
   openOverlay('total-visits-overlay');
 }
 
@@ -3558,12 +3558,12 @@ function showOrdersModal(){
       <div class="unvisited-item two-col">
         <span class="item-name">${esc(row.name)}</span>
         <span class="item-badges">
-          <span class="item-badge">${row.orders.toLocaleString()} طلبية</span>
-          <span class="item-badge">${row.qty.toLocaleString('ar-IQ')} كمية</span>
+          <span class="item-badge">${row.orders.toLocaleString('en-US')} طلبية</span>
+          <span class="item-badge">${row.qty.toLocaleString('en-US')} كمية</span>
         </span>
       </div>`).join('');
   }
-  subEl.textContent = `${rows.length.toLocaleString()} عميل ضمن الفلتر الحالي`;
+  subEl.textContent = `${rows.length.toLocaleString('en-US')} عميل ضمن الفلتر الحالي`;
   openOverlay('orders-overlay');
 }
 
@@ -3590,10 +3590,10 @@ function showAccurateVisitsModal(){
     listEl.innerHTML = rows.map(row => `
       <div class="unvisited-item two-col">
         <span class="item-name">${esc(row.name)}</span>
-        <span class="item-badges"><span class="item-badge">${row.visits.toLocaleString()} زيارة دقيقة</span></span>
+        <span class="item-badges"><span class="item-badge">${row.visits.toLocaleString('en-US')} زيارة دقيقة</span></span>
       </div>`).join('');
   }
-  subEl.textContent = `${rows.length.toLocaleString()} عميل ضمن الفلتر الحالي`;
+  subEl.textContent = `${rows.length.toLocaleString('en-US')} عميل ضمن الفلتر الحالي`;
   openOverlay('accurate-visits-overlay');
 }
 
@@ -3620,10 +3620,10 @@ function showInaccurateVisitsModal(){
     listEl.innerHTML = rows.map(row => `
       <div class="unvisited-item two-col">
         <span class="item-name">${esc(row.name)}</span>
-        <span class="item-badges"><span class="item-badge">${row.visits.toLocaleString()} زيارة غير دقيقة</span></span>
+        <span class="item-badges"><span class="item-badge">${row.visits.toLocaleString('en-US')} زيارة غير دقيقة</span></span>
       </div>`).join('');
   }
-  subEl.textContent = `${rows.length.toLocaleString()} عميل ضمن الفلتر الحالي`;
+  subEl.textContent = `${rows.length.toLocaleString('en-US')} عميل ضمن الفلتر الحالي`;
   openOverlay('inaccurate-visits-overlay');
 }
 
@@ -3652,12 +3652,12 @@ function showCollectModal(){
       <div class="unvisited-item two-col">
         <span class="item-name">${esc(row.name)}</span>
         <span class="item-badges">
-          <span class="item-badge">${row.count.toLocaleString()} تحصيل</span>
-          <span class="item-badge">${row.val.toLocaleString('ar-IQ')} د.ع</span>
+          <span class="item-badge">${row.count.toLocaleString('en-US')} تحصيل</span>
+          <span class="item-badge">${row.val.toLocaleString('en-US')} د.ع</span>
         </span>
       </div>`).join('');
   }
-  subEl.textContent = `${rows.length.toLocaleString()} عميل ضمن الفلتر الحالي`;
+  subEl.textContent = `${rows.length.toLocaleString('en-US')} عميل ضمن الفلتر الحالي`;
   openOverlay('collect-overlay');
 }
 
@@ -3678,7 +3678,7 @@ function showShortVisitsModal(){
   } else {
     listEl.innerHTML = names.map(name => `<div class="unvisited-item">${esc(name)}</div>`).join('');
   }
-  subEl.textContent = `${names.length.toLocaleString()} زيارة أقل من 5 دقائق ضمن الفلتر الحالي`;
+  subEl.textContent = `${names.length.toLocaleString('en-US')} زيارة أقل من 5 دقائق ضمن الفلتر الحالي`;
   openOverlay('short-visits-overlay');
 }
 
@@ -3745,13 +3745,13 @@ function updateRouteKPI(){
   const orderedCount = ROUTE_CLIENTS_LIST.filter(c=>c.ordered).length;
 
   animateKpiNumber('k-route-total', totalClients);
-  document.getElementById('k-route-visited').textContent = visitedCount.toLocaleString('ar-IQ') + ' زاروا (دقيقة)';
-  document.getElementById('k-route-orders').textContent = orderedCount.toLocaleString('ar-IQ') + ' عمل طلبية';
+  document.getElementById('k-route-visited').textContent = visitedCount.toLocaleString('en-US') + ' زاروا (دقيقة)';
+  document.getElementById('k-route-orders').textContent = orderedCount.toLocaleString('en-US') + ' عمل طلبية';
 }
 
 function showRouteModal(){
   document.getElementById('route-search-box').value = '';
-  document.getElementById('route-modal-sub').textContent = `${ROUTE_CLIENTS_LIST.length.toLocaleString('ar-IQ')} عميل ضمن خط السير الحالي`;
+  document.getElementById('route-modal-sub').textContent = `${ROUTE_CLIENTS_LIST.length.toLocaleString('en-US')} عميل ضمن خط السير الحالي`;
   renderRouteTable();
   openOverlay('route-overlay');
 }
@@ -3779,8 +3779,8 @@ function renderRouteTable(){
     const debtBadge = !c.hasDebt
       ? `<span style="color:var(--text-dim)">لا يوجد</span>`
       : (c.debtOverdue
-          ? `<span style="color:var(--red);font-weight:700">⚠️ متجاوز — ${c.debtSum.toLocaleString('ar-IQ')}</span>`
-          : `<span style="color:var(--green)">✅ سليم — ${c.debtSum.toLocaleString('ar-IQ')}</span>`);
+          ? `<span style="color:var(--red);font-weight:700">⚠️ متجاوز — ${c.debtSum.toLocaleString('en-US')}</span>`
+          : `<span style="color:var(--green)">✅ سليم — ${c.debtSum.toLocaleString('en-US')}</span>`);
     return `<tr>
       <td class="oc-name" data-label="العميل">${esc(c.name)}</td>
       <td style="text-align:center" data-label="تصنيف">${esc(c.grade)||'-'}</td>
@@ -3838,7 +3838,7 @@ function fillShareCardFields(){
   document.getElementById('sc-person').textContent = personName;
   document.getElementById('sc-branch').textContent = branchName;
   document.getElementById('sc-period').textContent = periodText;
-  document.getElementById('sc-date').textContent = new Date().toLocaleDateString('ar-EG', {year:'numeric', month:'long', day:'numeric'});
+  document.getElementById('sc-date').textContent = new Date().toLocaleDateString('ar-EG-u-nu-latn', {year:'numeric', month:'long', day:'numeric'});
 
   buildShareCardKPIGrid();
 
@@ -3884,7 +3884,7 @@ function buildShareCardKPIGrid(){
   // كارت "عملاء تم زيارتهم أكثر من مرة" محسوب خصيصًا لصورة المشاركة، مافيش له كارت مقابل ظاهر فوق في اللوحة
   const dupHtml = `<div style="grid-column:1/-1; min-height:96px; display:flex; flex-direction:column; justify-content:center; background:#fff; border-radius:12px; padding:14px; text-align:center; box-shadow:0 1px 4px rgba(0,0,0,.08);">
     <div style="font-size:22px;">🔁</div>
-    <div style="font-size:20px; font-weight:800; color:#c0392b; margin-top:4px;">${computeDuplicateClientsCount().toLocaleString('ar-IQ')}</div>
+    <div style="font-size:20px; font-weight:800; color:#c0392b; margin-top:4px;">${computeDuplicateClientsCount().toLocaleString('en-US')}</div>
     <div style="font-size:11px; color:#70758f; margin-top:2px;">عملاء تم زيارتهم أكثر من مرة</div>
   </div>`;
 
@@ -4040,7 +4040,7 @@ function renderPivots(){
     <td class="num">${grandAcc}</td><td class="num">${grandInacc}</td><td class="num">${grandTotal}</td></tr>`;
   }
   document.getElementById('visits-pivot-body').innerHTML = vhtml || '<tr><td colspan="6" class="no-data">لا توجد بيانات</td></tr>';
-  document.getElementById('visits-badge').textContent = grandTotal.toLocaleString();
+  document.getElementById('visits-badge').textContent = grandTotal.toLocaleString('en-US');
   EXPORT_DATA.visitsPivot = Object.values(groups).map(g=>({
     'الفرع':g.br,'النوع':g.tp,'الشخص':g.ps,'زيارات دقيقة':g.acc,'زيارات غير دقيقة':g.inacc,'إجمالي الزيارات':g.total
   }));
@@ -4059,31 +4059,31 @@ function renderPivots(){
       <td><span class="type-badge tb-${g.tp}">${esc(g.tp)}</span></td>
       <td>${esc(g.ps)}</td>
       <td class="num">${g.orders||'-'}</td>
-      <td class="money">${g.ordersVal ? g.ordersVal.toLocaleString('ar-IQ') : '-'}</td>
-      <td class="money qty-col">${g.ordersQty ? g.ordersQty.toLocaleString('ar-IQ') : '-'}</td>
+      <td class="money">${g.ordersVal ? g.ordersVal.toLocaleString('en-US') : '-'}</td>
+      <td class="money qty-col">${g.ordersQty ? g.ordersQty.toLocaleString('en-US') : '-'}</td>
       <td class="num">${g.collects||'-'}</td>
-      <td class="money">${g.collectVal ? g.collectVal.toLocaleString('ar-IQ') : '-'}</td></tr>`;
+      <td class="money">${g.collectVal ? g.collectVal.toLocaleString('en-US') : '-'}</td></tr>`;
     });
     if((brOrd || brCol) && !singleBranchScope){
       fhtml += `<tr class="group-row"><td colspan="3">إجمالي ${esc(br)}</td>
       <td class="num">${brOrd||'-'}</td>
-      <td class="money">${brOrdV ? brOrdV.toLocaleString('ar-IQ') : '-'}</td>
-      <td class="money qty-col">${brOrdQ ? brOrdQ.toLocaleString('ar-IQ') : '-'}</td>
+      <td class="money">${brOrdV ? brOrdV.toLocaleString('en-US') : '-'}</td>
+      <td class="money qty-col">${brOrdQ ? brOrdQ.toLocaleString('en-US') : '-'}</td>
       <td class="num">${brCol||'-'}</td>
-      <td class="money">${brColV ? brColV.toLocaleString('ar-IQ') : '-'}</td></tr>`;
+      <td class="money">${brColV ? brColV.toLocaleString('en-US') : '-'}</td></tr>`;
     }
     grandOrd += brOrd; grandOrdV += brOrdV; grandOrdQ += brOrdQ; grandCol += brCol; grandColV += brColV;
   });
   if(!singleGroupScope){
     fhtml += `<tr class="total-row"><td colspan="3">Grand Total</td>
     <td class="num">${grandOrd}</td>
-    <td class="money">${grandOrdV.toLocaleString('ar-IQ')}</td>
-    <td class="money qty-col">${grandOrdQ.toLocaleString('ar-IQ')}</td>
+    <td class="money">${grandOrdV.toLocaleString('en-US')}</td>
+    <td class="money qty-col">${grandOrdQ.toLocaleString('en-US')}</td>
     <td class="num">${grandCol}</td>
-    <td class="money">${grandColV.toLocaleString('ar-IQ')}</td></tr>`;
+    <td class="money">${grandColV.toLocaleString('en-US')}</td></tr>`;
   }
   document.getElementById('finance-pivot-body').innerHTML = fhtml || '<tr><td colspan="8" class="no-data">لا توجد بيانات مالية</td></tr>';
-  document.getElementById('finance-badge').textContent = (grandOrd+grandCol).toLocaleString();
+  document.getElementById('finance-badge').textContent = (grandOrd+grandCol).toLocaleString('en-US');
   EXPORT_DATA.financePivot = Object.values(groups).filter(g=>g.orders>0||g.collects>0).map(g=>({
     'الفرع':g.br,'النوع':g.tp,'الشخص':g.ps,'عدد الطلبيات':g.orders,[isValueHiddenRole()?'إجمالي الكمية':'قيمة الطلبيات']:g.ordersVal,
     ...(isValueHiddenRole() ? {} : {'إجمالي الكمية': g.ordersQty}),
@@ -4188,8 +4188,8 @@ function renderTable(){
       const distClass = r.accuracy==='دقيقة' ? 'dist-ok' : r.accuracy==='غير دقيقة' ? 'dist-no' : '';
       const distText = (r.distance_m!=='' && r.distance_m!=null) ? Math.round(r.distance_m)+' م' : '-';
       const ordVal = orderDisplayValue(r);
-      const qtyVal = (r['الكميه']!=='' && r['الكميه']!=null) ? (+r['الكميه']).toLocaleString('ar-IQ') : '-';
-      const colVal = (r['قيمة المقبوضات']!=='' && r['قيمة المقبوضات']!=null) ? (+r['قيمة المقبوضات']).toLocaleString('ar-IQ') : '-';
+      const qtyVal = (r['الكميه']!=='' && r['الكميه']!=null) ? (+r['الكميه']).toLocaleString('en-US') : '-';
+      const colVal = (r['قيمة المقبوضات']!=='' && r['قيمة المقبوضات']!=null) ? (+r['قيمة المقبوضات']).toLocaleString('en-US') : '-';
 
       const hasMap = r.lat_client!=='' && r.lat_client!=null && r.lat_visit!=null;
       const mapBtn = hasMap ? `<button class="map-link" onclick="openVisitMap(${start+i})">🗺️ خريطة</button>` : '<span style="color:var(--text-dim);font-size:11px">—</span>';
@@ -4216,7 +4216,7 @@ function renderTable(){
   }
   document.getElementById('visits-tbody').innerHTML = html;
 
-  document.getElementById('page-info').textContent = `صفحة ${currentPage} من ${totalPages} (${displayed.length.toLocaleString()} نتيجة)`;
+  document.getElementById('page-info').textContent = `صفحة ${currentPage} من ${totalPages} (${displayed.length.toLocaleString('en-US')} نتيجة)`;
   const pb = document.getElementById('page-buttons');
   pb.innerHTML = '';
   let startP = Math.max(1, currentPage-2), endP = Math.min(totalPages, startP+4);
@@ -4677,7 +4677,7 @@ function selectClientCard(name){
     debtLinkEl.style.display = 'inline-block';
     debtLinkEl.style.background = hasOverdueDebt ? 'var(--acc-no-bg)' : 'var(--acc-ok-bg)';
     debtLinkEl.style.color = hasOverdueDebt ? 'var(--acc-no-text)' : 'var(--acc-ok-text)';
-    debtLinkEl.textContent = `💰 مديونيته: ${totalDebt.toLocaleString('ar-IQ')} د.ع${hasOverdueDebt?' (يوجد متجاوز)':''} — عرض التفاصيل`;
+    debtLinkEl.textContent = `💰 مديونيته: ${totalDebt.toLocaleString('en-US')} د.ع${hasOverdueDebt?' (يوجد متجاوز)':''} — عرض التفاصيل`;
     debtLinkEl.onclick = () => switchTab('debt');
   } else {
     debtLinkEl.style.display = 'none';
@@ -4691,8 +4691,8 @@ function selectClientCard(name){
     const distText = (r.distance_m!=='' && r.distance_m!=null) ? Math.round(r.distance_m)+' م' : '-';
     const accClass = r.accuracy==='دقيقة' ? 'acc-ok' : r.accuracy==='غير دقيقة' ? 'acc-no' : 'acc-na';
     const orderVal = orderDisplayValue(r);
-    const qtyVal = (r['الكميه']!=='' && r['الكميه']!=null) ? (+r['الكميه']).toLocaleString('ar-IQ') : '-';
-    const collectVal = (r['قيمة المقبوضات']!=='' && r['قيمة المقبوضات']!=null) ? (+r['قيمة المقبوضات']).toLocaleString('ar-IQ') : '-';
+    const qtyVal = (r['الكميه']!=='' && r['الكميه']!=null) ? (+r['الكميه']).toLocaleString('en-US') : '-';
+    const collectVal = (r['قيمة المقبوضات']!=='' && r['قيمة المقبوضات']!=null) ? (+r['قيمة المقبوضات']).toLocaleString('en-US') : '-';
     html += `<tr><td>${r['تاريخ الزيارة']||'-'}</td><td>${toHHMM(r['وقت الدخول'])}</td>
     <td style="text-align:center">${r['مدة الدقائق']||'-'}</td>
     <td>${esc(r['الشخص اللي قام بالزياره'])||'-'}</td>
@@ -4719,7 +4719,7 @@ function selectClientCard(name){
   const clusters = clusterNearbyPoints(inaccPoints, 50);
   currentClientCardData = {name, client, visits, clusters};
   const clusterEl = document.getElementById('cc-cluster-content');
-  document.getElementById('cc-cluster-badge').textContent = clusters.length.toLocaleString();
+  document.getElementById('cc-cluster-badge').textContent = clusters.length.toLocaleString('en-US');
 
   if(clusters.length===0){
     clusterEl.innerHTML = '<div class="no-data" style="padding:14px 0">' +
@@ -4815,7 +4815,7 @@ function renderClientOrderHistoryChart(visits){
       plugins: { legend: { display: false } },
       scales: {
         x: { ticks: { color: colors.text, maxRotation: 45, minRotation: 45 }, grid: { display: false } },
-        y: { ticks: { color: colors.text, callback: v => (+v).toLocaleString('ar-IQ') }, grid: { color: colors.grid } }
+        y: { ticks: { color: colors.text, callback: v => (+v).toLocaleString('en-US') }, grid: { color: colors.grid } }
       }
     }
   });
@@ -4934,9 +4934,9 @@ function renderSimilarLocationsReport(){
 
   results.sort((a,b)=> b.clusterSize - a.clusterSize || b.pct - a.pct);
 
-  document.getElementById('sim-total').textContent = results.length.toLocaleString();
-  document.getElementById('sim-strong').textContent = results.filter(r=>r.strong).length.toLocaleString();
-  document.getElementById('similar-badge').textContent = results.length.toLocaleString();
+  document.getElementById('sim-total').textContent = results.length.toLocaleString('en-US');
+  document.getElementById('sim-strong').textContent = results.filter(r=>r.strong).length.toLocaleString('en-US');
+  document.getElementById('similar-badge').textContent = results.length.toLocaleString('en-US');
 
   let html = '';
   results.forEach(r=>{
@@ -5042,7 +5042,7 @@ function renderCoverageReport2(){
     return b.total - a.total;
   });
 
-  document.getElementById('coverage2-badge').textContent = rows.length.toLocaleString();
+  document.getElementById('coverage2-badge').textContent = rows.length.toLocaleString('en-US');
   let html = '';
   rows.forEach(r=>{
     const pctCell = r.pct==null ? '-' : `<span class="pill ${r.pct>=80?'pill-green':r.pct>=50?'pill-orange':'pill-red'}">${r.pct}%</span>`;
@@ -5272,7 +5272,7 @@ function renderJumpReport(){
   });
   results.sort((x,y)=>y.speed-x.speed);
 
-  document.getElementById('jump-badge').textContent = results.length.toLocaleString();
+  document.getElementById('jump-badge').textContent = results.length.toLocaleString('en-US');
   let html = '';
   results.slice(0,300).forEach(x=>{
     html += `<tr><td>${esc(x.person)}</td>
@@ -5298,15 +5298,15 @@ function renderShortVisits(){
     return (+dur <= 1) && hasTxn;
   }).sort((a,b)=>(+a['مدة الدقائق'])-(+b['مدة الدقائق']));
 
-  document.getElementById('short-badge').textContent = rows.length.toLocaleString();
+  document.getElementById('short-badge').textContent = rows.length.toLocaleString('en-US');
   let html = '';
   rows.slice(0,300).forEach(r=>{
     const seconds = Math.round((+r['مدة الدقائق'])*60);
     html += `<tr><td>${esc(r.العميل)}</td><td>${esc(r['الشخص اللي قام بالزياره'])||'-'}</td><td>${r['تاريخ الزيارة']||'-'}</td>
     <td style="text-align:center"><span class="pill pill-red">${seconds} ث</span></td>
     <td style="text-align:center" class="money">${orderDisplayValue(r)}</td>
-    <td style="text-align:center" class="money qty-col">${(r['الكميه']!==''&&r['الكميه']!=null)?(+r['الكميه']).toLocaleString('ar-IQ'):'-'}</td>
-    <td style="text-align:center" class="money">${(r['قيمة المقبوضات']!==''&&r['قيمة المقبوضات']!=null)?(+r['قيمة المقبوضات']).toLocaleString('ar-IQ'):'-'}</td></tr>`;
+    <td style="text-align:center" class="money qty-col">${(r['الكميه']!==''&&r['الكميه']!=null)?(+r['الكميه']).toLocaleString('en-US'):'-'}</td>
+    <td style="text-align:center" class="money">${(r['قيمة المقبوضات']!==''&&r['قيمة المقبوضات']!=null)?(+r['قيمة المقبوضات']).toLocaleString('en-US'):'-'}</td></tr>`;
   });
   document.getElementById('short-tbody').innerHTML = html || '<tr><td colspan="7" class="no-data">لا توجد حالات ضمن الفلتر الحالي</td></tr>';
   EXPORT_DATA.short = rows.map(r=>({
@@ -5329,7 +5329,7 @@ function renderRegionAccuracy(){
   let rows = Object.entries(byRegion).map(([reg,v])=>({region:reg, ...v, pct: v.total ? Math.round(v.acc/v.total*100) : 0}))
     .sort((a,b)=>a.pct-b.pct);
 
-  document.getElementById('region-badge').textContent = rows.length.toLocaleString();
+  document.getElementById('region-badge').textContent = rows.length.toLocaleString('en-US');
   let html = '';
   rows.forEach(r=>{
     const cls = r.pct>=80 ? 'pill-green' : r.pct>=50 ? 'pill-orange' : 'pill-red';
@@ -5355,7 +5355,7 @@ function renderRepeatInaccuracy(){
     .filter(v=>v.inacc>=2)
     .sort((a,b)=>b.inacc-a.inacc);
 
-  document.getElementById('repeat-badge').textContent = rows.length.toLocaleString();
+  document.getElementById('repeat-badge').textContent = rows.length.toLocaleString('en-US');
   let html = '';
   rows.slice(0,300).forEach(r=>{
     const pct = Math.round(r.inacc/r.total*100);
@@ -5376,11 +5376,11 @@ function renderCoverage(){
   const unvisited = clientsInScope.filter(c=>!visitedNames.has(c['اسم العميل']));
   const pct = clientsInScope.length ? Math.round(visited.length/clientsInScope.length*100) : 0;
 
-  document.getElementById('cov-total').textContent = clientsInScope.length.toLocaleString();
-  document.getElementById('cov-visited').textContent = visited.length.toLocaleString();
-  document.getElementById('cov-unvisited').textContent = unvisited.length.toLocaleString();
+  document.getElementById('cov-total').textContent = clientsInScope.length.toLocaleString('en-US');
+  document.getElementById('cov-visited').textContent = visited.length.toLocaleString('en-US');
+  document.getElementById('cov-unvisited').textContent = unvisited.length.toLocaleString('en-US');
   document.getElementById('cov-pct').textContent = pct + '%';
-  document.getElementById('unvisited-badge').textContent = unvisited.length.toLocaleString();
+  document.getElementById('unvisited-badge').textContent = unvisited.length.toLocaleString('en-US');
 
   let html = '';
   unvisited.slice(0,200).forEach(c=>{
@@ -5420,7 +5420,7 @@ function renderDropAlerts(){
     return {person:p, type:typeMap[p], last7:l7, prior7:p7, dropPct: Math.round((1 - l7/p7)*100)};
   }).filter(r=>r.dropPct >= 50).sort((a,b)=>b.dropPct-a.dropPct);
 
-  document.getElementById('drop-badge').textContent = rows.length.toLocaleString();
+  document.getElementById('drop-badge').textContent = rows.length.toLocaleString('en-US');
   let html = '';
   rows.forEach(r=>{
     html += `<tr><td>${esc(r.person)}</td><td><span class="type-badge tb-${r.type}">${esc(r.type)||'-'}</span></td>
@@ -5466,11 +5466,11 @@ function renderChurnAlerts(){
     return {client:c, branch:branchMap[c], last30:l30, prior30:p30, dropPct: Math.round((1 - l30/p30)*100)};
   }).filter(r=>r.dropPct >= 50).sort((a,b)=>b.dropPct-a.dropPct);
 
-  document.getElementById('orderchurn-badge').textContent = rows.length.toLocaleString();
+  document.getElementById('orderchurn-badge').textContent = rows.length.toLocaleString('en-US');
   let html = '';
   rows.forEach(r=>{
     html += `<tr><td>${esc(r.client)}</td><td>${esc(r.branch)}</td>
-    <td style="text-align:center">${r.prior30.toLocaleString('ar-IQ')}</td><td style="text-align:center">${r.last30.toLocaleString('ar-IQ')}</td>
+    <td style="text-align:center">${r.prior30.toLocaleString('en-US')}</td><td style="text-align:center">${r.last30.toLocaleString('en-US')}</td>
     <td style="text-align:center"><span class="pill pill-red">-${r.dropPct}%</span></td></tr>`;
   });
   document.getElementById('orderchurn-tbody').innerHTML = html || '<tr><td colspan="5" class="no-data">لا توجد حالات انخفاض ملحوظ ضمن الفلتر الحالي</td></tr>';
@@ -5510,7 +5510,7 @@ function renderGapDays(){
     return {person:p, type:v.type, totalDays, active, gapDays, gapPct};
   }).filter(r=>r.gapPct>=40).sort((a,b)=>b.gapPct-a.gapPct);
 
-  document.getElementById('gap-badge').textContent = rows.length.toLocaleString();
+  document.getElementById('gap-badge').textContent = rows.length.toLocaleString('en-US');
   let html = '';
   rows.forEach(r=>{
     const cls = r.gapPct>=70 ? 'pill-red' : 'pill-orange';
@@ -5590,10 +5590,10 @@ function renderChurnRisk(){
 
   const stoppedCount = rows.filter(r=>r.riskLevel==='توقف تمامًا').length;
   const decliningCount = rows.filter(r=>r.riskLevel==='تراجع حاد').length;
-  document.getElementById('churn-total').textContent = rows.length.toLocaleString();
-  document.getElementById('churn-stopped').textContent = stoppedCount.toLocaleString();
-  document.getElementById('churn-declining').textContent = decliningCount.toLocaleString();
-  document.getElementById('churn-badge').textContent = rows.length.toLocaleString();
+  document.getElementById('churn-total').textContent = rows.length.toLocaleString('en-US');
+  document.getElementById('churn-stopped').textContent = stoppedCount.toLocaleString('en-US');
+  document.getElementById('churn-declining').textContent = decliningCount.toLocaleString('en-US');
+  document.getElementById('churn-badge').textContent = rows.length.toLocaleString('en-US');
 
   let html = '';
   rows.forEach(r=>{
@@ -5640,7 +5640,7 @@ function renderScorecard(){
     cancelPct: g.total ? Math.round(g.cancel/g.total*100) : 0
   })).sort((a,b)=>b.total-a.total);
 
-  document.getElementById('scorecard-badge').textContent = rows.length.toLocaleString();
+  document.getElementById('scorecard-badge').textContent = rows.length.toLocaleString('en-US');
   let html = '';
   rows.forEach(r=>{
     const accCls = r.accPct>=80 ? 'pill-green' : r.accPct>=50 ? 'pill-orange' : 'pill-red';
@@ -5648,7 +5648,7 @@ function renderScorecard(){
     <td style="text-align:center">${r.total}</td>
     <td style="text-align:center"><span class="pill ${accCls}">${r.accPct}%</span></td>
     <td style="text-align:center">${r.convPct}%</td>
-    <td style="text-align:center" class="money">${r.collectVal.toLocaleString('ar-IQ')}</td>
+    <td style="text-align:center" class="money">${r.collectVal.toLocaleString('en-US')}</td>
     <td style="text-align:center">${r.cancelPct}%</td></tr>`;
   });
   document.getElementById('scorecard-tbody').innerHTML = html || '<tr><td colspan="6" class="no-data">لا توجد بيانات</td></tr>';
@@ -5695,7 +5695,7 @@ function renderPerfTable(){
   });
   rows.sort((a,b)=>b.score-a.score);
 
-  document.getElementById('perf-badge').textContent = rows.length.toLocaleString();
+  document.getElementById('perf-badge').textContent = rows.length.toLocaleString('en-US');
   let html = '';
   rows.forEach((r,idx)=>{
     const rank = idx+1;
@@ -5708,9 +5708,9 @@ function renderPerfTable(){
     <td style="text-align:center">${r.total}</td>
     <td style="text-align:center"><span class="pill ${trustClass}">${r.trust}%</span></td>
     <td style="text-align:center">${r.conversion}%</td>
-    <td style="text-align:center" class="money">${r.avgOrder ? r.avgOrder.toLocaleString('ar-IQ') : '-'}</td>
-    <td style="text-align:center" class="money qty-col">${r.avgOrderQty ? r.avgOrderQty.toLocaleString('ar-IQ') : '-'}</td>
-    <td style="text-align:center" class="money">${r.avgCollect ? r.avgCollect.toLocaleString('ar-IQ') : '-'}</td>
+    <td style="text-align:center" class="money">${r.avgOrder ? r.avgOrder.toLocaleString('en-US') : '-'}</td>
+    <td style="text-align:center" class="money qty-col">${r.avgOrderQty ? r.avgOrderQty.toLocaleString('en-US') : '-'}</td>
+    <td style="text-align:center" class="money">${r.avgCollect ? r.avgCollect.toLocaleString('en-US') : '-'}</td>
     <td style="text-align:center" class="${spreadClass}">${spreadText}</td>
     <td style="text-align:center"><span class="pill ${scoreClass}">${r.score}</span></td></tr>`;
   });
@@ -5809,7 +5809,7 @@ function buildTrackingMapHtml(person, date, rows){
       duration:r['مدة الدقائق']||'', acc:r.accuracy,
       hasOrder, hasCollect,
       orderVal: hasOrder ? orderDisplayValue(r) : '',
-      collectVal: hasCollect ? (+r['قيمة المقبوضات']).toLocaleString('ar-IQ') : ''
+      collectVal: hasCollect ? (+r['قيمة المقبوضات']).toLocaleString('en-US') : ''
     };
   });
 
@@ -6712,9 +6712,9 @@ function updateDebtDashboardKPI(){
   const allClients = new Set(rows.map(r=>(r['كود العميل']||'')+'|'+(r['اسم العميل']||'')).filter(k=>k!=='|'));
   const overdueClients = new Set(overdueRows.map(r=>(r['كود العميل']||'')+'|'+(r['اسم العميل']||'')).filter(k=>k!=='|'));
   animateKpiNumber('k-debt-total', total);
-  document.getElementById('k-debt-overdue-val').textContent = 'متجاوز: ' + overdueVal.toLocaleString('ar-IQ') + ' د.ع';
+  document.getElementById('k-debt-overdue-val').textContent = 'متجاوز: ' + overdueVal.toLocaleString('en-US') + ' د.ع';
   document.getElementById('k-debt-overdue-pct').textContent = 'النسبة: ' + pct + '%';
-  document.getElementById('k-debt-clients').textContent = allClients.size.toLocaleString('ar-IQ') + ' عميل • ' + overdueClients.size.toLocaleString('ar-IQ') + ' متجاوز';
+  document.getElementById('k-debt-clients').textContent = allClients.size.toLocaleString('en-US') + ' عميل • ' + overdueClients.size.toLocaleString('en-US') + ' متجاوز';
   applyPerfColor('k-debt-card', total ? pct : null, true); // higherIsWorse: نسبة متجاوز عالية = أداء سيئ
   updateDebtRiskClientSet();
 }
@@ -6755,7 +6755,7 @@ function showOverdueClientsModal(){
 
   document.getElementById('overdue-search-box').value = '';
   document.getElementById('overdue-modal-sub').textContent =
-    `${OVERDUE_CLIENTS_LIST.length.toLocaleString('ar-IQ')} عميل متجاوز ضمن الفلتر الحالي — عدد الزيارات معتمد على مطابقة اسم العميل بين شيت المديونية وشيت الزيارات (ممكن يظهر صفر إذا الاسم مسجّل بصيغة مختلفة قليل من بين الشيتين)`;
+    `${OVERDUE_CLIENTS_LIST.length.toLocaleString('en-US')} عميل متجاوز ضمن الفلتر الحالي — عدد الزيارات معتمد على مطابقة اسم العميل بين شيت المديونية وشيت الزيارات (ممكن يظهر صفر إذا الاسم مسجّل بصيغة مختلفة قليل من بين الشيتين)`;
   renderOverdueClientsTable();
   openOverlay('overdue-overlay');
 }
@@ -6766,9 +6766,9 @@ function renderOverdueClientsTable(){
   const list = term ? OVERDUE_CLIENTS_LIST.filter(c => (c.name||'').toLocaleLowerCase('ar').includes(term)) : OVERDUE_CLIENTS_LIST;
   document.getElementById('overdue-list').innerHTML = list.map(c=>`
     <tr><td class="oc-name" data-label="اسم العميل">${callButtonHtml(c.name)}${esc(c.name)}${clientGrade(c.name)?` <span style="color:var(--text-dim);font-size:11px">(${esc(clientGrade(c.name))})</span>`:''}</td>
-    <td style="text-align:center;color:var(--red);font-weight:700" data-label="قيمة التجاوز">${c.sum.toLocaleString('ar-IQ')}</td>
-    <td style="text-align:center" data-label="عدد الزيارات">${c.visitsCount.toLocaleString('ar-IQ')}</td>
-    <td style="text-align:center;color:var(--red);font-weight:700" data-label="كام يوم متجاوز">${c.maxOverdueDays.toLocaleString('ar-IQ')}</td></tr>`
+    <td style="text-align:center;color:var(--red);font-weight:700" data-label="قيمة التجاوز">${c.sum.toLocaleString('en-US')}</td>
+    <td style="text-align:center" data-label="عدد الزيارات">${c.visitsCount.toLocaleString('en-US')}</td>
+    <td style="text-align:center;color:var(--red);font-weight:700" data-label="كام يوم متجاوز">${c.maxOverdueDays.toLocaleString('en-US')}</td></tr>`
   ).join('') || `<tr><td colspan="4" style="text-align:center;color:var(--text-dim)">${term ? 'لا يوجد عملاء مطابقين' : 'لا يوجد عملاء متجاوزين ضمن الفلتر الحالي'}</td></tr>`;
 }
 function closeOverdueClientsModal(){
@@ -6830,7 +6830,7 @@ function renderDebtTrendComparison(){
     return;
   }
 
-  const fmt = v => (v>=0?'+':'') + v.toLocaleString('ar-IQ');
+  const fmt = v => (v>=0?'+':'') + v.toLocaleString('en-US');
   const arrow = v => v>0 ? '🔺' : (v<0 ? '🔻' : '➖');
   const colorFor = v => v>0 ? 'var(--red)' : (v<0 ? 'var(--green)' : 'var(--text-dim)');
   function renderRow(label, compare){
@@ -6860,7 +6860,7 @@ function priorityRowHtml(kind, item){
     return `<div style="padding:4px 0;display:flex;justify-content:space-between;gap:8px">
       <span>${esc(item.name)}</span>
       <span style="text-align:left;white-space:nowrap">
-        <b style="color:var(--red)">${item.sum.toLocaleString('ar-IQ')}</b>
+        <b style="color:var(--red)">${item.sum.toLocaleString('en-US')}</b>
         <span style="color:var(--text-dim);font-size:11px"> • ${item.maxOverdueDays > 0 ? item.maxOverdueDays + ' يوم' : 'اليوم'}</span>
       </span></div>`;
   }
@@ -6869,7 +6869,7 @@ function priorityRowHtml(kind, item){
       <span>${esc(item.name)}</span>
       <span style="text-align:left;white-space:nowrap">
         <b style="color:var(--orange)">${item.remaining===0?'اليوم':item.remaining+' يوم'}</b>
-        <span style="color:var(--text-dim);font-size:11px"> • ${item.sum.toLocaleString('ar-IQ')}</span>
+        <span style="color:var(--text-dim);font-size:11px"> • ${item.sum.toLocaleString('en-US')}</span>
       </span></div>`;
   }
   // unvisited
@@ -7028,12 +7028,12 @@ function renderDebtReport(){
     renderPriorityList('unvisited');
   }
 
-  document.getElementById('debt-k-total').textContent = total.toLocaleString('ar-IQ');
-  document.getElementById('debt-k-count').textContent = count.toLocaleString('ar-IQ');
-  document.getElementById('debt-k-overdue').textContent = overdueCount.toLocaleString('ar-IQ');
-  document.getElementById('debt-k-overdue-val').textContent = overdueVal.toLocaleString('ar-IQ');
-  document.getElementById('debt-k-notoverdue').textContent = notOverdueCount.toLocaleString('ar-IQ');
-  document.getElementById('debt-k-notoverdue-val').textContent = notOverdueVal.toLocaleString('ar-IQ');
+  document.getElementById('debt-k-total').textContent = total.toLocaleString('en-US');
+  document.getElementById('debt-k-count').textContent = count.toLocaleString('en-US');
+  document.getElementById('debt-k-overdue').textContent = overdueCount.toLocaleString('en-US');
+  document.getElementById('debt-k-overdue-val').textContent = overdueVal.toLocaleString('en-US');
+  document.getElementById('debt-k-notoverdue').textContent = notOverdueCount.toLocaleString('en-US');
+  document.getElementById('debt-k-notoverdue-val').textContent = notOverdueVal.toLocaleString('en-US');
   document.getElementById('debt-k-overduepct').textContent = overduePct + '%';
   document.getElementById('debt-k-avgage').textContent = avgAge;
 
@@ -7053,7 +7053,7 @@ function renderDebtReport(){
   document.getElementById('debt-top-clients-list').innerHTML = top3.length ? top3.map((c,i)=>`
     <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;${i>0?'border-top:1px solid var(--border-main)':''}">
       <div><span style="font-weight:800;color:var(--accent);margin-left:6px">#${i+1}</span>${esc(c.name)}</div>
-      <div style="color:var(--red);font-weight:700">${c.sum.toLocaleString('ar-IQ')} د.ع</div>
+      <div style="color:var(--red);font-weight:700">${c.sum.toLocaleString('en-US')} د.ع</div>
     </div>`
   ).join('') : '<div style="color:var(--text-dim);text-align:center;padding:6px 0">لا توجد بيانات ضمن الفلتر الحالي</div>';
 
@@ -7072,8 +7072,8 @@ function renderDebtReport(){
   document.getElementById('debt-branch-badge').textContent = branchRows.length;
   document.getElementById('debt-branch-tbody').innerHTML = branchRows.map(b=>`
     <tr><td>${esc(b.branch)}</td><td style="text-align:center">${b.count}</td><td style="text-align:center">${b.overdue}</td>
-    <td style="text-align:center;color:var(--red)">${b.overdueVal.toLocaleString('ar-IQ')}</td>
-    <td style="text-align:center">${b.sum.toLocaleString('ar-IQ')}</td>
+    <td style="text-align:center;color:var(--red)">${b.overdueVal.toLocaleString('en-US')}</td>
+    <td style="text-align:center">${b.sum.toLocaleString('en-US')}</td>
     <td style="text-align:center">${b.sum ? Math.round(b.overdueVal/b.sum*100) : 0}%</td></tr>`
   ).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--text-dim)">لا توجد بيانات ضمن الفلتر الحالي</td></tr>';
 
@@ -7092,8 +7092,8 @@ function renderDebtReport(){
   document.getElementById('debt-rep-badge').textContent = repRows.length;
   document.getElementById('debt-rep-tbody').innerHTML = repRows.map(r=>`
     <tr><td>${esc(r.person)}</td><td>${esc(r.branch)}</td><td style="text-align:center">${r.count}</td><td style="text-align:center">${r.overdue}</td>
-    <td style="text-align:center;color:var(--red)">${r.overdueVal.toLocaleString('ar-IQ')}</td>
-    <td style="text-align:center">${r.sum.toLocaleString('ar-IQ')}</td></tr>`
+    <td style="text-align:center;color:var(--red)">${r.overdueVal.toLocaleString('en-US')}</td>
+    <td style="text-align:center">${r.sum.toLocaleString('en-US')}</td></tr>`
   ).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--text-dim)">لا توجد بيانات ضمن الفلتر الحالي</td></tr>';
 
   // جدول تفصيلي (سقف عرض للأداء، التصدير يأخذ الكل)
@@ -7108,7 +7108,7 @@ function renderDebtReport(){
     <td style="text-align:center">${esc(r.نقدي)}</td><td style="text-align:center">${r['عمر الفاتوره']!=null?r['عمر الفاتوره']:'-'}</td>
     <td style="text-align:center">${r['عدد  ايام السماح']!=null?r['عدد  ايام السماح']:'-'}</td>
     <td style="text-align:center"><span class="pill ${r.نوع==='متجاوز'?'pill-red':'pill-green'}">${esc(r.نوع)||'-'}</span></td>
-    <td>${esc(r.المحصل)}</td><td style="text-align:center">${(+r.المديونيه||0).toLocaleString('ar-IQ')}</td></tr>`
+    <td>${esc(r.المحصل)}</td><td style="text-align:center">${(+r.المديونيه||0).toLocaleString('en-US')}</td></tr>`
   ).join('') || '<tr><td colspan="12" style="text-align:center;color:var(--text-dim)">لا توجد بيانات ضمن الفلتر الحالي</td></tr>';
 
   // تقرير أعمار الديون: مديونية كل عميل موزّعة على شرائح عمر الفاتورة (كل 10 أيام)
@@ -7168,14 +7168,14 @@ function renderDebtReport(){
     return `<tr><td>${esc(c.branch)}</td><td>${esc(c.rep)}</td><td style="text-align:center">${esc(c.code)}</td><td>${callButtonHtml(c.name)}<span style="cursor:pointer;text-decoration:underline dotted" title="فتح كارت العميل" onclick="openClientCardByName('${c.name.replace(/'/g,"\\'")}')">${esc(c.name)}</span></td>
     <td style="text-align:center">${esc(c.grade)}</td>
     <td style="text-align:center"><span class="pill ${c.hasOverdue?'pill-red':'pill-green'}">${c.hasOverdue?'متجاوز':'منتظم'}</span></td>
-    <td style="text-align:center">${c.b0 ? c.b0.toLocaleString('ar-IQ') : '-'}</td>
-    <td style="text-align:center">${c.b10 ? c.b10.toLocaleString('ar-IQ') : '-'}</td>
-    <td style="text-align:center">${c.b20 ? c.b20.toLocaleString('ar-IQ') : '-'}</td>
-    <td style="text-align:center">${c.b30 ? c.b30.toLocaleString('ar-IQ') : '-'}</td>
-    <td style="text-align:center">${c.b40 ? c.b40.toLocaleString('ar-IQ') : '-'}</td>
-    <td style="text-align:center;color:var(--red)">${c.b50 ? c.b50.toLocaleString('ar-IQ') : '-'}</td>
+    <td style="text-align:center">${c.b0 ? c.b0.toLocaleString('en-US') : '-'}</td>
+    <td style="text-align:center">${c.b10 ? c.b10.toLocaleString('en-US') : '-'}</td>
+    <td style="text-align:center">${c.b20 ? c.b20.toLocaleString('en-US') : '-'}</td>
+    <td style="text-align:center">${c.b30 ? c.b30.toLocaleString('en-US') : '-'}</td>
+    <td style="text-align:center">${c.b40 ? c.b40.toLocaleString('en-US') : '-'}</td>
+    <td style="text-align:center;color:var(--red)">${c.b50 ? c.b50.toLocaleString('en-US') : '-'}</td>
     <td style="text-align:center">${c.count}</td>
-    <td style="text-align:center;font-weight:700">${c.sum.toLocaleString('ar-IQ')}</td>
+    <td style="text-align:center;font-weight:700">${c.sum.toLocaleString('en-US')}</td>
     <td style="text-align:center">${esc(c.oldestDate) || '-'}</td>
     <td style="text-align:center;font-weight:700">${invoiceAge==null ? '-' : invoiceAge}</td>
     <td style="text-align:center">${status==='-' ? '-' : `<span class="pill ${status.cls}">${esc(status.text)}</span>`}</td></tr>`;
@@ -7207,7 +7207,7 @@ function renderDebtReport(){
     <td style="text-align:center">${esc(r.التاريخ)||'-'}</td>
     <td style="text-align:center">${r['عدد  ايام السماح']!=null?r['عدد  ايام السماح']:'-'}</td>
     <td style="text-align:center;font-weight:700;color:${r.remaining<=1?'var(--red)':'var(--orange)'}">${r.remaining === 0 ? 'اليوم' : r.remaining}</td>
-    <td style="text-align:center">${(+r.المديونيه||0).toLocaleString('ar-IQ')}</td></tr>`
+    <td style="text-align:center">${(+r.المديونيه||0).toLocaleString('en-US')}</td></tr>`
   ).join('') || '<tr><td colspan="8" style="text-align:center;color:var(--text-dim)">لا توجد فواتير قريبة من التجاوز ضمن الفلتر الحالي</td></tr>';
 
   EXPORT_DATA.debtNearOverdue = nearOverdueRows.map(r=>({
@@ -7248,7 +7248,7 @@ function renderDebtReport(){
     document.getElementById('debt-top5-tbody').innerHTML = top5.map(c=>`
       <tr><td>${callButtonHtml(c.name)}<span style="cursor:pointer;text-decoration:underline dotted" onclick="openClientCardByName('${c.name.replace(/'/g,"\\'")}')">${esc(c.name)}</span>${clientGrade(c.name)?` <span style="color:var(--text-dim);font-size:11px">(${esc(clientGrade(c.name))})</span>`:''}</td><td style="text-align:center">${esc(c.code)}</td><td style="text-align:center">${c.count}</td>
       <td style="text-align:center"><span class="pill ${c.hasOverdue?'pill-red':'pill-green'}">${c.hasOverdue?'يوجد متجاوز':'منتظم'}</span></td>
-      <td style="text-align:center">${c.sum.toLocaleString('ar-IQ')}</td></tr>`
+      <td style="text-align:center">${c.sum.toLocaleString('en-US')}</td></tr>`
     ).join('') || '<tr><td colspan="5" style="text-align:center;color:var(--text-dim)">لا توجد بيانات ضمن الفلتر الحالي</td></tr>';
   } else if(distMode === 'byRep'){
     chartCard.style.display = '';
@@ -7294,7 +7294,7 @@ function renderDebtReport(){
     document.getElementById('debt-risk-concentration').style.color = riskConcPct >= 50 ? 'var(--red)' : riskConcPct >= 25 ? 'var(--orange)' : 'var(--green)';
     const topRiskName = riskEntries.length ? riskEntries[0][0].split('|')[1] : '';
     document.getElementById('debt-risk-concentration-detail').textContent = topRiskName
-      ? `أكبر عميل ضمن النطاق الحالي: ${topRiskName} — ${riskEntries[0][1].toLocaleString('ar-IQ')} د.ع`
+      ? `أكبر عميل ضمن النطاق الحالي: ${topRiskName} — ${riskEntries[0][1].toLocaleString('en-US')} د.ع`
       : '';
 
     // كفاءة المندوب المالية = قيمة مبيعاته ÷ المديونية المتجاوزة الناتجة عنه (كلما زاد الرقم كان أفضل)
@@ -7315,8 +7315,8 @@ function renderDebtReport(){
       }).sort((a,b)=>b.eff-a.eff);
       document.getElementById('debt-rep-efficiency-tbody').innerHTML = effRows.map(r=>`
         <tr><td>${esc(r.person)}</td>
-        <td style="text-align:center">${r.sales.toLocaleString('ar-IQ')}</td>
-        <td style="text-align:center;color:var(--red)">${r.overdueVal.toLocaleString('ar-IQ')}</td>
+        <td style="text-align:center">${r.sales.toLocaleString('en-US')}</td>
+        <td style="text-align:center;color:var(--red)">${r.overdueVal.toLocaleString('en-US')}</td>
         <td style="text-align:center;font-weight:700">${r.eff===Infinity ? '∞' : r.eff.toFixed(1)}</td></tr>`
       ).join('') || '<tr><td colspan="4" style="text-align:center;color:var(--text-dim)">لا توجد بيانات ضمن الفلتر الحالي</td></tr>';
     }
@@ -7345,17 +7345,17 @@ function renderDebtBranchChart(dataRows){
         legend: { display: true, labels: { color: colors.text } },
         tooltip: {
           callbacks: {
-            label: (ctx) => ctx.dataset.label + ': ' + (+ctx.parsed.y).toLocaleString('ar-IQ') + ' د.ع',
+            label: (ctx) => ctx.dataset.label + ': ' + (+ctx.parsed.y).toLocaleString('en-US') + ' د.ع',
             afterBody: (items) => {
               const r = dataRows[items[0].dataIndex];
-              return ['عدد الفواتير: ' + r.count.toLocaleString('ar-IQ'), 'عدد العملاء: ' + r.clientsCount.toLocaleString('ar-IQ')];
+              return ['عدد الفواتير: ' + r.count.toLocaleString('en-US'), 'عدد العملاء: ' + r.clientsCount.toLocaleString('en-US')];
             }
           }
         }
       },
       scales: {
         x: { ticks: { color: colors.text }, grid: { color: colors.grid } },
-        y: { ticks: { color: colors.text, callback: v => (+v).toLocaleString('ar-IQ') }, grid: { color: colors.grid } }
+        y: { ticks: { color: colors.text, callback: v => (+v).toLocaleString('en-US') }, grid: { color: colors.grid } }
       }
     }
   });
@@ -7376,7 +7376,7 @@ async function exportDebtPDF(){
       : [branchVal, personVal].filter(Boolean).join(' — ') || 'كل الفروع';
 
     document.getElementById('pdf-debt-scope').textContent = scopeLabel;
-    document.getElementById('pdf-debt-date').textContent = 'تاريخ التقرير: ' + new Date().toLocaleDateString('ar-EG', {year:'numeric', month:'long', day:'numeric'});
+    document.getElementById('pdf-debt-date').textContent = 'تاريخ التقرير: ' + new Date().toLocaleDateString('ar-EG-u-nu-latn', {year:'numeric', month:'long', day:'numeric'});
     document.getElementById('pdf-debt-total').textContent = document.getElementById('debt-k-total').textContent + ' د.ع';
     document.getElementById('pdf-debt-overdue').textContent = document.getElementById('debt-k-overdue-val').textContent + ' د.ع';
     document.getElementById('pdf-debt-pct').textContent = document.getElementById('debt-k-overduepct').textContent;
@@ -7388,10 +7388,10 @@ async function exportDebtPDF(){
       const pct = b['إجمالي المديونية'] ? Math.round(b['قيمة المتجاوز']/b['إجمالي المديونية']*100) : 0;
       return `<tr>
         <td style="padding:7px; border-bottom:1px solid #eee;">${esc(b['الفرع'])}</td>
-        <td style="padding:7px; border-bottom:1px solid #eee; text-align:center;">${(+b['عدد الفواتير']||0).toLocaleString('ar-IQ')}</td>
-        <td style="padding:7px; border-bottom:1px solid #eee; text-align:center;">${(+b['متجاوز']||0).toLocaleString('ar-IQ')}</td>
-        <td style="padding:7px; border-bottom:1px solid #eee; text-align:center; color:#c0392b;">${(+b['قيمة المتجاوز']||0).toLocaleString('ar-IQ')}</td>
-        <td style="padding:7px; border-bottom:1px solid #eee; text-align:center;">${(+b['إجمالي المديونية']||0).toLocaleString('ar-IQ')}</td>
+        <td style="padding:7px; border-bottom:1px solid #eee; text-align:center;">${(+b['عدد الفواتير']||0).toLocaleString('en-US')}</td>
+        <td style="padding:7px; border-bottom:1px solid #eee; text-align:center;">${(+b['متجاوز']||0).toLocaleString('en-US')}</td>
+        <td style="padding:7px; border-bottom:1px solid #eee; text-align:center; color:#c0392b;">${(+b['قيمة المتجاوز']||0).toLocaleString('en-US')}</td>
+        <td style="padding:7px; border-bottom:1px solid #eee; text-align:center;">${(+b['إجمالي المديونية']||0).toLocaleString('en-US')}</td>
         <td style="padding:7px; border-bottom:1px solid #eee; text-align:center;">${pct}%</td>
       </tr>`;
     }).join('');
@@ -7403,10 +7403,10 @@ async function exportDebtPDF(){
       <tr>
         <td style="padding:7px; border-bottom:1px solid #eee;">${esc(r['المندوب'])}</td>
         <td style="padding:7px; border-bottom:1px solid #eee;">${esc(r['الفرع'])}</td>
-        <td style="padding:7px; border-bottom:1px solid #eee; text-align:center;">${(+r['عدد الفواتير']||0).toLocaleString('ar-IQ')}</td>
-        <td style="padding:7px; border-bottom:1px solid #eee; text-align:center;">${(+r['متجاوز']||0).toLocaleString('ar-IQ')}</td>
-        <td style="padding:7px; border-bottom:1px solid #eee; text-align:center; color:#c0392b;">${(+r['قيمة المتجاوز']||0).toLocaleString('ar-IQ')}</td>
-        <td style="padding:7px; border-bottom:1px solid #eee; text-align:center;">${(+r['إجمالي المديونية']||0).toLocaleString('ar-IQ')}</td>
+        <td style="padding:7px; border-bottom:1px solid #eee; text-align:center;">${(+r['عدد الفواتير']||0).toLocaleString('en-US')}</td>
+        <td style="padding:7px; border-bottom:1px solid #eee; text-align:center;">${(+r['متجاوز']||0).toLocaleString('en-US')}</td>
+        <td style="padding:7px; border-bottom:1px solid #eee; text-align:center; color:#c0392b;">${(+r['قيمة المتجاوز']||0).toLocaleString('en-US')}</td>
+        <td style="padding:7px; border-bottom:1px solid #eee; text-align:center;">${(+r['إجمالي المديونية']||0).toLocaleString('en-US')}</td>
       </tr>`).join('');
 
     const el = document.getElementById('debt-pdf-template');
