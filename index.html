@@ -18,6 +18,9 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 
@@ -109,7 +112,35 @@ body.dark{
   --shadow:0 1px 4px rgba(0,0,0,.45);
 }
 
-body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Arial,sans-serif;background:var(--bg-page);color:var(--text-primary);min-height:100vh;transition:background .2s,color .2s;overflow-x:hidden;-webkit-tap-highlight-color:transparent}
+@media (prefers-reduced-motion: no-preference){
+  #splash-intro{
+    position:fixed; inset:0; z-index:9999; background:linear-gradient(135deg, var(--bg-page), var(--bg-card2));
+    display:flex; align-items:center; justify-content:center; perspective:1000px;
+    animation: splashHold 1.6s ease forwards; cursor:pointer;
+  }
+  .splash-inner{ text-align:center; animation: splashIn .9s cubic-bezier(.22,.9,.3,1.4) both; }
+  .splash-icon{ font-size:64px; filter:drop-shadow(0 6px 14px rgba(0,0,0,.2)); }
+  .splash-title{ font-size:26px; font-weight:900; margin-top:10px; color:var(--text-heading); }
+  .splash-sub{ font-size:13px; color:var(--text-dim); margin-top:6px; }
+  @keyframes splashIn{
+    from{ opacity:0; transform: rotateY(90deg) scale(.6); }
+    to{ opacity:1; transform: rotateY(0deg) scale(1); }
+  }
+  @keyframes splashHold{
+    0%,78%{ opacity:1; }
+    100%{ opacity:0; }
+  }
+}
+body{font-family:'Cairo',-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Arial,sans-serif;background:var(--bg-page);color:var(--text-primary);min-height:100vh;transition:background .2s,color .2s;overflow-x:hidden;-webkit-tap-highlight-color:transparent}
+@media (prefers-reduced-motion: no-preference){
+  /* كرة إضاءة خفيفة خلف المحتوى بتتحرك شوية مع كل تبديل تاب — إحساس عمق (parallax) بسيط */
+  body::before{
+    content:''; position:fixed; top:-15%; left:-10%; width:55vw; height:55vw; max-width:560px; max-height:560px;
+    background:radial-gradient(circle, color-mix(in srgb, var(--accent) 12%, transparent), transparent 70%);
+    pointer-events:none; z-index:0; transition:transform .7s cubic-bezier(.22,.9,.3,1);
+    transform:translate(var(--parallax-x,0px), var(--parallax-y,0px));
+  }
+}
 /* تحوّل ناعم بين الوضع الفاتح والغامق بدل التغيير الفجائي لكل عناصر الصفحة */
 @media (prefers-reduced-motion: no-preference){
   body, .kpi, .report-card, .admin-panel, .admin-overlay, select, input, button, .tab-btn, .tab-bar,
@@ -130,6 +161,20 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Ar
 .hs .v{font-size:20px;font-weight:700;color:var(--accent)}
 .hs .l{font-size:11px;color:var(--text-dim)}
 .theme-toggle{width:38px;height:38px;border-radius:50%;border:1px solid var(--border-main);background:var(--bg-card);cursor:pointer;font-size:17px;display:flex;align-items:center;justify-content:center;transition:.2s;flex:none}
+#notif-bell-btn{position:relative}
+#notif-bell-badge{position:absolute;top:-4px;left:-4px;background:var(--red);color:#fff;font-size:10px;font-weight:800;min-width:17px;height:17px;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 3px;border:2px solid var(--bg-card)}
+@media (prefers-reduced-motion: no-preference){
+  @keyframes bellRing{0%,85%,100%{transform:rotate(0)}88%{transform:rotate(-12deg)}91%{transform:rotate(10deg)}94%{transform:rotate(-8deg)}97%{transform:rotate(4deg)}}
+  #notif-bell-btn.has-alerts{animation:bellRing 4.5s ease-in-out infinite}
+}
+#notif-bell-panel{display:none;position:absolute;top:46px;left:0;width:300px;max-height:400px;overflow-y:auto;background:var(--bg-card);border:1px solid var(--border-main);border-radius:14px;box-shadow:0 8px 28px rgba(0,0,0,.18);padding:14px;z-index:500}
+#notif-bell-panel.open{display:block}
+.notif-item{display:flex;align-items:center;gap:10px;padding:9px 6px;border-radius:10px;cursor:pointer;font-size:12.5px}
+.notif-item:hover{background:var(--bg-page)}
+.notif-item .notif-icon{font-size:18px;flex:none}
+.notif-item .notif-text{flex:1;color:var(--text-primary);font-weight:600}
+.notif-item .notif-count{font-weight:800;color:var(--red)}
+.notif-empty{padding:16px 6px;text-align:center;color:var(--text-dim);font-size:12.5px}
 .theme-toggle:hover{background:var(--bg-hover)}
 
 /* FILTERS */
@@ -155,6 +200,14 @@ select:focus,input:focus{outline:none;border-color:var(--accent)}
 /* كارت KPI قابل للضغط (عملاء لم تتم زيارتهم) */
 .kpi-clickable{cursor:pointer}
 @media (prefers-reduced-motion: no-preference){
+  .kpi-clickable{perspective:800px}
+  .kpi-clickable.flipping{transform:rotateY(180deg) !important; transition:transform .45s ease}
+  .kpi-clickable > *{backface-visibility:hidden}
+  .kpi-clickable::after{
+    content:'👆 اضغط لعرض كل التفاصيل'; position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    text-align:center; padding:14px; border-radius:12px; background:linear-gradient(135deg,var(--bg-card),var(--bg-card2));
+    backface-visibility:hidden; transform:rotateY(180deg); font-weight:800; font-size:13px; color:var(--accent);
+  }
   @keyframes kpiPulseGlow{
     0%,100%{box-shadow:var(--shadow)}
     50%{box-shadow:var(--shadow), 0 0 0 5px color-mix(in srgb, var(--accent) 22%, transparent)}
@@ -211,7 +264,7 @@ body.mobile-focus-mode .filters, body.mobile-focus-mode .tab-bar{display:none !i
 }
 .kpi::before{content:'';position:absolute;top:0;right:0;width:60px;height:60px;border-radius:0 12px 0 60px;opacity:.15}
 .kpi.blue::before{background:var(--blue)}.kpi.green::before{background:var(--green)}.kpi.red::before{background:var(--red)}.kpi.orange::before{background:var(--orange)}.kpi.purple::before{background:var(--purple)}.kpi.teal::before{background:var(--teal)}.kpi.indigo::before{background:var(--indigo)}
-.kpi-icon{font-size:20px;margin-bottom:8px}
+.kpi-icon{font-size:20px;margin-bottom:8px;display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:50%;background:radial-gradient(circle at 30% 25%, rgba(255,255,255,.55), rgba(255,255,255,0) 60%), linear-gradient(135deg, rgba(255,255,255,.22), rgba(0,0,0,.05));box-shadow:inset 0 1px 2px rgba(255,255,255,.55), 0 3px 7px rgba(0,0,0,.15), 0 1px 1px rgba(0,0,0,.06)}
 .kpi-val{font-size:26px;font-weight:700;color:var(--text-heading);line-height:1}
 .kpi-val.kpi-val-small{font-size:19px}
 .kpi-label{font-size:11px;color:var(--text-dim);margin-top:6px}
@@ -264,7 +317,10 @@ body.mobile-focus-mode .filters, body.mobile-focus-mode .tab-bar{display:none !i
 .page-btn{padding:5px 12px;border-radius:6px;border:1px solid var(--border-input);background:var(--bg-card2);color:var(--text-primary);cursor:pointer;font-size:12px;transition:.15s}
 .page-btn:hover,.page-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
 .page-info{font-size:12px;color:var(--text-dim)}
-.no-data{text-align:center;padding:40px;color:var(--text-dim);font-size:14px}
+.no-data{text-align:center;padding:40px 20px;color:var(--text-dim);font-size:14px;display:flex;flex-direction:column;align-items:center;gap:8px}
+.no-data::before{content:'📭';font-size:32px;opacity:.35;line-height:1}
+td.no-data, td.no-data::before{display:table-cell} /* داخل الجدول التقليدي، الأيقونة تبان جنب النص مش فوقه عشان الصف يفضل رفيع */
+td.no-data{padding:24px 12px}
 
 /* TABS */
 .tab-bar{display:flex;gap:6px;padding:0 30px;margin-top:6px;flex-wrap:wrap}
@@ -610,6 +666,14 @@ body.role-field-restricted #fg-branch, body.role-field-restricted #fg-type, body
 </head>
 <body>
 
+<div id="splash-intro" onclick="dismissSplash()">
+  <div class="splash-inner">
+    <div class="splash-icon">🚶</div>
+    <div class="splash-title">مساعد المندوب</div>
+    <div class="splash-sub">جاري التحضير...</div>
+  </div>
+</div>
+
 <div id="login-overlay">
   <div class="login-card">
     <div class="login-icon">🔒</div>
@@ -642,6 +706,13 @@ body.role-field-restricted #fg-branch, body.role-field-restricted #fg-type, body
     <div class="hs"><div class="v" id="hs-total">0</div><div class="l">إجمالي الزيارات</div></div>
     <div class="hs"><div class="v" style="color:var(--green)" id="hs-acc">0</div><div class="l">زيارات دقيقة</div></div>
     <div class="hs"><div class="v" style="color:var(--red)" id="hs-inacc">0</div><div class="l">غير دقيقة</div></div>
+    <div style="position:relative">
+      <button class="theme-toggle" id="notif-bell-btn" onclick="toggleNotifBell()" title="التنبيهات">🔔<span id="notif-bell-badge" style="display:none">0</span></button>
+      <div id="notif-bell-panel">
+        <div style="font-weight:800;font-size:13px;padding:2px 4px 10px;color:var(--text-heading)">🔔 التنبيهات الحرجة</div>
+        <div id="notif-bell-list"></div>
+      </div>
+    </div>
     <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="تبديل الوضع الليلي">🌙</button>
     <button class="theme-toggle" id="help-toggle" onclick="openHelpModal()" title="مساعدة">❓</button>
     <span id="sync-indicator" style="font-size:10.5px;color:var(--text-dim);white-space:nowrap"></span>
@@ -1108,10 +1179,15 @@ body.role-field-restricted #fg-branch, body.role-field-restricted #fg-type, body
       <select id="geo-region"><option value="">كل المناطق</option></select>
     </div>
     <button class="admin-btn primary" style="width:auto;padding:9px 20px;background:linear-gradient(135deg,#c9a227,#e0b34d)" onclick="openGeoPerfMapFull()">⛶ فتح الخريطة كاملة</button>
+    <button class="admin-btn primary" style="width:auto;padding:9px 20px" id="globe-3d-btn" onclick="toggleGlobe3D()">🌐 عرض كروي 3D</button>
   </div>
   <div style="padding:6px 30px 14px;font-size:12px;color:var(--text-dim)">الخريطة تتبع فلتر "الشخص" وفلاتر السنة/الشهر/الفرع الذي فوق الصفحة تلقائيًا (على مستوى الشهر). 🟢 زيارة دقيقة + طلبية · 🟡 زيارة دقيقة بدون طلبية · 🔴 زيارة غير دقيقة · ⚪ عميل بدون أي زيارة إطلاقًا.</div>
   <div id="geo-perf-info" style="padding:0 30px 14px;font-size:13px;font-weight:700;color:var(--text-heading)"></div>
   <div id="geo-perf-map"></div>
+  <div id="globe-3d-wrap" style="display:none;margin:0 30px 20px">
+    <div id="globe-3d-canvas" style="height:420px;border-radius:12px;overflow:hidden;background:radial-gradient(circle at 50% 30%,#1a2035,#05070d);touch-action:none;position:relative"></div>
+    <div style="text-align:center;font-size:11px;color:var(--text-dim);margin-top:6px">🖱️ اسحب لتدوير الكرة — نفس عملاء الخريطة فوق بنفس الألوان</div>
+  </div>
 </div><!-- end tab-geomap -->
 
 <!-- TAB: MONTHLY CLIENT COVERAGE -->
@@ -1217,8 +1293,13 @@ body.role-field-restricted #fg-branch, body.role-field-restricted #fg-type, body
           <button data-metric="accuracy" onclick="setLeaderboardMetric('accuracy')">نسبة الدقة</button>
         </div>
         <button class="mini-export-btn" style="float:left" onclick="exportChartPNG('chart-leaderboard','لوحة_الصدارة')">📷 PNG</button>
+        <button class="mini-export-btn" style="float:left;margin-left:6px" id="leaderboard-3d-btn" onclick="toggleLeaderboard3D()">🎲 عرض 3D</button>
       </h4>
       <div class="chart-wrap"><canvas id="chart-leaderboard"></canvas></div>
+      <div id="leaderboard-3d-wrap" style="display:none">
+        <div id="leaderboard-3d-canvas" style="height:320px;border-radius:12px;overflow:hidden;background:linear-gradient(160deg,#1a1f2e,#2a3350);touch-action:none"></div>
+        <div style="text-align:center;font-size:11px;color:var(--text-dim);margin-top:6px">🖱️ اسحب لتدوير الرسم — نفس بيانات لوحة الصدارة فوق</div>
+      </div>
     </div>
     <div class="chart-card">
       <h4>📈 اتجاه الأداء عبر الزمن (يوميًا)
@@ -1845,6 +1926,8 @@ const PAGE_SIZE = 50;
 let selectedDay = null;
 let searchTerm = '';
 let currentTab = 'dashboard';
+// عدّادات التنبيهات الحرجة المجمّعة في جرس الإشعارات العام بالهيدر (تتحدث مع كل تغيير فلتر)
+let ALERT_COUNTS = {unvisited:0, overdueDebt:0, shortVisits:0, inaccurate:0};
 let currentLeaderboardMetric = 'visits';
 let EXPORT_DATA = {};
 
@@ -3249,6 +3332,53 @@ function closeOverlay(id){
   setTimeout(()=>{ el.style.display = 'none'; panel.classList.remove('pop-exit'); }, 200);
 }
 
+// 🚶 إنترو بسيط أول ما تفتح الملف — بيختفي لوحده بعد ثانية ونص أو بضغطة
+function dismissSplash(){
+  const el = document.getElementById('splash-intro');
+  if(el) el.style.display = 'none';
+}
+if(prefersReducedMotion()){ dismissSplash(); }
+else { setTimeout(dismissSplash, 1700); }
+
+function toggleNotifBell(){
+  document.getElementById('notif-bell-panel').classList.toggle('open');
+}
+document.addEventListener('click', e=>{
+  const panel = document.getElementById('notif-bell-panel');
+  const btn = document.getElementById('notif-bell-btn');
+  if(panel && panel.classList.contains('open') && !panel.contains(e.target) && e.target!==btn){
+    panel.classList.remove('open');
+  }
+});
+
+function updateNotificationBell(){
+  const items = [
+    {n:ALERT_COUNTS.overdueDebt, icon:'⏰', text:'عميل متجاوز في المديونية', fn:'showOverdueClientsModal'},
+    {n:ALERT_COUNTS.unvisited, icon:'🚫', text:'عميل لم تتم زيارته', fn:'showUnvisitedClientsModal'},
+    {n:ALERT_COUNTS.shortVisits, icon:'⏱️', text:'زيارة أقل من 5 دقائق', fn:'showShortVisitsModal'},
+    {n:ALERT_COUNTS.inaccurate, icon:'❌', text:'زيارة غير دقيقة', fn:'showInaccurateVisitsModal'},
+  ].filter(it=>it.n > 0);
+
+  const total = items.reduce((s,it)=>s+it.n, 0);
+  const badge = document.getElementById('notif-bell-badge');
+  const btn = document.getElementById('notif-bell-btn');
+  if(total > 0){
+    badge.style.display = 'flex';
+    badge.textContent = total > 99 ? '99+' : total.toLocaleString('en-US');
+    btn.classList.add('has-alerts');
+  } else {
+    badge.style.display = 'none';
+    btn.classList.remove('has-alerts');
+  }
+
+  document.getElementById('notif-bell-list').innerHTML = items.length ? items.map(it => `
+    <div class="notif-item" onclick="document.getElementById('notif-bell-panel').classList.remove('open'); ${it.fn}()">
+      <span class="notif-icon">${it.icon}</span>
+      <span class="notif-text">${esc(it.text)}</span>
+      <span class="notif-count">${it.n.toLocaleString('en-US')}</span>
+    </div>`).join('') : '<div class="notif-empty">مفيش تنبيهات حرجة دلوقتي 🎉</div>';
+}
+
 function applyFilters(){
   const branch = document.getElementById('f-branch').value;
   const type = document.getElementById('f-type').value;
@@ -3312,6 +3442,7 @@ function updateKPIs(){
   document.getElementById('k-total-clients').textContent = uniqueClients.toLocaleString('en-US') + ' عميل';
   animateKpiNumber('k-acc', accCount);
   animateKpiNumber('k-inacc', inaccCount);
+  ALERT_COUNTS.inaccurate = inaccCount;
   document.getElementById('k-acc-pct').textContent = total ? Math.round(accCount/total*100)+'%' : '0%';
   document.getElementById('k-inacc-pct').textContent = total ? Math.round(inaccCount/total*100)+'%' : '0%';
   applyPerfColor('k-acc-card', total ? Math.round(accCount/total*100) : null);
@@ -3331,6 +3462,7 @@ function updateKPIs(){
   updateExtraKPIs();
   updateDebtDashboardKPI();
   updateRouteKPI();
+  updateNotificationBell();
   scheduleShareCardPrep();
 }
 
@@ -3404,6 +3536,7 @@ function updateExtraKPIs(){
   })).filter(c=>c.name).sort((a,b)=>a.name.localeCompare(b.name,'ar'));
 
   animateKpiNumber('k-unvisited', unvisitedCount);
+  ALERT_COUNTS.unvisited = unvisitedCount;
   document.getElementById('k-unvisited-pct').textContent = totalClientsInScope
     ? `من ${totalClientsInScope.toLocaleString('en-US')} عميل`
     : 'من 0 عميل';
@@ -3411,6 +3544,7 @@ function updateExtraKPIs(){
   // 2) زيارات مدتها أقل من 5 دقائق (من نفس نطاق الفلاتر الحالية بما فيها اليوم إذا محدد)
   const shortVisits = filtered.filter(r => r['مدة الدقائق'] !== '' && r['مدة الدقائق'] != null && +r['مدة الدقائق'] < 5).length;
   animateKpiNumber('k-shortvisits', shortVisits);
+  ALERT_COUNTS.shortVisits = shortVisits;
 
   // 3) بداية الحركة (وقت دخول أول زيارة دقيقة زمنيًا) وختامها (وقت خروج آخر زيارة دقيقة زمنيًا)
   //    ملحوظة: بعض دفعات البيانات يحدث فيها وقت الدخول/الخروج كرقم إكسيل خام (كسر من اليوم) غير نص "س:د" جاهز،
@@ -4261,6 +4395,10 @@ function switchTab(name){
   document.getElementById('tab-'+name).classList.add('active');
   document.getElementById('tabbtn-'+name).classList.add('active');
   currentTab = name;
+  // إحساس عمق بسيط: نزحزح كرة الإضاءة الخلفية شوية بشكل مختلف لكل تاب (رقم ثابت لكل اسم عشان التاب يرجع لنفس الإحساس كل مرة)
+  let h = 0; for(let i=0;i<name.length;i++) h = (h*31 + name.charCodeAt(i)) % 997;
+  document.documentElement.style.setProperty('--parallax-x', (((h % 200) - 100) * 0.6) + 'px');
+  document.documentElement.style.setProperty('--parallax-y', ((((h*7) % 160) - 80) * 0.6) + 'px');
   // شيت المديونية مبني على تواريخ فواتير غير تواريخ زيارات، فلا يوجد معنى لفلاتر السنة/الشهر/اليوم/الدقة هنا —
   // نخفيهم مؤقتًا وقت ما التاب مفتوح ونرجّعهم في أي تاب تاني.
   ['fg-year','fg-month','fg-acc'].forEach(id=>{
@@ -4327,6 +4465,35 @@ function toggleMobileFocusMode(){
       });
     }
   }catch(e){}
+})();
+
+// 🪄 حركة 3D لكروت KPI: ميلان خفيف يتبع الماوس على الديسكتوب، وتقليب (flip) بضغطة مطوّلة على الموبايل
+(function setupKpiCard3DEffects(){
+  if(prefersReducedMotion()) return;
+  const canHover = window.matchMedia && window.matchMedia('(hover: hover)').matches;
+  document.querySelectorAll('.kpi-row .kpi').forEach(card=>{
+    if(canHover){
+      card.addEventListener('mousemove', e=>{
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left, y = e.clientY - rect.top;
+        const rotateY = ((x / rect.width) - 0.5) * 12;
+        const rotateX = (0.5 - (y / rect.height)) * 12;
+        card.style.transform = `perspective(700px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+      });
+      card.addEventListener('mouseleave', ()=>{ card.style.transform = ''; });
+    } else if(card.classList.contains('kpi-clickable')){
+      let pressTimer = null, moved = false;
+      card.addEventListener('touchstart', ()=>{
+        moved = false;
+        pressTimer = setTimeout(()=>{ if(!moved) card.classList.add('flipping'); }, 420);
+      }, {passive:true});
+      card.addEventListener('touchmove', ()=>{ moved = true; clearTimeout(pressTimer); }, {passive:true});
+      card.addEventListener('touchend', ()=>{
+        clearTimeout(pressTimer);
+        if(card.classList.contains('flipping')) setTimeout(()=>card.classList.remove('flipping'), 900);
+      });
+    }
+  });
 })();
 
 // 👉👈 التنقل بالسحب بين التابات على الموبايل — يتنقل فقط بين التابات المتاحة فعليًا لهذا المستخدم
@@ -4403,8 +4570,8 @@ function renderHourlyChart(){
 }
 
 let leaderboardChartInstance = null;
-function renderLeaderboardChart(){
-  if(typeof Chart === 'undefined') return;
+// بيانات لوحة الصدارة — مستخدمة في الشارت العادي (Chart.js) وفي عرض الـ3D القابل للتدوير مع بعض بدون تكرار الحساب
+function getLeaderboardData(){
   const byPerson = {};
   filtered.forEach(r=>{
     const p = r['الشخص اللي قام بالزياره'];
@@ -4420,10 +4587,194 @@ function renderLeaderboardChart(){
   const metric = currentLeaderboardMetric;
   rows.sort((a,b)=> b[metric] - a[metric]);
   rows = rows.slice(0, isMobileView() ? 8 : 15);
-
   const labels = rows.map(r=>r.person);
   const values = rows.map(r=> metric==='accuracy' ? Math.round(r.accuracy) : (metric==='collect' ? Math.round(r.collect) : r.visits));
   const metricLabel = metric==='visits' ? 'عدد الزيارات' : metric==='collect' ? 'قيمة التحصيل' : 'نسبة الدقة %';
+  return {labels, values, metricLabel};
+}
+
+// ============ Three.js عند الطلب فقط (مش محمّل افتراضيًا حتى ما يبطّئش تحميل اللوحة اليومية) ============
+let threeJSLoadPromise = null;
+function loadThreeJS(){
+  if(window.THREE) return Promise.resolve();
+  if(threeJSLoadPromise) return threeJSLoadPromise;
+  threeJSLoadPromise = new Promise((resolve, reject)=>{
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
+    s.onload = resolve;
+    s.onerror = reject;
+    document.head.appendChild(s);
+  });
+  return threeJSLoadPromise;
+}
+
+// تدوير أي مشهد Three.js بالسحب (فأرة أو إصبع) — مشترك بين لوحة الصدارة 3D والكرة الأرضية 3D
+function attachDragRotate(container, group){
+  let dragging = false, lastX = 0, lastY = 0;
+  const onDown = (x,y)=>{ dragging = true; lastX = x; lastY = y; };
+  const onMove = (x,y)=>{
+    if(!dragging) return;
+    group.rotation.y += (x - lastX) * 0.008;
+    group.rotation.x = Math.max(-0.5, Math.min(0.5, group.rotation.x + (y - lastY) * 0.008));
+    lastX = x; lastY = y;
+  };
+  const onUp = ()=>{ dragging = false; };
+  container.addEventListener('mousedown', e=>onDown(e.clientX, e.clientY));
+  window.addEventListener('mousemove', e=>onMove(e.clientX, e.clientY));
+  window.addEventListener('mouseup', onUp);
+  container.addEventListener('touchstart', e=>{ const t=e.touches[0]; onDown(t.clientX, t.clientY); }, {passive:true});
+  container.addEventListener('touchmove', e=>{ const t=e.touches[0]; onMove(t.clientX, t.clientY); }, {passive:true});
+  container.addEventListener('touchend', onUp);
+  return ()=>dragging;
+}
+
+// ============ لوحة الصدارة كرسم 3D قابل للتدوير (بديل تقديمي للشارت العادي فوق، بنفس البيانات بالظبط) ============
+let leaderboard3DState = null;
+function toggleLeaderboard3D(){
+  const wrap = document.getElementById('leaderboard-3d-wrap');
+  if(wrap.style.display !== 'none'){ wrap.style.display = 'none'; return; }
+  wrap.style.display = 'block';
+  loadThreeJS().then(renderLeaderboard3D).catch(()=>{
+    document.getElementById('leaderboard-3d-canvas').innerHTML = '<div class="no-data" style="color:#fff">تعذر تحميل عرض الـ3D — تأكد من الاتصال بالإنترنت</div>';
+  });
+}
+
+function renderLeaderboard3D(){
+  const container = document.getElementById('leaderboard-3d-canvas');
+  container.innerHTML = '';
+  container.style.position = 'relative';
+  const {labels, values} = getLeaderboardData();
+  if(!values.length){ container.innerHTML = '<div class="no-data" style="color:#fff">مفيش بيانات كافية لعرضها ضمن الفلتر الحالي</div>'; return; }
+
+  const width = container.clientWidth, height = container.clientHeight || 320;
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(45, width/height, 0.1, 100);
+  camera.position.set(0, 6, 14);
+  camera.lookAt(0, 1, 0);
+
+  const renderer = new THREE.WebGLRenderer({antialias:true, alpha:true});
+  renderer.setSize(width, height);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  container.appendChild(renderer.domElement);
+
+  scene.add(new THREE.AmbientLight(0xffffff, 0.65));
+  const dirLight = new THREE.DirectionalLight(0xffffff, 0.85);
+  dirLight.position.set(5, 10, 7);
+  scene.add(dirLight);
+
+  const group = new THREE.Group();
+  scene.add(group);
+
+  const maxVal = Math.max(...values, 1);
+  const barWidth = 0.9, gap = 0.5;
+  const n = values.length;
+  const totalWidth = n * (barWidth + gap);
+  const palette = ['#f1c40f','#c0c0c0','#cd7f32']; // ذهبي/فضي/برونزي لأول 3 مراتب
+
+  values.forEach((v,i)=>{
+    const h = (v / maxVal) * 5 + 0.25;
+    const geo = new THREE.BoxGeometry(barWidth, h, barWidth);
+    const mat = new THREE.MeshStandardMaterial({color: palette[i] || '#1d4fa3', metalness:0.3, roughness:0.4});
+    const bar = new THREE.Mesh(geo, mat);
+    bar.position.x = -totalWidth/2 + i*(barWidth+gap) + barWidth/2;
+    bar.position.y = h/2;
+    group.add(bar);
+  });
+
+  const isDragging = attachDragRotate(container, group);
+
+  const legend = document.createElement('div');
+  legend.style.cssText = 'position:absolute;bottom:6px;right:8px;left:8px;display:flex;gap:6px;overflow-x:auto;font-size:10px;color:#fff';
+  legend.innerHTML = labels.map((l,i)=>`<span style="white-space:nowrap;background:rgba(255,255,255,.12);padding:3px 7px;border-radius:8px">${i+1}. ${esc(l)} (${values[i].toLocaleString('en-US')})</span>`).join('');
+  container.appendChild(legend);
+
+  if(leaderboard3DState) cancelAnimationFrame(leaderboard3DState.raf);
+  function animate(){
+    const raf = requestAnimationFrame(animate);
+    leaderboard3DState = {raf, renderer};
+    if(!isDragging() && !prefersReducedMotion()) group.rotation.y += 0.003;
+    renderer.render(scene, camera);
+  }
+  animate();
+}
+
+// ============ كرة أرضية 3D لتاب الخريطة — نفس عملاء الخريطة فوق بنفس الألوان، للعرض التقديمي/العام فقط ============
+let globe3DState = null;
+function toggleGlobe3D(){
+  const wrap = document.getElementById('globe-3d-wrap');
+  if(wrap.style.display !== 'none'){ wrap.style.display = 'none'; return; }
+  wrap.style.display = 'block';
+  loadThreeJS().then(renderGlobe3D).catch(()=>{
+    document.getElementById('globe-3d-canvas').innerHTML = '<div class="no-data" style="color:#fff">تعذر تحميل عرض الـ3D — تأكد من الاتصال بالإنترنت</div>';
+  });
+}
+
+function renderGlobe3D(){
+  const container = document.getElementById('globe-3d-canvas');
+  container.innerHTML = '';
+  const payload = computeGeoPerfPayload();
+  if(payload.error || !payload.payload || !payload.payload.length){
+    container.innerHTML = `<div class="no-data" style="color:#fff">${esc(payload.error || 'مفيش عملاء بإحداثيات ضمن الفلتر الحالي لعرضهم على الكرة')}</div>`;
+    return;
+  }
+
+  const width = container.clientWidth, height = container.clientHeight || 420;
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(45, width/height, 0.1, 100);
+  camera.position.set(0, 0, 6);
+
+  const renderer = new THREE.WebGLRenderer({antialias:true, alpha:true});
+  renderer.setSize(width, height);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  container.appendChild(renderer.domElement);
+
+  scene.add(new THREE.AmbientLight(0xffffff, 0.7));
+  const dirLight = new THREE.DirectionalLight(0xffffff, 0.7);
+  dirLight.position.set(4, 3, 5);
+  scene.add(dirLight);
+
+  const group = new THREE.Group();
+  scene.add(group);
+
+  const globeGeo = new THREE.SphereGeometry(2, 32, 32);
+  const globeMat = new THREE.MeshBasicMaterial({color:0x2c3e6b, wireframe:true, transparent:true, opacity:0.55});
+  group.add(new THREE.Mesh(globeGeo, globeMat));
+
+  const colors = {green:0x1e8e5a, yellow:0xe0b83a, red:0xc0392b, gray:0x95a5a6};
+  // نحول إحداثيات العميل (خط عرض/طول حقيقيين) لنقطة تقريبية على سطح الكرة، متمركزة حول متوسط مواقع هذا الشخص
+  const lats = payload.payload.map(p=>p.lat), lngs = payload.payload.map(p=>p.lng);
+  const centerLat = lats.reduce((a,b)=>a+b,0) / lats.length;
+  const centerLng = lngs.reduce((a,b)=>a+b,0) / lngs.length;
+  payload.payload.forEach(p=>{
+    // نكبّر الفروق عن المركز شوية حتى النقط تتوزع بشكل واضح على سطح الكرة بدل ما تتلزّق في بقعة صغيرة
+    const dLat = (p.lat - centerLat) * 6, dLng = (p.lng - centerLng) * 6;
+    const latRad = (dLat) * Math.PI/180, lngRad = (dLng) * Math.PI/180;
+    const r = 2.05;
+    const x = r * Math.cos(latRad) * Math.sin(lngRad);
+    const y = r * Math.sin(latRad);
+    const z = r * Math.cos(latRad) * Math.cos(lngRad);
+    const dotGeo = new THREE.SphereGeometry(0.045, 8, 8);
+    const dotMat = new THREE.MeshBasicMaterial({color: colors[p.status] || 0x95a5a6});
+    const dot = new THREE.Mesh(dotGeo, dotMat);
+    dot.position.set(x, y, z);
+    group.add(dot);
+  });
+
+  const isDragging = attachDragRotate(container, group);
+
+  if(globe3DState) cancelAnimationFrame(globe3DState.raf);
+  function animate(){
+    const raf = requestAnimationFrame(animate);
+    globe3DState = {raf, renderer};
+    if(!isDragging() && !prefersReducedMotion()) group.rotation.y += 0.0025;
+    renderer.render(scene, camera);
+  }
+  animate();
+}
+
+function renderLeaderboardChart(){
+  if(typeof Chart === 'undefined') return;
+  const {labels, values, metricLabel} = getLeaderboardData();
   const c = themeColors();
 
   const canvas = document.getElementById('chart-leaderboard');
@@ -4441,6 +4792,7 @@ function renderLeaderboardChart(){
       }
     }
   });
+  if(document.getElementById('leaderboard-3d-wrap').style.display !== 'none') renderLeaderboard3D();
 }
 
 let trendChartInstance = null;
@@ -6715,6 +7067,7 @@ function updateDebtDashboardKPI(){
   document.getElementById('k-debt-overdue-val').textContent = 'متجاوز: ' + overdueVal.toLocaleString('en-US') + ' د.ع';
   document.getElementById('k-debt-overdue-pct').textContent = 'النسبة: ' + pct + '%';
   document.getElementById('k-debt-clients').textContent = allClients.size.toLocaleString('en-US') + ' عميل • ' + overdueClients.size.toLocaleString('en-US') + ' متجاوز';
+  ALERT_COUNTS.overdueDebt = overdueClients.size;
   applyPerfColor('k-debt-card', total ? pct : null, true); // higherIsWorse: نسبة متجاوز عالية = أداء سيئ
   updateDebtRiskClientSet();
 }
