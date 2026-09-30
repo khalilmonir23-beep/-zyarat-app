@@ -912,6 +912,15 @@ body.role-field-restricted #fg-branch, body.role-field-restricted #fg-type, body
 </div>
 
 <!-- مودال المساعدة: شرح مختصر لكل تبويب ظاهر للمستخدم الحالي -->
+<!-- مودال صغير لعرض نص "ملاحظات الزيارة" كامل لو كان طويل ومقصوص في الجدول -->
+<div class="admin-overlay" id="note-detail-overlay">
+  <div class="admin-panel" style="max-width:420px">
+    <button class="admin-close" onclick="closeOverlay('note-detail-overlay')">✕</button>
+    <h3>📝 ملاحظات الزيارة</h3>
+    <div id="note-detail-text" style="margin-top:10px;line-height:1.8;white-space:pre-wrap"></div>
+  </div>
+</div>
+
 <div class="admin-overlay" id="help-overlay">
   <div class="admin-panel admin-panel-wide">
     <button class="admin-close" onclick="closeHelpModal()">✕</button>
@@ -1089,13 +1098,12 @@ body.role-field-restricted #fg-branch, body.role-field-restricted #fg-type, body
       <table class="visits-table">
         <thead><tr>
           <th>#</th><th>التاريخ</th><th>الفرع</th><th>الشخص</th><th>النوع</th>
-          <th>العميل</th><th>المنطقة</th><th>وقت الدخول</th><th>مدة (د)</th>
+          <th>العميل</th><th>المنطقة</th><th>ملاحظات الزيارة</th><th>وقت الدخول</th><th>مدة (د)</th>
           <th style="text-align:center" id="th-order-1">قيمة الطلبية</th>
           <th style="text-align:center" class="qty-col">الكمية</th>
           <th style="text-align:center">التحصيل</th>
           <th style="text-align:center">المسافة (م)</th>
           <th style="text-align:center">الدقة</th>
-          <th style="text-align:center">سبب الإلغاء</th>
           <th style="text-align:center">الخريطة</th>
         </tr></thead>
         <tbody id="visits-tbody"></tbody>
@@ -2626,6 +2634,7 @@ function applyWorkbookData(wb, opts){
         'الكميه': r['الكميه'] != null ? r['الكميه'] : '',
         'قيمة المقبوضات': r['قيمة المقبوضات'] != null ? r['قيمة المقبوضات'] : '',
         'سبب الغاء الزيارة': r['سبب الغاء الزيارة'] || '',
+        'ملاحظات الزيارة': r['ملاحظات الزيارة'] || '',
         'موقع الزيارة': r['موقع الزيارة'] || '',
         lat_visit: latV, lng_visit: lngV,
         lat_client: c.lat_client != null ? c.lat_client : '',
@@ -4279,6 +4288,20 @@ function openTrackStopMap(idx){
   openMapWindow(html);
 }
 
+// يبني خلية "ملاحظات الزيارة": نص مختصر في الجدول + رابط لعرض النص كامل في نافذة صغيرة لو كان طويل،
+// عشان عمود الملاحظات ميوسّعش الجدول أو يخلي الصفوف طويلة بشكل يبوّظ شكل باقي الأعمدة
+function noteCell(note){
+  if(!note) return '<span style="color:var(--text-dim)">-</span>';
+  const safe = esc(note);
+  if(note.length <= 45) return safe;
+  const shortText = esc(note.slice(0,45)) + '…';
+  return `<span style="cursor:pointer;color:var(--accent);text-decoration:underline dotted" data-note="${safe}" onclick="showNoteDetail(this)">${shortText}</span>`;
+}
+function showNoteDetail(el){
+  document.getElementById('note-detail-text').textContent = el.dataset.note;
+  openOverlay('note-detail-overlay');
+}
+
 function renderTable(){
   const term = searchTerm.toLowerCase();
   displayed = filtered.filter(r=>{
@@ -4317,6 +4340,7 @@ function renderTable(){
         <td data-label="النوع"><span class="type-badge tb-${r.نوع_الشخص}">${esc(r.نوع_الشخص)||'-'}</span></td>
         <td data-label="العميل" style="max-width:180px;overflow:hidden;text-overflow:ellipsis" title="${esc(r.العميل)}">${esc(r.العميل)||'-'}${DEBT_RISK_CLIENT_NAMES.has(r.العميل) ? ' <span title="عميل عنده مديونية متجاوزة أو شارفت على الدخول في التجاوز" style="cursor:help">⚠️</span>' : ''}</td>
         <td data-label="المنطقة">${esc(r['المنطقه سيستم'])||'-'}</td>
+        <td data-label="ملاحظات الزيارة" style="max-width:160px">${noteCell(r['ملاحظات الزيارة'])}</td>
         <td data-label="وقت الدخول">${toHHMM(r['وقت الدخول'])}</td>
         <td data-label="مدة (د)" class="num">${r['مدة الدقائق']||'-'}</td>
         <td data-label="${orderColumnLabel()}" class="money">${ordVal}</td>
@@ -4324,7 +4348,6 @@ function renderTable(){
         <td data-label="التحصيل" class="money">${colVal}</td>
         <td data-label="المسافة (م)" class="${distClass}" style="text-align:center;font-weight:600">${distText}</td>
         <td data-label="الدقة" style="text-align:center"><span class="acc-badge ${accClass}">${r.accuracy==='دقيقة'?'✅ دقيقة':r.accuracy==='غير دقيقة'?'❌ غير دقيقة':'⚪ —'}</span></td>
-        <td data-label="سبب الإلغاء" style="color:var(--red);text-align:center;font-size:11px">${esc(r['سبب الغاء الزيارة'])||''}</td>
         <td data-label="الخريطة" style="text-align:center">${mapBtn}</td>
       </tr>`;
     });
@@ -7719,7 +7742,7 @@ function exportToExcel(){
   if(typeof XLSX === 'undefined'){ alert('تعذر تحميل مكتبة التصدير — تأكد من الاتصال بالإنترنت'); return; }
   const rows = displayed.map(r=>({
     'التاريخ': r['تاريخ الزيارة'], 'الفرع': r.الفرع, 'الشخص': r['الشخص اللي قام بالزياره'], 'النوع': r.نوع_الشخص,
-    'العميل': r.العميل, 'المنطقة': r['المنطقه سيستم'], 'وقت الدخول': r['وقت الدخول'], 'وقت الخروج': r['وقت الخروج'],
+    'العميل': r.العميل, 'المنطقة': r['المنطقه سيستم'], 'ملاحظات الزيارة': r['ملاحظات الزيارة'] || '', 'وقت الدخول': r['وقت الدخول'], 'وقت الخروج': r['وقت الخروج'],
     'مدة الدقائق': r['مدة الدقائق'], [orderColumnLabel()]: (isValueHiddenRole()?r['الكميه']:r['قيمة ف الطلبية']),
     ...(isValueHiddenRole() ? {} : {'الكمية': r['الكميه']}),
     'قيمة التحصيل': r['قيمة المقبوضات'],
