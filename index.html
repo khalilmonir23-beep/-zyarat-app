@@ -168,6 +168,9 @@ body{font-family:'Cairo',-apple-system,BlinkMacSystemFont,'SF Pro Display','Sego
   #notif-bell-btn.has-alerts{animation:bellRing 4.5s ease-in-out infinite}
 }
 #notif-bell-panel{display:none;position:absolute;top:46px;left:0;width:300px;max-height:400px;overflow-y:auto;background:var(--bg-card);border:1px solid var(--border-main);border-radius:14px;box-shadow:0 8px 28px rgba(0,0,0,.18);padding:14px;z-index:500}
+@media (max-width:640px){
+  #notif-bell-panel{position:fixed;top:64px;left:10px;right:10px;width:auto;max-height:70vh}
+}
 #notif-bell-panel.open{display:block}
 .notif-item{display:flex;align-items:center;gap:10px;padding:9px 6px;border-radius:10px;cursor:pointer;font-size:12.5px}
 .notif-item:hover{background:var(--bg-page)}
@@ -200,14 +203,6 @@ select:focus,input:focus{outline:none;border-color:var(--accent)}
 /* كارت KPI قابل للضغط (عملاء لم تتم زيارتهم) */
 .kpi-clickable{cursor:pointer}
 @media (prefers-reduced-motion: no-preference){
-  .kpi-clickable{perspective:800px}
-  .kpi-clickable.flipping{transform:rotateY(180deg) !important; transition:transform .45s ease}
-  .kpi-clickable > *{backface-visibility:hidden}
-  .kpi-clickable::after{
-    content:'👆 اضغط لعرض كل التفاصيل'; position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
-    text-align:center; padding:14px; border-radius:12px; background:linear-gradient(135deg,var(--bg-card),var(--bg-card2));
-    backface-visibility:hidden; transform:rotateY(180deg); font-weight:800; font-size:13px; color:var(--accent);
-  }
   @keyframes kpiPulseGlow{
     0%,100%{box-shadow:var(--shadow)}
     50%{box-shadow:var(--shadow), 0 0 0 5px color-mix(in srgb, var(--accent) 22%, transparent)}
@@ -1179,15 +1174,10 @@ body.role-field-restricted #fg-branch, body.role-field-restricted #fg-type, body
       <select id="geo-region"><option value="">كل المناطق</option></select>
     </div>
     <button class="admin-btn primary" style="width:auto;padding:9px 20px;background:linear-gradient(135deg,#c9a227,#e0b34d)" onclick="openGeoPerfMapFull()">⛶ فتح الخريطة كاملة</button>
-    <button class="admin-btn primary" style="width:auto;padding:9px 20px" id="globe-3d-btn" onclick="toggleGlobe3D()">🌐 عرض كروي 3D</button>
   </div>
   <div style="padding:6px 30px 14px;font-size:12px;color:var(--text-dim)">الخريطة تتبع فلتر "الشخص" وفلاتر السنة/الشهر/الفرع الذي فوق الصفحة تلقائيًا (على مستوى الشهر). 🟢 زيارة دقيقة + طلبية · 🟡 زيارة دقيقة بدون طلبية · 🔴 زيارة غير دقيقة · ⚪ عميل بدون أي زيارة إطلاقًا.</div>
   <div id="geo-perf-info" style="padding:0 30px 14px;font-size:13px;font-weight:700;color:var(--text-heading)"></div>
   <div id="geo-perf-map"></div>
-  <div id="globe-3d-wrap" style="display:none;margin:0 30px 20px">
-    <div id="globe-3d-canvas" style="height:420px;border-radius:12px;overflow:hidden;background:radial-gradient(circle at 50% 30%,#1a2035,#05070d);touch-action:none;position:relative"></div>
-    <div style="text-align:center;font-size:11px;color:var(--text-dim);margin-top:6px">🖱️ اسحب لتدوير الكرة — نفس عملاء الخريطة فوق بنفس الألوان</div>
-  </div>
 </div><!-- end tab-geomap -->
 
 <!-- TAB: MONTHLY CLIENT COVERAGE -->
@@ -3351,12 +3341,19 @@ document.addEventListener('click', e=>{
   }
 });
 
+function goToAlert(tab, fn){
+  document.getElementById('notif-bell-panel').classList.remove('open');
+  switchTab(tab);
+  // نستنى لحظة بسيطة حتى محتوى التاب يظهر فعليًا قبل ما نفتح المودال فوقه
+  setTimeout(()=>{ window[fn](); }, 120);
+}
+
 function updateNotificationBell(){
   const items = [
-    {n:ALERT_COUNTS.overdueDebt, icon:'⏰', text:'عميل متجاوز في المديونية', fn:'showOverdueClientsModal'},
-    {n:ALERT_COUNTS.unvisited, icon:'🚫', text:'عميل لم تتم زيارته', fn:'showUnvisitedClientsModal'},
-    {n:ALERT_COUNTS.shortVisits, icon:'⏱️', text:'زيارة أقل من 5 دقائق', fn:'showShortVisitsModal'},
-    {n:ALERT_COUNTS.inaccurate, icon:'❌', text:'زيارة غير دقيقة', fn:'showInaccurateVisitsModal'},
+    {n:ALERT_COUNTS.overdueDebt, icon:'⏰', text:'عميل متجاوز في المديونية', fn:'showOverdueClientsModal', tab:'debt'},
+    {n:ALERT_COUNTS.unvisited, icon:'🚫', text:'عميل لم تتم زيارته', fn:'showUnvisitedClientsModal', tab:'dashboard'},
+    {n:ALERT_COUNTS.shortVisits, icon:'⏱️', text:'زيارة أقل من 5 دقائق', fn:'showShortVisitsModal', tab:'dashboard'},
+    {n:ALERT_COUNTS.inaccurate, icon:'❌', text:'زيارة غير دقيقة', fn:'showInaccurateVisitsModal', tab:'dashboard'},
   ].filter(it=>it.n > 0);
 
   const total = items.reduce((s,it)=>s+it.n, 0);
@@ -3372,7 +3369,7 @@ function updateNotificationBell(){
   }
 
   document.getElementById('notif-bell-list').innerHTML = items.length ? items.map(it => `
-    <div class="notif-item" onclick="document.getElementById('notif-bell-panel').classList.remove('open'); ${it.fn}()">
+    <div class="notif-item" onclick="goToAlert('${it.tab}','${it.fn}')">
       <span class="notif-icon">${it.icon}</span>
       <span class="notif-text">${esc(it.text)}</span>
       <span class="notif-count">${it.n.toLocaleString('en-US')}</span>
@@ -4467,32 +4464,20 @@ function toggleMobileFocusMode(){
   }catch(e){}
 })();
 
-// 🪄 حركة 3D لكروت KPI: ميلان خفيف يتبع الماوس على الديسكتوب، وتقليب (flip) بضغطة مطوّلة على الموبايل
+// 🪄 حركة 3D لكروت KPI: ميلان خفيف يتبع الماوس على الديسكتوب فقط (الأجهزة اللي بتدعم hover)
 (function setupKpiCard3DEffects(){
   if(prefersReducedMotion()) return;
   const canHover = window.matchMedia && window.matchMedia('(hover: hover)').matches;
+  if(!canHover) return;
   document.querySelectorAll('.kpi-row .kpi').forEach(card=>{
-    if(canHover){
-      card.addEventListener('mousemove', e=>{
-        const rect = card.getBoundingClientRect();
-        const x = e.clientX - rect.left, y = e.clientY - rect.top;
-        const rotateY = ((x / rect.width) - 0.5) * 12;
-        const rotateX = (0.5 - (y / rect.height)) * 12;
-        card.style.transform = `perspective(700px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
-      });
-      card.addEventListener('mouseleave', ()=>{ card.style.transform = ''; });
-    } else if(card.classList.contains('kpi-clickable')){
-      let pressTimer = null, moved = false;
-      card.addEventListener('touchstart', ()=>{
-        moved = false;
-        pressTimer = setTimeout(()=>{ if(!moved) card.classList.add('flipping'); }, 420);
-      }, {passive:true});
-      card.addEventListener('touchmove', ()=>{ moved = true; clearTimeout(pressTimer); }, {passive:true});
-      card.addEventListener('touchend', ()=>{
-        clearTimeout(pressTimer);
-        if(card.classList.contains('flipping')) setTimeout(()=>card.classList.remove('flipping'), 900);
-      });
-    }
+    card.addEventListener('mousemove', e=>{
+      const rect = card.getBoundingClientRect();
+      const x = e.clientX - rect.left, y = e.clientY - rect.top;
+      const rotateY = ((x / rect.width) - 0.5) * 12;
+      const rotateX = (0.5 - (y / rect.height)) * 12;
+      card.style.transform = `perspective(700px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+    });
+    card.addEventListener('mouseleave', ()=>{ card.style.transform = ''; });
   });
 })();
 
@@ -4693,80 +4678,6 @@ function renderLeaderboard3D(){
     const raf = requestAnimationFrame(animate);
     leaderboard3DState = {raf, renderer};
     if(!isDragging() && !prefersReducedMotion()) group.rotation.y += 0.003;
-    renderer.render(scene, camera);
-  }
-  animate();
-}
-
-// ============ كرة أرضية 3D لتاب الخريطة — نفس عملاء الخريطة فوق بنفس الألوان، للعرض التقديمي/العام فقط ============
-let globe3DState = null;
-function toggleGlobe3D(){
-  const wrap = document.getElementById('globe-3d-wrap');
-  if(wrap.style.display !== 'none'){ wrap.style.display = 'none'; return; }
-  wrap.style.display = 'block';
-  loadThreeJS().then(renderGlobe3D).catch(()=>{
-    document.getElementById('globe-3d-canvas').innerHTML = '<div class="no-data" style="color:#fff">تعذر تحميل عرض الـ3D — تأكد من الاتصال بالإنترنت</div>';
-  });
-}
-
-function renderGlobe3D(){
-  const container = document.getElementById('globe-3d-canvas');
-  container.innerHTML = '';
-  const payload = computeGeoPerfPayload();
-  if(payload.error || !payload.payload || !payload.payload.length){
-    container.innerHTML = `<div class="no-data" style="color:#fff">${esc(payload.error || 'مفيش عملاء بإحداثيات ضمن الفلتر الحالي لعرضهم على الكرة')}</div>`;
-    return;
-  }
-
-  const width = container.clientWidth, height = container.clientHeight || 420;
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(45, width/height, 0.1, 100);
-  camera.position.set(0, 0, 6);
-
-  const renderer = new THREE.WebGLRenderer({antialias:true, alpha:true});
-  renderer.setSize(width, height);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-  container.appendChild(renderer.domElement);
-
-  scene.add(new THREE.AmbientLight(0xffffff, 0.7));
-  const dirLight = new THREE.DirectionalLight(0xffffff, 0.7);
-  dirLight.position.set(4, 3, 5);
-  scene.add(dirLight);
-
-  const group = new THREE.Group();
-  scene.add(group);
-
-  const globeGeo = new THREE.SphereGeometry(2, 32, 32);
-  const globeMat = new THREE.MeshBasicMaterial({color:0x2c3e6b, wireframe:true, transparent:true, opacity:0.55});
-  group.add(new THREE.Mesh(globeGeo, globeMat));
-
-  const colors = {green:0x1e8e5a, yellow:0xe0b83a, red:0xc0392b, gray:0x95a5a6};
-  // نحول إحداثيات العميل (خط عرض/طول حقيقيين) لنقطة تقريبية على سطح الكرة، متمركزة حول متوسط مواقع هذا الشخص
-  const lats = payload.payload.map(p=>p.lat), lngs = payload.payload.map(p=>p.lng);
-  const centerLat = lats.reduce((a,b)=>a+b,0) / lats.length;
-  const centerLng = lngs.reduce((a,b)=>a+b,0) / lngs.length;
-  payload.payload.forEach(p=>{
-    // نكبّر الفروق عن المركز شوية حتى النقط تتوزع بشكل واضح على سطح الكرة بدل ما تتلزّق في بقعة صغيرة
-    const dLat = (p.lat - centerLat) * 6, dLng = (p.lng - centerLng) * 6;
-    const latRad = (dLat) * Math.PI/180, lngRad = (dLng) * Math.PI/180;
-    const r = 2.05;
-    const x = r * Math.cos(latRad) * Math.sin(lngRad);
-    const y = r * Math.sin(latRad);
-    const z = r * Math.cos(latRad) * Math.cos(lngRad);
-    const dotGeo = new THREE.SphereGeometry(0.045, 8, 8);
-    const dotMat = new THREE.MeshBasicMaterial({color: colors[p.status] || 0x95a5a6});
-    const dot = new THREE.Mesh(dotGeo, dotMat);
-    dot.position.set(x, y, z);
-    group.add(dot);
-  });
-
-  const isDragging = attachDragRotate(container, group);
-
-  if(globe3DState) cancelAnimationFrame(globe3DState.raf);
-  function animate(){
-    const raf = requestAnimationFrame(animate);
-    globe3DState = {raf, renderer};
-    if(!isDragging() && !prefersReducedMotion()) group.rotation.y += 0.0025;
     renderer.render(scene, camera);
   }
   animate();
