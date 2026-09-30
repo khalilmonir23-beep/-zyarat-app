@@ -20,7 +20,7 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 
@@ -144,9 +144,13 @@ body{font-family:'Cairo',-apple-system,BlinkMacSystemFont,'SF Pro Display','Sego
 /* تحوّل ناعم بين الوضع الفاتح والغامق بدل التغيير الفجائي لكل عناصر الصفحة */
 @media (prefers-reduced-motion: no-preference){
   body, .kpi, .report-card, .admin-panel, .admin-overlay, select, input, button, .tab-btn, .tab-bar,
-  .visits-table tr, table.report-table tr, table.pivot-table tr, table.overdue-table tr,
   .client-info-card, .header, .filters, .login-card, .card{
     transition: background-color .25s ease, color .25s ease, border-color .25s ease, box-shadow .25s ease;
+  }
+  /* الجداول دي ممكن يكون فيها آلاف الصفوف (تقارير/زيارات)، فبنكتفي بتحوّل لوني خفيف بدون box-shadow —
+     تحريك الظل على عدد كبير من الصفوف مع بعض بيكلّف المتصفح إعادة رسم زيادة وبيحس المستخدم إن الصفحة تقيلة */
+  .visits-table tr, table.report-table tr, table.pivot-table tr, table.overdue-table tr{
+    transition: background-color .25s ease, border-color .25s ease;
   }
 }
 ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--scrollbar-track)}::-webkit-scrollbar-thumb{background:var(--scrollbar-thumb);border-radius:3px}
@@ -203,12 +207,15 @@ select:focus,input:focus{outline:none;border-color:var(--accent)}
 /* كارت KPI قابل للضغط (عملاء لم تتم زيارتهم) */
 .kpi-clickable{cursor:pointer}
 @media (prefers-reduced-motion: no-preference){
-  @keyframes kpiPulseGlow{
-    0%,100%{box-shadow:var(--shadow)}
-    50%{box-shadow:var(--shadow), 0 0 0 5px color-mix(in srgb, var(--accent) 22%, transparent)}
+  /* نبضة الانتباه على box-shadow نفسه كانت بتجبر إعادة رسم مستمرة لكل الكروت طول الوقت حتى بدون تفاعل —
+     بدّلناها بتحريك opacity بس على طبقة ثابتة، وده يشتغل على الـGPU (compositor) وأخف بكتير على المعالج */
+  .kpi-clickable::after{
+    content:''; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
+    box-shadow:0 0 0 5px color-mix(in srgb, var(--accent) 22%, transparent);
+    opacity:0; animation:kpiPulseGlow 3s ease-in-out infinite;
   }
-  .kpi-clickable{animation:kpiPulseGlow 3s ease-in-out infinite}
-  .kpi-clickable:hover{animation-play-state:paused}
+  @keyframes kpiPulseGlow{ 0%,100%{opacity:0} 50%{opacity:1} }
+  .kpi-clickable:hover::after{animation-play-state:paused}
 }
 
 /* عمود "الكمية" الإضافي يظهر فقط للإدارة (التي ترى قيمة الطلبية والكمية معًا)؛ المندوب/المشرف أصلًا يريان الكمية بدل القيمة في نفس العمود */
@@ -1322,28 +1329,6 @@ body.role-field-restricted #fg-branch, body.role-field-restricted #fg-type, body
 <!-- TAB: QUALITY REPORTS -->
 <div class="tab-content" id="tab-quality">
 
-  <div class="section-title">🚀 القفزة المستحيلة بين زيارتين متتاليتين</div>
-  <div class="section-sub">نفس الشخص انتقل بين موقعين بسرعة غير واقعية (أكتر من 60 كم/س) — مؤشر قوي على تسجيل زيارة وهمية.</div>
-  <div class="report-card">
-    <div class="report-header"><h4>الحالات المكتشفة</h4><span class="badge" id="jump-badge">0</span><button class="mini-export-btn" style="margin-right:auto" onclick="exportReport('jump')">📤 تصدير</button></div>
-    <div class="report-scroll"><table class="report-table" id="jump-table">
-      <thead><tr><th>الشخص</th><th>من (عميل / وقت)</th><th>إلى (عميل / وقت)</th>
-      <th style="text-align:center">المسافة (كم)</th><th style="text-align:center">الفارق (دقيقة)</th><th style="text-align:center">السرعة المطلوبة</th></tr></thead>
-      <tbody id="jump-tbody"></tbody>
-    </table></div>
-  </div>
-
-  <div class="section-title">⏱️ زيارات قصيرة جدًا بها معاملة مالية</div>
-  <div class="section-sub">زيارة أقل من دقيقة واحدة لكن سُجّلت فيها طلبية أو تحصيل — يصعب واقعيًا إتمام معاملة حقيقية بهذه السرعة.</div>
-  <div class="report-card">
-    <div class="report-header"><h4>الحالات المكتشفة</h4><span class="badge" id="short-badge">0</span><button class="mini-export-btn" style="margin-right:auto" onclick="exportReport('short')">📤 تصدير</button></div>
-    <div class="report-scroll"><table class="report-table" id="short-table">
-      <thead><tr><th>العميل</th><th>الشخص</th><th>التاريخ</th><th style="text-align:center">المدة (ثانية)</th>
-      <th style="text-align:center" id="th-order-3">قيمة الطلبية</th><th style="text-align:center" class="qty-col">الكمية</th><th style="text-align:center">قيمة التحصيل</th></tr></thead>
-      <tbody id="short-tbody"></tbody>
-    </table></div>
-  </div>
-
   <div class="section-title">🔁 عملاء بتكرار عدم الدقة</div>
   <div class="section-sub">عملاء ظهرت زياراتهم "غير دقيقة" أكثر من مرة — الأرجح أن موقع العميل المسجّل غلط وليس تقصير المندوب.</div>
   <div class="report-card">
@@ -1560,7 +1545,6 @@ body.role-field-restricted #fg-branch, body.role-field-restricted #fg-type, body
       </select>
     </div>
     <button class="btn-reset" onclick="resetDebtFilters()">↺ إعادة ضبط فلاتر المديونية</button>
-    <button class="mini-export-btn" onclick="exportDebtPDF()">🖨️ تصدير PDF</button>
   </div>
 
   <!-- أولوياتي اليوم: خلاصة سريعة تجمع المتجاوز + قرب التجاوز + عملاء لم تتم زيارتهم، حتى مايحتاجش يدور في كل قسم لوحده -->
@@ -4470,14 +4454,26 @@ function toggleMobileFocusMode(){
   const canHover = window.matchMedia && window.matchMedia('(hover: hover)').matches;
   if(!canHover) return;
   document.querySelectorAll('.kpi-row .kpi').forEach(card=>{
-    card.addEventListener('mousemove', e=>{
-      const rect = card.getBoundingClientRect();
-      const x = e.clientX - rect.left, y = e.clientY - rect.top;
-      const rotateY = ((x / rect.width) - 0.5) * 12;
-      const rotateX = (0.5 - (y / rect.height)) * 12;
+    // نحسب مقاس الكارت مرة واحدة بس عند الدخول (مش في كل حركة ماوس) حتى منجبرش المتصفح يعيد حساب الـlayout
+    // بشكل متكرر جدًا، وكمان نأجل الكتابة لـrequestAnimationFrame حتى الحركة تبقى ناعمة من غير تهنيج
+    let rect = null, pendingX = 0, pendingY = 0, rafId = null;
+    const applyTilt = ()=>{
+      rafId = null;
+      const rotateY = ((pendingX / rect.width) - 0.5) * 12;
+      const rotateX = (0.5 - (pendingY / rect.height)) * 12;
       card.style.transform = `perspective(700px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+    };
+    card.addEventListener('mouseenter', ()=>{ rect = card.getBoundingClientRect(); });
+    card.addEventListener('mousemove', e=>{
+      if(!rect) rect = card.getBoundingClientRect();
+      pendingX = e.clientX - rect.left; pendingY = e.clientY - rect.top;
+      if(rafId==null) rafId = requestAnimationFrame(applyTilt);
     });
-    card.addEventListener('mouseleave', ()=>{ card.style.transform = ''; });
+    card.addEventListener('mouseleave', ()=>{
+      if(rafId!=null){ cancelAnimationFrame(rafId); rafId=null; }
+      rect = null;
+      card.style.transform = '';
+    });
   });
 })();
 
@@ -5400,8 +5396,6 @@ function openCoverageGapsMap(){
 
 /* ---------- QUALITY REPORTS ---------- */
 function renderQualityReports(){
-  renderJumpReport();
-  renderShortVisits();
   renderRepeatInaccuracy();
   renderRegionAccuracy();
   renderCoverage();
@@ -5502,82 +5496,6 @@ function parseDateOnly(dateStr){
   if(!dateStr) return null;
   const d = new Date(dateStr + 'T00:00:00');
   return isNaN(d) ? null : d;
-}
-
-function renderJumpReport(){
-  const byPerson = {};
-  filtered.forEach(r=>{
-    const p = r['الشخص اللي قام بالزياره'];
-    if(!p || r.lat_visit==null || r.lat_visit==='' || !r['تاريخ الزيارة']) return;
-    const dt = toDateTime(r['تاريخ الزيارة'], r['وقت الدخول']);
-    if(!dt) return;
-    if(!byPerson[p]) byPerson[p] = [];
-    byPerson[p].push({r, dt});
-  });
-
-  const results = [];
-  Object.entries(byPerson).forEach(([p, arr])=>{
-    arr.sort((a,b)=>a.dt-b.dt);
-    for(let i=1;i<arr.length;i++){
-      const a = arr[i-1], b = arr[i];
-      const minutesDiff = (b.dt - a.dt)/60000;
-      if(minutesDiff <= 0 || minutesDiff > 180) continue;
-      const distKm = haversine(a.r.lat_visit, a.r.lng_visit, b.r.lat_visit, b.r.lng_visit)/1000;
-      const speed = distKm / (minutesDiff/60);
-      if(speed > 60 && distKm > 1){
-        results.push({
-          person:p, fromClient:a.r.العميل, fromTime:a.r['تاريخ الزيارة']+' '+(a.r['وقت الدخول']||''),
-          toClient:b.r.العميل, toTime:b.r['تاريخ الزيارة']+' '+(b.r['وقت الدخول']||''),
-          distKm, minutesDiff, speed
-        });
-      }
-    }
-  });
-  results.sort((x,y)=>y.speed-x.speed);
-
-  document.getElementById('jump-badge').textContent = results.length.toLocaleString('en-US');
-  let html = '';
-  results.slice(0,300).forEach(x=>{
-    html += `<tr><td>${esc(x.person)}</td>
-    <td>${esc(x.fromClient)}<br><span style="font-size:11px;color:var(--text-dim)">${x.fromTime}</span></td>
-    <td>${esc(x.toClient)}<br><span style="font-size:11px;color:var(--text-dim)">${x.toTime}</span></td>
-    <td style="text-align:center">${x.distKm.toFixed(1)}</td>
-    <td style="text-align:center">${Math.round(x.minutesDiff)}</td>
-    <td style="text-align:center"><span class="pill pill-red">${Math.round(x.speed)} كم/س</span></td></tr>`;
-  });
-  document.getElementById('jump-tbody').innerHTML = html || '<tr><td colspan="6" class="no-data">لا توجد حالات مشبوهة ضمن الفلتر الحالي</td></tr>';
-  EXPORT_DATA.jump = results.map(x=>({
-    'الشخص':x.person,'من':x.fromClient,'وقت من':x.fromTime,'إلى':x.toClient,'وقت إلى':x.toTime,
-    'المسافة (كم)':x.distKm.toFixed(1),'الفارق (دقيقة)':Math.round(x.minutesDiff),'السرعة (كم/س)':Math.round(x.speed)
-  }));
-}
-
-function renderShortVisits(){
-  const rows = filtered.filter(r=>{
-    const dur = r['مدة الدقائق'];
-    if(dur==='' || dur==null) return false;
-    const hasTxn = (r['قيمة ف الطلبية']!=='' && r['قيمة ف الطلبية']!=null && (+r['قيمة ف الطلبية']>0)) ||
-                   (r['قيمة المقبوضات']!=='' && r['قيمة المقبوضات']!=null && (+r['قيمة المقبوضات']>0));
-    return (+dur <= 1) && hasTxn;
-  }).sort((a,b)=>(+a['مدة الدقائق'])-(+b['مدة الدقائق']));
-
-  document.getElementById('short-badge').textContent = rows.length.toLocaleString('en-US');
-  let html = '';
-  rows.slice(0,300).forEach(r=>{
-    const seconds = Math.round((+r['مدة الدقائق'])*60);
-    html += `<tr><td>${esc(r.العميل)}</td><td>${esc(r['الشخص اللي قام بالزياره'])||'-'}</td><td>${r['تاريخ الزيارة']||'-'}</td>
-    <td style="text-align:center"><span class="pill pill-red">${seconds} ث</span></td>
-    <td style="text-align:center" class="money">${orderDisplayValue(r)}</td>
-    <td style="text-align:center" class="money qty-col">${(r['الكميه']!==''&&r['الكميه']!=null)?(+r['الكميه']).toLocaleString('en-US'):'-'}</td>
-    <td style="text-align:center" class="money">${(r['قيمة المقبوضات']!==''&&r['قيمة المقبوضات']!=null)?(+r['قيمة المقبوضات']).toLocaleString('en-US'):'-'}</td></tr>`;
-  });
-  document.getElementById('short-tbody').innerHTML = html || '<tr><td colspan="7" class="no-data">لا توجد حالات ضمن الفلتر الحالي</td></tr>';
-  EXPORT_DATA.short = rows.map(r=>({
-    'العميل':r.العميل,'الشخص':r['الشخص اللي قام بالزياره']||'','التاريخ':r['تاريخ الزيارة']||'',
-    'المدة (ثانية)':Math.round((+r['مدة الدقائق'])*60),[orderColumnLabel()]:(isValueHiddenRole()?r['الكميه']:r['قيمة ف الطلبية']),
-    ...(isValueHiddenRole() ? {} : {'الكمية': r['الكميه']}),
-    'قيمة التحصيل':r['قيمة المقبوضات']
-  }));
 }
 
 function renderRegionAccuracy(){
@@ -7707,8 +7625,6 @@ async function exportDebtPDF(){
 const EXPORT_CONFIG = {
   visitsPivot:  {file:'ملخص_الزيارات', sheet:'ملخص الزيارات'},
   financePivot: {file:'ملخص_التحصيل_والفواتير', sheet:'ملخص التحصيل'},
-  jump:         {file:'القفزة_المستحيلة', sheet:'القفزة المستحيلة'},
-  short:        {file:'زيارات_قصيرة_جدا', sheet:'زيارات قصيرة'},
   repeat:       {file:'عملاء_متكررة_عدم_الدقة', sheet:'تكرار عدم الدقة'},
   region:       {file:'الدقة_حسب_المنطقة', sheet:'الدقة حسب المنطقة'},
   coverage:     {file:'تغطية_العملاء', sheet:'التغطية'},
