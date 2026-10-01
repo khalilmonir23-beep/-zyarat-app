@@ -3213,14 +3213,27 @@ const MOTIVATIONAL_QUOTES = [
   'كل يوم فرصة جديدة تحسّن فيها رقمك 📈',
   'الثقة بين تلاقيها في التفاصيل الصغيرة و الدقة العالية ✅',
   'خطوة صغيرة النهاردة، نتيجة كبيرة آخر الشهر 🏁',
+  'الزيارة الدقيقة مش بس رقم — هي أساس العلاقة مع العميل 🤝',
+  'التحصيل في وقته بيحافظ على استمرار الشغل بسلاسة 💰',
+  'مفيش بديل عن الانتظام في المتابعة اليومية 🗓️',
+  'كل عميل بتزوره بانتظام، بتقرب نفسك من رضاه أكتر 😊',
+  'الفرق بين الممتاز والعادي هو الالتزام بالتفاصيل الصغيرة 🔍',
+  'ابدأ يومك بخطة واضحة، وهتلاقي نتيجته آخر الشهر 🧭',
+  'السرعة من غير دقة مالهاش قيمة — خد وقتك واتأكد ✅',
+  'كل رقم في اللوحة دي بيحكي قصة مجهودك — افتخر بيه 🏆',
+  'المتابعة المستمرة هي سر تقليل العملاء المتجاوزين 📉',
+  'يوم هادي ومنظم أفضل من يوم مزحوم وبلا نتيجة واضحة 🌤️',
+  'كل طلبية بتبدأ بزيارة صادقة ومهتمة بالعميل 🛒',
+  'لو حسّيت التعب، فاكر إن كل زيارة بتقرّبك من هدفك 🔥',
+  'الاستمرارية أهم من الكمال — كمّل يومك زي ما هو 🙌',
 ];
 function showWelcomeToast(){
-  if(!currentUser || !currentUser.username) return;
+  if(!currentUser) return;
   const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(),0,0)) / 86400000);
   const quote = MOTIVATIONAL_QUOTES[dayOfYear % MOTIVATIONAL_QUOTES.length];
   const toast = document.getElementById('welcome-toast');
   if(!toast) return;
-  toast.innerHTML = `<div class="welcome-toast-title">👋 أهلًا يا ${esc(currentUser.username)}</div><div class="welcome-toast-quote">${esc(quote)}</div>`;
+  toast.innerHTML = `<div class="welcome-toast-title">👋 أهلًا بيك</div><div class="welcome-toast-quote">${esc(quote)}</div>`;
   toast.classList.add('show');
   setTimeout(()=>toast.classList.remove('show'), 4500);
 }
@@ -3485,19 +3498,17 @@ document.addEventListener('click', e=>{
   }
 });
 
-function goToAlert(tab, fn){
+function goToAlert(fn){
   document.getElementById('notif-bell-panel').classList.remove('open');
-  switchTab(tab);
-  // نستنى لحظة بسيطة حتى محتوى التاب يظهر فعليًا قبل ما نفتح المودال فوقه
-  setTimeout(()=>{ window[fn](); }, 120);
+  window[fn]();
 }
 
 function updateNotificationBell(){
   const items = [
-    {n:ALERT_COUNTS.overdueDebt, icon:'⏰', text:'عميل متجاوز في المديونية', fn:'showOverdueClientsModal', tab:'debt'},
-    {n:ALERT_COUNTS.unvisited, icon:'🚫', text:'عميل لم تتم زيارته', fn:'showUnvisitedClientsModal', tab:'dashboard'},
-    {n:ALERT_COUNTS.shortVisits, icon:'⏱️', text:'زيارة أقل من 5 دقائق', fn:'showShortVisitsModal', tab:'dashboard'},
-    {n:ALERT_COUNTS.inaccurate, icon:'❌', text:'زيارة غير دقيقة', fn:'showInaccurateVisitsModal', tab:'dashboard'},
+    {n:ALERT_COUNTS.overdueDebt, icon:'⏰', text:'عميل متجاوز في المديونية', fn:'showOverdueClientsModal'},
+    {n:ALERT_COUNTS.unvisited, icon:'🚫', text:'عميل لم تتم زيارته', fn:'showUnvisitedClientsModal'},
+    {n:ALERT_COUNTS.shortVisits, icon:'⏱️', text:'زيارة أقل من 5 دقائق', fn:'showShortVisitsModal'},
+    {n:ALERT_COUNTS.inaccurate, icon:'❌', text:'زيارة غير دقيقة', fn:'showInaccurateVisitsModal'},
   ].filter(it=>it.n > 0);
 
   const total = items.reduce((s,it)=>s+it.n, 0);
@@ -3513,7 +3524,7 @@ function updateNotificationBell(){
   }
 
   document.getElementById('notif-bell-list').innerHTML = items.length ? items.map(it => `
-    <div class="notif-item" onclick="goToAlert('${it.tab}','${it.fn}')">
+    <div class="notif-item" onclick="goToAlert('${it.fn}')">
       <span class="notif-icon">${it.icon}</span>
       <span class="notif-text">${esc(it.text)}</span>
       <span class="notif-count">${it.n.toLocaleString('en-US')}</span>
