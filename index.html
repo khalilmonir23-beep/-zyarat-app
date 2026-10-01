@@ -2116,8 +2116,28 @@ function closePermPreview(){
   closeOverlay('perm-preview-overlay');
 }
 
+// تسجيل خفيف لحظة فتح الملف: سطر واحد بس (مش نبضة متكررة زي القديمة) — التاريخ والوقت بيتحسبوا هنا
+// في المتصفح نفسه ويتبعتوا جاهزين، عشان نضمن إنهم بتوقيت المستخدم الفعلي وقت الدخول
+function logFileOpen(user){
+  if(!user || !user.username) return;
+  const now = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  const dateStr = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;
+  const timeStr = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  const params = new URLSearchParams({
+    action: 'logOpen',
+    username: user.username,
+    person: user.person || '',
+    branch: user.branch || '',
+    date: dateStr,
+    time: timeStr
+  });
+  fetch(`${LOGIN_API_URL}?${params.toString()}`).catch(()=>{});
+}
+
 function startSession(user){
   currentUser = user;
+  logFileOpen(user);
   closeOverlay('login-overlay');
   document.getElementById('loading').style.display = 'flex';
   document.getElementById('logout-btn').style.display = 'inline-flex';
