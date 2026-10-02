@@ -997,6 +997,19 @@ body.density-compact .report-card{padding:10px}
 </div>
 
 <!-- مودال خط السير: كل عملاء خط سير المندوب/الفرع المحدد + تصنيفهم وموقفهم من المديونية والمنطقة + اتصال/كارت العميل -->
+<!-- مودال تصعيدات الجرس: نفس بيانات تقرير "تصعيدات عاجلة" في تاب الجودة لكن كجدول سريع من غير تنقل بين التابات -->
+<div class="admin-overlay" id="escalation-modal-overlay">
+  <div class="admin-panel admin-panel-wide">
+    <button class="admin-close" onclick="closeEscalationModal()">✕</button>
+    <h3>🚨 تصعيدات عاجلة</h3>
+    <div class="sub" id="escalation-modal-sub">عملاء متجاوزين في المديونية ومالهمش زيارة دقيقة من 7 أيام على الأقل</div>
+    <div class="unvisited-list"><table class="overdue-table">
+      <thead><tr><th>العميل</th><th>المندوب</th><th style="text-align:center">قيمة التجاوز</th><th style="text-align:center">آخر زيارة دقيقة</th><th style="text-align:center">عدد الأيام</th><th style="text-align:center">إجراء</th></tr></thead>
+      <tbody id="escalation-modal-tbody"></tbody>
+    </table></div>
+  </div>
+</div>
+
 <div class="admin-overlay" id="route-overlay">
   <div class="admin-panel admin-panel-wide">
     <button class="admin-close" onclick="closeRouteModal()">✕</button>
@@ -1143,6 +1156,7 @@ body.density-compact .report-card{padding:10px}
       <h3>📋 تفاصيل الزيارات</h3>
       <input class="search-box" type="text" id="search-box" placeholder="🔍 بحث عن عميل أو شخص..." oninput="onSearch()">
       <button class="export-btn" onclick="exportToExcel()">📤 تصدير Excel</button>
+      <button class="export-btn" id="live-export-btn" onclick="exportLiveToSheets()" style="background:#1a73e8">📡 تصدير مباشر لـ Google Sheets</button>
     </div>
     <div class="table-wrap">
       <table class="visits-table">
@@ -1387,6 +1401,26 @@ body.density-compact .report-card{padding:10px}
 
 <!-- TAB: QUALITY REPORTS -->
 <div class="tab-content" id="tab-quality">
+
+  <div class="section-title">🚨 تصعيدات عاجلة (عملاء متجاوزين ولم تتم زيارتهم)</div>
+  <div class="section-sub">عملاء متجاوزين في المديونية ومالهمش زيارة دقيقة من 7 أيام على الأقل — محتاجين تدخل فوري.</div>
+  <div class="report-card">
+    <div class="report-header"><h4>قائمة التصعيدات</h4><span class="badge" id="escalation-badge">0</span><button class="mini-export-btn" style="margin-right:auto" onclick="exportReport('escalation')">📤 تصدير</button></div>
+    <div class="report-scroll"><table class="report-table" id="escalation-table">
+      <thead><tr><th>العميل</th><th>المندوب</th><th style="text-align:center">قيمة التجاوز</th><th style="text-align:center">آخر زيارة دقيقة</th><th style="text-align:center">عدد الأيام</th><th style="text-align:center">إجراء</th></tr></thead>
+      <tbody id="escalation-tbody"></tbody>
+    </table></div>
+  </div>
+
+  <div class="section-title">💸 طلبيات بقيمة غير طبيعية</div>
+  <div class="section-sub">طلبية قيمتها أعلى بوضوح من متوسط نفس العميل التاريخي — يستحق مراجعة سريعة قبل الاعتماد.</div>
+  <div class="report-card">
+    <div class="report-header"><h4>قائمة الطلبيات</h4><span class="badge" id="unusual-order-badge">0</span><button class="mini-export-btn" style="margin-right:auto" onclick="exportReport('unusualOrder')">📤 تصدير</button></div>
+    <div class="report-scroll"><table class="report-table" id="unusual-order-table">
+      <thead><tr><th>العميل</th><th>المندوب</th><th>التاريخ</th><th style="text-align:center">قيمة الطلبية</th><th style="text-align:center">متوسط العميل</th><th style="text-align:center">نسبة الزيادة</th></tr></thead>
+      <tbody id="unusual-order-tbody"></tbody>
+    </table></div>
+  </div>
 
   <div class="section-title">🔁 عملاء بتكرار عدم الدقة</div>
   <div class="section-sub">عملاء ظهرت زياراتهم "غير دقيقة" أكثر من مرة — الأرجح أن موقع العميل المسجّل غلط وليس تقصير المندوب.</div>
@@ -1960,7 +1994,7 @@ let selectedDay = null;
 let searchTerm = '';
 let currentTab = 'dashboard';
 // عدّادات التنبيهات الحرجة المجمّعة في جرس الإشعارات العام بالهيدر (تتحدث مع كل تغيير فلتر)
-let ALERT_COUNTS = {unvisited:0, overdueDebt:0, shortVisits:0, inaccurate:0};
+let ALERT_COUNTS = {unvisited:0, overdueDebt:0, shortVisits:0, inaccurate:0, escalation:0};
 let currentLeaderboardMetric = 'visits';
 let EXPORT_DATA = {};
 
@@ -3525,6 +3559,7 @@ function goToAlert(fn){
 
 function updateNotificationBell(){
   const items = [
+    {n:ALERT_COUNTS.escalation, icon:'🚨', text:'تصعيد عاجل: متجاوز ومالوش زيارة دقيقة من 7 أيام', fn:'showEscalationModal'},
     {n:ALERT_COUNTS.overdueDebt, icon:'⏰', text:'عميل متجاوز في المديونية', fn:'showOverdueClientsModal'},
     {n:ALERT_COUNTS.unvisited, icon:'🚫', text:'عميل لم تتم زيارته', fn:'showUnvisitedClientsModal'},
     {n:ALERT_COUNTS.shortVisits, icon:'⏱️', text:'زيارة أقل من 5 دقائق', fn:'showShortVisitsModal'},
@@ -3634,6 +3669,7 @@ function updateKPIs(){
   updateExtraKPIs();
   updateDebtDashboardKPI();
   updateRouteKPI();
+  renderEscalations();
   updateNotificationBell();
   scheduleShareCardPrep();
 }
@@ -5638,6 +5674,8 @@ function openCoverageGapsMap(){
 
 /* ---------- QUALITY REPORTS ---------- */
 function renderQualityReports(){
+  renderEscalations();
+  renderUnusualOrders();
   renderRepeatInaccuracy();
   renderRegionAccuracy();
   renderCoverage();
@@ -5800,6 +5838,110 @@ function renderRegionAccuracy(){
   });
   document.getElementById('region-tbody').innerHTML = html || '<tr><td colspan="5" class="no-data">لا توجد بيانات</td></tr>';
   EXPORT_DATA.region = rows.map(r=>({'المنطقة':r.region,'إجمالي الزيارات':r.total,'دقيقة':r.acc,'غير دقيقة':r.inacc,'نسبة الدقة %':r.pct}));
+}
+
+// ============ تصعيدات عاجلة: عملاء متجاوزين في المديونية ومالهمش زيارة دقيقة من 7 أيام على الأقل ============
+// يحسب قائمة التصعيدات (عملاء متجاوزين ومالهمش زيارة دقيقة من 7 أيام على الأقل) — مستخدم في تاب الجودة وفي مودال الجرس مع بعض
+function computeEscalations(){
+  const overdueRows = getDebtScope().filter(r=>r.نوع==='متجاوز');
+  if(!overdueRows.length) return [];
+  const debtByClient = {};
+  overdueRows.forEach(r=>{
+    const name = r['اسم العميل'];
+    if(!name) return;
+    if(!debtByClient[name]) debtByClient[name] = {sum:0};
+    debtByClient[name].sum += (+r.المديونيه||0);
+  });
+
+  // آخر زيارة دقيقة لكل عميل من كل بيانات الزيارات (مش بس الفلتر الحالي) عشان نلاقي آخر زيارة فعلية له أيًا كانت
+  const lastAccurateVisit = {};
+  DATA.forEach(r=>{
+    if(!r.العميل || r.accuracy!=='دقيقة' || !r['تاريخ الزيارة']) return;
+    const d = parseDateOnly(r['تاريخ الزيارة']);
+    if(!d) return;
+    if(!lastAccurateVisit[r.العميل] || d > lastAccurateVisit[r.العميل].date){
+      lastAccurateVisit[r.العميل] = {date:d, person:r['الشخص اللي قام بالزياره']};
+    }
+  });
+
+  const allDates = DATA.map(r=>r['تاريخ الزيارة']).filter(Boolean).sort();
+  const referenceDate = allDates.length ? parseDateOnly(allDates[allDates.length-1]) : new Date();
+
+  return Object.keys(debtByClient).map(name=>{
+    const lv = lastAccurateVisit[name];
+    const days = lv ? Math.round((referenceDate - lv.date)/86400000) : null;
+    return {
+      name, sum: debtByClient[name].sum,
+      person: lv ? (lv.person||'') : ((CLIENT_INFO_MAP[name] && CLIENT_INFO_MAP[name].المندوب) || ''),
+      days
+    };
+  }).filter(r => r.days === null || r.days >= 7)
+    .sort((a,b)=> (b.days==null?9999:b.days) - (a.days==null?9999:a.days));
+}
+
+function escalationRowHtml(r){
+  return `<tr><td>${esc(r.name)}</td><td>${esc(r.person)||'-'}</td>
+    <td style="text-align:center;color:var(--red);font-weight:700">${r.sum.toLocaleString('en-US')}</td>
+    <td style="text-align:center">${r.days==null ? 'مفيش زيارة دقيقة إطلاقًا' : (r.days+' يوم')}</td>
+    <td style="text-align:center;font-weight:800;color:var(--red)">${r.days==null?'—':r.days}</td>
+    <td style="text-align:center">${callButtonHtml(r.name)}</td></tr>`;
+}
+
+function renderEscalations(){
+  const rows = computeEscalations();
+  document.getElementById('escalation-badge').textContent = rows.length.toLocaleString('en-US');
+  ALERT_COUNTS.escalation = rows.length;
+  document.getElementById('escalation-tbody').innerHTML = rows.length
+    ? rows.map(escalationRowHtml).join('')
+    : '<tr><td colspan="6" class="no-data">مفيش تصعيدات ضمن الفلتر الحالي 🎉</td></tr>';
+  EXPORT_DATA.escalation = rows.map(r=>({'العميل':r.name,'المندوب':r.person||'','قيمة التجاوز':r.sum,'عدد الأيام بدون زيارة دقيقة':r.days==null?'لا يوجد':r.days}));
+}
+
+function showEscalationModal(){
+  const rows = computeEscalations();
+  document.getElementById('escalation-modal-sub').textContent = `${rows.length.toLocaleString('en-US')} عميل محتاج تصعيد فوري`;
+  document.getElementById('escalation-modal-tbody').innerHTML = rows.length
+    ? rows.map(escalationRowHtml).join('')
+    : '<tr><td colspan="6" class="no-data">مفيش تصعيدات ضمن الفلتر الحالي 🎉</td></tr>';
+  openOverlay('escalation-modal-overlay');
+}
+function closeEscalationModal(){
+  closeOverlay('escalation-modal-overlay');
+}
+
+// ============ طلبيات بقيمة غير طبيعية مقارنة بمتوسط نفس العميل التاريخي ============
+function renderUnusualOrders(){
+  const byClient = {};
+  DATA.forEach(r=>{
+    if(!r.العميل) return;
+    const val = (r['قيمة ف الطلبية']!=='' && r['قيمة ف الطلبية']!=null) ? (+r['قيمة ف الطلبية']||0) : 0;
+    if(val<=0) return;
+    if(!byClient[r.العميل]) byClient[r.العميل] = [];
+    byClient[r.العميل].push(val);
+  });
+
+  const THRESHOLD_MULTIPLIER = 2.5, MIN_HISTORY = 3;
+  let rows = [];
+  filtered.forEach(r=>{
+    if(!r.العميل) return;
+    const val = (r['قيمة ف الطلبية']!=='' && r['قيمة ف الطلبية']!=null) ? (+r['قيمة ف الطلبية']||0) : 0;
+    if(val<=0) return;
+    const hist = byClient[r.العميل] || [];
+    if(hist.length < MIN_HISTORY) return;
+    const avg = hist.reduce((a,b)=>a+b,0)/hist.length;
+    if(avg<=0 || val < avg*THRESHOLD_MULTIPLIER) return;
+    rows.push({client:r.العميل, person:r['الشخص اللي قام بالزياره']||'', date:r['تاريخ الزيارة']||'', val, avg, pct: Math.round((val/avg-1)*100)});
+  });
+  rows.sort((a,b)=>b.pct-a.pct);
+
+  document.getElementById('unusual-order-badge').textContent = rows.length.toLocaleString('en-US');
+  document.getElementById('unusual-order-tbody').innerHTML = rows.length ? rows.map(r=>`
+    <tr><td>${esc(r.client)}</td><td>${esc(r.person)}</td><td>${esc(r.date)}</td>
+    <td style="text-align:center;font-weight:700">${r.val.toLocaleString('en-US')}</td>
+    <td style="text-align:center;color:var(--text-dim)">${Math.round(r.avg).toLocaleString('en-US')}</td>
+    <td style="text-align:center"><span class="pill pill-red">+${r.pct}%</span></td></tr>`
+  ).join('') : '<tr><td colspan="6" class="no-data">مفيش طلبيات غير طبيعية ضمن الفلتر الحالي</td></tr>';
+  EXPORT_DATA.unusualOrder = rows.map(r=>({'العميل':r.client,'المندوب':r.person,'التاريخ':r.date,'قيمة الطلبية':r.val,'متوسط العميل':Math.round(r.avg),'نسبة الزيادة %':r.pct}));
 }
 
 function renderRepeatInaccuracy(){
@@ -7938,6 +8080,8 @@ const EXPORT_CONFIG = {
   visitsPivot:  {file:'ملخص_الزيارات', sheet:'ملخص الزيارات'},
   financePivot: {file:'ملخص_التحصيل_والفواتير', sheet:'ملخص التحصيل'},
   repeat:       {file:'عملاء_متكررة_عدم_الدقة', sheet:'تكرار عدم الدقة'},
+  escalation:   {file:'تصعيدات_عاجلة', sheet:'تصعيدات'},
+  unusualOrder: {file:'طلبيات_غير_طبيعية', sheet:'طلبيات غير طبيعية'},
   region:       {file:'الدقة_حسب_المنطقة', sheet:'الدقة حسب المنطقة'},
   coverage:     {file:'تغطية_العملاء', sheet:'التغطية'},
   drop:         {file:'انخفاض_النشاط', sheet:'انخفاض النشاط'},
@@ -8025,6 +8169,31 @@ function exportDebtAccounting(){
   const now = new Date();
   const stamp = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
   XLSX.writeFile(wb, `debt_accounting_export_${stamp}.xlsx`);
+}
+
+// تصدير مباشر لنفس جدول "تفاصيل الزيارات" الحالي (بعد الفلاتر) إلى شيت حي في Google Sheets بدل ما تنزّل ملف جديد كل مرة
+function exportLiveToSheets(){
+  const rows = displayed.map(r=>({
+    'التاريخ': r['تاريخ الزيارة'], 'الفرع': r.الفرع, 'الشخص': r['الشخص اللي قام بالزياره'], 'النوع': r.نوع_الشخص,
+    'العميل': r.العميل, 'المنطقة': r['المنطقه سيستم'], 'ملاحظات الزيارة': r['ملاحظات الزيارة'] || '', 'وقت الدخول': r['وقت الدخول'], 'وقت الخروج': r['وقت الخروج'],
+    'مدة الدقائق': r['مدة الدقائق'], [orderColumnLabel()]: (isValueHiddenRole()?r['الكميه']:r['قيمة ف الطلبية']),
+    ...(isValueHiddenRole() ? {} : {'الكمية': r['الكميه']}),
+    'قيمة التحصيل': r['قيمة المقبوضات'],
+    'المسافة (م)': r.distance_m, 'الدقة': r.accuracy
+  }));
+  if(!rows.length){ alert('مفيش بيانات ضمن الفلتر الحالي لتصديرها'); return; }
+  const btn = document.getElementById('live-export-btn');
+  const originalText = btn.textContent;
+  btn.disabled = true; btn.textContent = '⏳ جاري التصدير...';
+  fetch(LOGIN_API_URL, {
+    method: 'POST',
+    headers: {'Content-Type': 'text/plain;charset=utf-8'}, // نتفادى بيها مشاكل CORS المعروفة مع Apps Script
+    body: JSON.stringify({ action: 'liveExport', rows })
+  })
+    .then(r=>r.json())
+    .then(res=>{ alert(res.success ? '✅ اتصدرت البيانات على طول في Google Sheets' : '❌ حصل خطأ أثناء التصدير'); })
+    .catch(()=>{ alert('تعذر الاتصال بالسيرفر — تأكد من الإنترنت'); })
+    .finally(()=>{ btn.disabled = false; btn.textContent = originalText; });
 }
 
 function exportToExcel(){
