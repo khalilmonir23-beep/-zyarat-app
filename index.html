@@ -887,6 +887,7 @@ body.density-compact .report-card{padding:10px}
 <div class="admin-overlay" id="unvisited-overlay">
   <div class="admin-panel admin-panel-wide">
     <button class="admin-close" onclick="closeUnvisitedClientsModal()">✕</button>
+    <button class="mini-export-btn" onclick="exportCurrentModal()">📤 تصدير Excel</button>
     <h3>🚫 عملاء ما زالوا بحاجة إلى زيارة</h3>
     <div class="sub" id="unvisited-modal-sub">قائمة العملاء الذين معندهغير أي زيارة مسجّلة في الفترة الحالية</div>
     <div class="unvisited-list" id="unvisited-list"></div>
@@ -905,6 +906,7 @@ body.density-compact .report-card{padding:10px}
 <div class="admin-overlay" id="total-visits-overlay">
   <div class="admin-panel admin-panel-wide">
     <button class="admin-close" onclick="closeTotalVisitsModal()">✕</button>
+    <button class="mini-export-btn" onclick="exportCurrentModal()">📤 تصدير Excel</button>
     <h3>📋 عملاء إجمالي الزيارات</h3>
     <div class="sub" id="total-visits-modal-sub">عدد الزيارات وكمية المبيعات لكل عميل ضمن الفلتر الحالي</div>
     <div class="unvisited-list" id="total-visits-list"></div>
@@ -915,6 +917,7 @@ body.density-compact .report-card{padding:10px}
 <div class="admin-overlay" id="orders-overlay">
   <div class="admin-panel admin-panel-wide">
     <button class="admin-close" onclick="closeOrdersModal()">✕</button>
+    <button class="mini-export-btn" onclick="exportCurrentModal()">📤 تصدير Excel</button>
     <h3>📦 عملاء الطلبيات</h3>
     <div class="sub" id="orders-modal-sub">العملاء الذين أُجريت لهم طلبيات وكميتها ضمن الفلتر الحالي</div>
     <div class="unvisited-list" id="orders-list"></div>
@@ -925,6 +928,7 @@ body.density-compact .report-card{padding:10px}
 <div class="admin-overlay" id="accurate-visits-overlay">
   <div class="admin-panel admin-panel-wide">
     <button class="admin-close" onclick="closeAccurateVisitsModal()">✕</button>
+    <button class="mini-export-btn" onclick="exportCurrentModal()">📤 تصدير Excel</button>
     <h3>✅ عملاء الزيارات الدقيقة</h3>
     <div class="sub" id="accurate-visits-modal-sub">عدد الزيارات الدقيقة لكل عميل ضمن الفلتر الحالي</div>
     <div class="unvisited-list" id="accurate-visits-list"></div>
@@ -935,6 +939,7 @@ body.density-compact .report-card{padding:10px}
 <div class="admin-overlay" id="inaccurate-visits-overlay">
   <div class="admin-panel admin-panel-wide">
     <button class="admin-close" onclick="closeInaccurateVisitsModal()">✕</button>
+    <button class="mini-export-btn" onclick="exportCurrentModal()">📤 تصدير Excel</button>
     <h3>❌ عملاء الزيارات غير الدقيقة</h3>
     <div class="sub" id="inaccurate-visits-modal-sub">عدد الزيارات غير الدقيقة لكل عميل ضمن الفلتر الحالي</div>
     <div class="unvisited-list" id="inaccurate-visits-list"></div>
@@ -945,6 +950,7 @@ body.density-compact .report-card{padding:10px}
 <div class="admin-overlay" id="collect-overlay">
   <div class="admin-panel admin-panel-wide">
     <button class="admin-close" onclick="closeCollectModal()">✕</button>
+    <button class="mini-export-btn" onclick="exportCurrentModal()">📤 تصدير Excel</button>
     <h3>💰 عملاء التحصيل</h3>
     <div class="sub" id="collect-modal-sub">عدد عمليات التحصيل وقيمتها لكل عميل ضمن الفلتر الحالي</div>
     <div class="unvisited-list" id="collect-list"></div>
@@ -955,6 +961,7 @@ body.density-compact .report-card{padding:10px}
 <div class="admin-overlay" id="short-visits-overlay">
   <div class="admin-panel admin-panel-wide">
     <button class="admin-close" onclick="closeShortVisitsModal()">✕</button>
+    <button class="mini-export-btn" onclick="exportCurrentModal()">📤 تصدير Excel</button>
     <h3>⏱️ عملاء الزيارات السريعة (أقل من 5 دقائق)</h3>
     <div class="sub" id="short-visits-modal-sub">قائمة العملاء الذين زيارتهم استغرقت أقل من 5 دقائق ضمن الفلتر الحالي</div>
     <div class="unvisited-list" id="short-visits-list"></div>
@@ -984,6 +991,7 @@ body.density-compact .report-card{padding:10px}
 <div class="admin-overlay" id="overdue-overlay">
   <div class="admin-panel admin-panel-wide">
     <button class="admin-close" onclick="closeOverdueClientsModal()">✕</button>
+    <button class="mini-export-btn" onclick="exportCurrentModal()">📤 تصدير Excel</button>
     <h3>⏰ العملاء المتجاوزين في المديونية</h3>
     <div class="sub" id="overdue-modal-sub">قيمة التجاوز وعدد الزيارات لكل عميل ضمن الفلتر الحالي</div>
     <input class="search-box" type="text" id="overdue-search-box" placeholder="🔍 دور باسم العميل..." oninput="renderOverdueClientsTable()" style="width:100%;margin:10px 0 4px">
@@ -1001,6 +1009,7 @@ body.density-compact .report-card{padding:10px}
 <div class="admin-overlay" id="escalation-modal-overlay">
   <div class="admin-panel admin-panel-wide">
     <button class="admin-close" onclick="closeEscalationModal()">✕</button>
+    <button class="mini-export-btn" onclick="exportCurrentModal()">📤 تصدير Excel</button>
     <h3>🚨 تصعيدات عاجلة</h3>
     <div class="sub" id="escalation-modal-sub">عملاء متجاوزين في المديونية ومالهمش زيارة دقيقة من 7 أيام على الأقل</div>
     <div class="unvisited-list"><table class="overdue-table">
@@ -1013,6 +1022,7 @@ body.density-compact .report-card{padding:10px}
 <div class="admin-overlay" id="route-overlay">
   <div class="admin-panel admin-panel-wide">
     <button class="admin-close" onclick="closeRouteModal()">✕</button>
+    <button class="mini-export-btn" onclick="exportCurrentModal()">📤 تصدير Excel</button>
     <h3>🧭 خط السير</h3>
     <div class="sub" id="route-modal-sub">كل عملاء خط السير ضمن الفلتر الحالي</div>
     <input class="search-box" type="text" id="route-search-box" placeholder="🔍 دور باسم العميل..." oninput="renderRouteTable()" style="width:100%;margin:10px 0 4px">
@@ -1156,7 +1166,6 @@ body.density-compact .report-card{padding:10px}
       <h3>📋 تفاصيل الزيارات</h3>
       <input class="search-box" type="text" id="search-box" placeholder="🔍 بحث عن عميل أو شخص..." oninput="onSearch()">
       <button class="export-btn" onclick="exportToExcel()">📤 تصدير Excel</button>
-      <button class="export-btn" id="live-export-btn" onclick="exportLiveToSheets()" style="background:#1a73e8">📡 تصدير مباشر لـ Google Sheets</button>
     </div>
     <div class="table-wrap">
       <table class="visits-table">
@@ -2016,26 +2025,37 @@ async function doLogin(){
   const loginBtn = document.querySelector('.login-btn');
   if(loginBtn){ loginBtn.disabled = true; loginBtn.textContent = 'جارٍ التحقق...'; }
 
-  try{
-    const url = `${LOGIN_API_URL}?username=${encodeURIComponent(uname)}&password=${encodeURIComponent(pwd)}`;
-    const res = await fetch(url);
-    const result = await res.json();
+  const url = `${LOGIN_API_URL}?username=${encodeURIComponent(uname)}&password=${encodeURIComponent(pwd)}`;
+  // محاولات تلقائية (3 كحد أقصى) قبل ما نعرض "تعذر الاتصال بالسيرفر" — أغلب الفشل هنا مؤقت وسببه
+  // ضغط مؤقت على حد الطلبات المتزامنة لجوجل أبس سكريبت (مثلاً لما أكتر من حد يسجل دخول في نفس اللحظة بالظبط)،
+  // مش عطل حقيقي، فمحاولة تانية بعد نص ثانية غالبًا تنجح من غير ما تحتاج تضغط "دخول" تاني بنفسك
+  const MAX_ATTEMPTS = 3;
+  for(let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++){
+    try{
+      if(loginBtn && attempt > 1) loginBtn.textContent = `جارٍ التحقق... (محاولة ${attempt})`;
+      const res = await fetch(url);
+      const result = await res.json();
 
-    if(!result.success){
-      errEl.textContent = 'اسم المستخدم أو كلمة السر غير صحيحة';
-      errEl.style.display = 'block';
-      return;
+      if(!result.success){
+        errEl.textContent = 'اسم المستخدم أو كلمة السر غير صحيحة';
+        errEl.style.display = 'block';
+        break;
+      }
+
+      const match = result.user;
+      try{ sessionStorage.setItem('visits_dashboard_user', JSON.stringify(match)); }catch(e){}
+      startSession(match);
+      break;
+    }catch(err){
+      if(attempt < MAX_ATTEMPTS){
+        await new Promise(r => setTimeout(r, 600 * attempt)); // تأخير بسيط يكبر شوية مع كل محاولة، ونعيد المحاولة
+      } else {
+        errEl.textContent = 'تعذر الاتصال بالسيرفر بعد عدة محاولات — تأكد من الإنترنت وحاول تاني بعد شوية';
+        errEl.style.display = 'block';
+      }
     }
-
-    const match = result.user;
-    try{ sessionStorage.setItem('visits_dashboard_user', JSON.stringify(match)); }catch(e){}
-    startSession(match);
-  }catch(err){
-    errEl.textContent = 'تعذر الاتصال بالسيرفر، حاول مرة ثانية';
-    errEl.style.display = 'block';
-  }finally{
-    if(loginBtn){ loginBtn.disabled = false; loginBtn.textContent = 'دخول'; }
   }
+  if(loginBtn){ loginBtn.disabled = false; loginBtn.textContent = 'دخول'; }
 }
 
 function doLogout(){
@@ -3838,6 +3858,10 @@ function showUnvisitedClientsModal(){
     }).join('');
   }
   subEl.textContent = `${UNVISITED_CLIENTS_LIST.length.toLocaleString('en-US')} عميل ما زالوا بحاجة إلى زيارة ضمن الفلتر الحالي`;
+  MODAL_EXPORT = {
+    rows: UNVISITED_CLIENTS_LIST.map(c=>({'العميل':c.name,'الفرع':c.branch||'','تصنيف':c.grade||'','آخر زيارة':c.lastVisitDate || 'لم يُزَر من قبل'})),
+    filename: 'عملاء_لم_تتم_زيارتهم', sheet: 'لم تتم الزيارة'
+  };
   openOverlay('unvisited-overlay');
 }
 
@@ -3872,6 +3896,10 @@ function showTotalVisitsModal(){
       </div>`).join('');
   }
   subEl.textContent = `${rows.length.toLocaleString('en-US')} عميل ضمن الفلتر الحالي`;
+  MODAL_EXPORT = {
+    rows: rows.map(r=>({'العميل':r.name,'عدد الزيارات':r.visits,'الكمية':r.qty})),
+    filename: 'إجمالي_الزيارات', sheet: 'إجمالي الزيارات'
+  };
   openOverlay('total-visits-overlay');
 }
 
@@ -3906,6 +3934,10 @@ function showOrdersModal(){
       </div>`).join('');
   }
   subEl.textContent = `${rows.length.toLocaleString('en-US')} عميل ضمن الفلتر الحالي`;
+  MODAL_EXPORT = {
+    rows: rows.map(r=>({'العميل':r.name,'عدد الطلبيات':r.orders,'الكمية':r.qty})),
+    filename: 'إجمالي_الطلبيات', sheet: 'الطلبيات'
+  };
   openOverlay('orders-overlay');
 }
 
@@ -3936,6 +3968,10 @@ function showAccurateVisitsModal(){
       </div>`).join('');
   }
   subEl.textContent = `${rows.length.toLocaleString('en-US')} عميل ضمن الفلتر الحالي`;
+  MODAL_EXPORT = {
+    rows: rows.map(r=>({'العميل':r.name,'عدد الزيارات الدقيقة':r.visits})),
+    filename: 'زيارات_دقيقة', sheet: 'زيارات دقيقة'
+  };
   openOverlay('accurate-visits-overlay');
 }
 
@@ -3966,6 +4002,10 @@ function showInaccurateVisitsModal(){
       </div>`).join('');
   }
   subEl.textContent = `${rows.length.toLocaleString('en-US')} عميل ضمن الفلتر الحالي`;
+  MODAL_EXPORT = {
+    rows: rows.map(r=>({'العميل':r.name,'عدد الزيارات غير الدقيقة':r.visits})),
+    filename: 'زيارات_غير_دقيقة', sheet: 'زيارات غير دقيقة'
+  };
   openOverlay('inaccurate-visits-overlay');
 }
 
@@ -4000,6 +4040,10 @@ function showCollectModal(){
       </div>`).join('');
   }
   subEl.textContent = `${rows.length.toLocaleString('en-US')} عميل ضمن الفلتر الحالي`;
+  MODAL_EXPORT = {
+    rows: rows.map(r=>({'العميل':r.name,'عدد عمليات التحصيل':r.count,'قيمة التحصيل':r.val})),
+    filename: 'إجمالي_التحصيل', sheet: 'التحصيل'
+  };
   openOverlay('collect-overlay');
 }
 
@@ -4021,6 +4065,10 @@ function showShortVisitsModal(){
     listEl.innerHTML = names.map(name => `<div class="unvisited-item">${esc(name)}</div>`).join('');
   }
   subEl.textContent = `${names.length.toLocaleString('en-US')} زيارة أقل من 5 دقائق ضمن الفلتر الحالي`;
+  MODAL_EXPORT = {
+    rows: shortVisitsArr.map(r=>({'العميل':r.العميل,'الشخص':r['الشخص اللي قام بالزياره']||'','التاريخ':r['تاريخ الزيارة']||'','المدة بالدقائق':r['مدة الدقائق']})),
+    filename: 'زيارات_أقل_من_5_دقائق', sheet: 'زيارات قصيرة'
+  };
   openOverlay('short-visits-overlay');
 }
 
@@ -4095,6 +4143,15 @@ function showRouteModal(){
   document.getElementById('route-search-box').value = '';
   document.getElementById('route-modal-sub').textContent = `${ROUTE_CLIENTS_LIST.length.toLocaleString('en-US')} عميل ضمن خط السير الحالي`;
   renderRouteTable();
+  MODAL_EXPORT = {
+    rows: ROUTE_CLIENTS_LIST.map(c=>({
+      'العميل':c.name, 'تصنيف':c.grade||'', 'المنطقة':c.region||'',
+      'حالة الزيارة': c.visitedAccurate ? 'زار (دقيقة)' : (c.visitedAny ? 'زار (غير دقيقة)' : 'لم يُزَر'),
+      'عمل طلبية': c.ordered ? 'نعم' : 'لا',
+      'المديونية': c.hasDebt ? (c.debtOverdue ? ('متجاوز — '+c.debtSum) : ('سليم — '+c.debtSum)) : 'لا يوجد'
+    })),
+    filename: 'خط_السير', sheet: 'خط السير'
+  };
   openOverlay('route-overlay');
 }
 
@@ -5903,6 +5960,10 @@ function showEscalationModal(){
   document.getElementById('escalation-modal-tbody').innerHTML = rows.length
     ? rows.map(escalationRowHtml).join('')
     : '<tr><td colspan="6" class="no-data">مفيش تصعيدات ضمن الفلتر الحالي 🎉</td></tr>';
+  MODAL_EXPORT = {
+    rows: rows.map(r=>({'العميل':r.name,'المندوب':r.person||'','قيمة التجاوز':r.sum,'عدد الأيام بدون زيارة دقيقة':r.days==null?'لا يوجد':r.days})),
+    filename: 'تصعيدات_عاجلة', sheet: 'تصعيدات'
+  };
   openOverlay('escalation-modal-overlay');
 }
 function closeEscalationModal(){
@@ -7384,14 +7445,24 @@ function showOverdueClientsModal(){
     const overdueDays = (+r['عمر الفاتوره']||0) - (+r['عدد  ايام السماح']||0);
     if(overdueDays > byClient[key].maxOverdueDays) byClient[key].maxOverdueDays = overdueDays;
   });
-  OVERDUE_CLIENTS_LIST = Object.values(byClient).map(c=>{
-    const visitsCount = DATA.filter(v=>v.العميل === c.name).length;
-    return {...c, visitsCount};
-  }).sort((a,b)=>b.sum-a.sum);
+  // عدد الزيارات لكل عميل: نمر على كل الزيارات مرة واحدة بس ونبني جدول بحث (بدل ما نعيد مسح كل الزيارات
+  // من جديد لكل عميل متجاوز على حدة — الطريقة القديمة كانت بتتباطأ أكتر كل ما عدد الزيارات أو العملاء المتجاوزين يكبر)
+  const visitsCountByClient = {};
+  DATA.forEach(v=>{
+    if(!v.العميل) return;
+    visitsCountByClient[v.العميل] = (visitsCountByClient[v.العميل] || 0) + 1;
+  });
+  OVERDUE_CLIENTS_LIST = Object.values(byClient).map(c=>({
+    ...c, visitsCount: visitsCountByClient[c.name] || 0
+  })).sort((a,b)=>b.sum-a.sum);
 
   document.getElementById('overdue-search-box').value = '';
   document.getElementById('overdue-modal-sub').textContent =
     `${OVERDUE_CLIENTS_LIST.length.toLocaleString('en-US')} عميل متجاوز ضمن الفلتر الحالي — عدد الزيارات معتمد على مطابقة اسم العميل بين شيت المديونية وشيت الزيارات (ممكن يظهر صفر إذا الاسم مسجّل بصيغة مختلفة قليل من بين الشيتين)`;
+  MODAL_EXPORT = {
+    rows: OVERDUE_CLIENTS_LIST.map(c=>({'اسم العميل':c.name,'قيمة التجاوز':c.sum,'عدد الزيارات':c.visitsCount,'كام يوم متجاوز':c.maxOverdueDays})),
+    filename: 'العملاء_المتجاوزين', sheet: 'متجاوزين'
+  };
   renderOverdueClientsTable();
   openOverlay('overdue-overlay');
 }
@@ -8135,6 +8206,25 @@ function applyExcelSheetPolish(ws, rows){
   ws['!margins'] = { left:0.4, right:0.4, top:0.5, bottom:0.5, header:0.3, footer:0.3 };
 }
 
+// حالة مشتركة لزرار "تصدير Excel" الموجود في كل مودال منبثق من الجرس/كروت الـKPI — كل مودال يحدّثها قبل ما يفتح
+let MODAL_EXPORT = { rows: [], filename: 'تصدير', sheet: 'بيانات' };
+function exportCurrentModal(){
+  exportModalRows(MODAL_EXPORT.rows, MODAL_EXPORT.filename, MODAL_EXPORT.sheet);
+}
+
+// تصدير عام لأي جدول منبثق (مودالات الجرس وكروت الـKPI): نفس تنسيق تصدير الزيارات (عرض أعمدة مناسب + فلاتر تلقائية)
+function exportModalRows(rows, filename, sheetName){
+  if(typeof XLSX === 'undefined'){ alert('تعذر تحميل مكتبة التصدير — تأكد من الاتصال بالإنترنت'); return; }
+  if(!rows || !rows.length){ alert('لا توجد بيانات للتصدير ضمن الفلتر الحالي'); return; }
+  const ws = XLSX.utils.json_to_sheet(rows);
+  applyExcelSheetPolish(ws, rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, sheetName.slice(0,31));
+  const now = new Date();
+  const stamp = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+  XLSX.writeFile(wb, `${filename}_${stamp}.xlsx`);
+}
+
 // 🧾 تصدير محاسبي: نفس بيانات جدول التفاصيل الحالي، لكن بأعمدة إنجليزية موحّدة وتواريخ استحقاق محسوبة —
 // حتى تتوافق مع أي برنامج محاسبة/استيراد بيانات (مثل Excel قوالب QuickBooks أو أي نظام مشابه)
 function exportDebtAccounting(){
@@ -8169,31 +8259,6 @@ function exportDebtAccounting(){
   const now = new Date();
   const stamp = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
   XLSX.writeFile(wb, `debt_accounting_export_${stamp}.xlsx`);
-}
-
-// تصدير مباشر لنفس جدول "تفاصيل الزيارات" الحالي (بعد الفلاتر) إلى شيت حي في Google Sheets بدل ما تنزّل ملف جديد كل مرة
-function exportLiveToSheets(){
-  const rows = displayed.map(r=>({
-    'التاريخ': r['تاريخ الزيارة'], 'الفرع': r.الفرع, 'الشخص': r['الشخص اللي قام بالزياره'], 'النوع': r.نوع_الشخص,
-    'العميل': r.العميل, 'المنطقة': r['المنطقه سيستم'], 'ملاحظات الزيارة': r['ملاحظات الزيارة'] || '', 'وقت الدخول': r['وقت الدخول'], 'وقت الخروج': r['وقت الخروج'],
-    'مدة الدقائق': r['مدة الدقائق'], [orderColumnLabel()]: (isValueHiddenRole()?r['الكميه']:r['قيمة ف الطلبية']),
-    ...(isValueHiddenRole() ? {} : {'الكمية': r['الكميه']}),
-    'قيمة التحصيل': r['قيمة المقبوضات'],
-    'المسافة (م)': r.distance_m, 'الدقة': r.accuracy
-  }));
-  if(!rows.length){ alert('مفيش بيانات ضمن الفلتر الحالي لتصديرها'); return; }
-  const btn = document.getElementById('live-export-btn');
-  const originalText = btn.textContent;
-  btn.disabled = true; btn.textContent = '⏳ جاري التصدير...';
-  fetch(LOGIN_API_URL, {
-    method: 'POST',
-    headers: {'Content-Type': 'text/plain;charset=utf-8'}, // نتفادى بيها مشاكل CORS المعروفة مع Apps Script
-    body: JSON.stringify({ action: 'liveExport', rows })
-  })
-    .then(r=>r.json())
-    .then(res=>{ alert(res.success ? '✅ اتصدرت البيانات على طول في Google Sheets' : '❌ حصل خطأ أثناء التصدير'); })
-    .catch(()=>{ alert('تعذر الاتصال بالسيرفر — تأكد من الإنترنت'); })
-    .finally(()=>{ btn.disabled = false; btn.textContent = originalText; });
 }
 
 function exportToExcel(){
