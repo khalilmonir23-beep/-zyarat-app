@@ -170,6 +170,9 @@ body{font-family:'Cairo',-apple-system,BlinkMacSystemFont,'SF Pro Display','Sego
 .hs .v{font-size:20px;font-weight:700;color:var(--accent)}
 .hs .l{font-size:11px;color:var(--text-dim)}
 .theme-toggle{width:38px;height:38px;border-radius:50%;border:1px solid var(--border-main);background:var(--bg-card);cursor:pointer;font-size:17px;display:flex;align-items:center;justify-content:center;transition:.2s;flex:none}
+/* إخفاء/إظهار الهيدر: لما يكون مقفول، الهيدر يتقلّص لشريط رفيع فيه زرار الإظهار بس، عشان المندوب ياخد أقصى مساحة شاشة وهو شغال في الميدان */
+body.header-collapsed .header{padding-top:6px;padding-bottom:6px;gap:0;justify-content:center}
+body.header-collapsed .header > *:not(#header-collapse-btn){display:none}
 #notif-bell-btn{position:relative}
 #notif-bell-badge{position:absolute;top:-4px;left:-4px;background:var(--red);color:#fff;font-size:10px;font-weight:800;min-width:17px;height:17px;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 3px;border:2px solid var(--bg-card)}
 #welcome-toast{position:fixed;top:14px;left:50%;transform:translateX(-50%) translateY(-140%);z-index:3000;background:linear-gradient(135deg,var(--bg-card),var(--bg-card2));border:1px solid var(--border-main);border-radius:14px;box-shadow:0 8px 28px rgba(0,0,0,.18);padding:12px 20px;text-align:center;max-width:90vw;transition:transform .4s cubic-bezier(.22,.9,.3,1.4)}
@@ -771,6 +774,7 @@ body.density-compact .report-card{padding:10px}
     <span id="sync-indicator" style="font-size:10.5px;color:var(--text-dim);white-space:nowrap"></span>
     <button class="logout-btn" id="logout-btn" onclick="doLogout()" style="display:none">🚪 <span id="current-user-label"></span></button>
   </div>
+  <button class="theme-toggle" id="header-collapse-btn" onclick="toggleHeaderCollapse()" title="إخفاء/إظهار الهيدر لتوفير مساحة">🔽</button>
 </div>
 
 <!-- بانر تنبيه أولويات اليوم — يظهر تلقائي للمندوب/المحصل بعد الدخول إذا عنده عملاء متجاوزين أو شارفوا على الدخول في التجاوز -->
@@ -3557,6 +3561,24 @@ function applyIconSet(){
   });
 }
 document.addEventListener('DOMContentLoaded', applyIconSet);
+
+// إخفاء/إظهار الهيدر بالكامل (يفضل بس زرار صغير رفيع) لتوفير مساحة شاشة أكبر للمندوب وهو شغال بره المكتب
+function toggleHeaderCollapse(){
+  const collapsed = document.body.classList.toggle('header-collapsed');
+  document.getElementById('header-collapse-btn').textContent = collapsed ? '🔼' : '🔽';
+  try{ localStorage.setItem('headerCollapsed', collapsed ? '1' : '0'); }catch(e){}
+}
+(function restoreHeaderCollapse(){
+  try{
+    if(localStorage.getItem('headerCollapsed') === '1'){
+      document.body.classList.add('header-collapsed');
+      document.addEventListener('DOMContentLoaded', ()=>{
+        const btn = document.getElementById('header-collapse-btn');
+        if(btn) btn.textContent = '🔼';
+      });
+    }
+  }catch(e){}
+})();
 
 function toggleDensity(){
   const compact = document.body.classList.toggle('density-compact');
