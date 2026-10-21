@@ -723,6 +723,40 @@ body.density-compact .report-card{padding:10px}
   .visits-table{font-size:12px}
   #client-card-map, #geo-perf-map{height:320px}
 }
+:root{--pv-card:#fff;--pv-accent:#e11d48;--pv-accent2:#fb7185}
+body.dark{--pv-card:var(--bg-card)}
+#pv-nav,#pv-sheet,#pv-fab-menu{display:none}
+@media (max-width:640px){
+  .tab-bar{display:none!important}
+  body{padding-bottom:calc(92px + env(safe-area-inset-bottom))!important}
+  #mobile-focus-toggle{bottom:calc(96px + env(safe-area-inset-bottom))!important;left:14px!important}
+  body.mobile-focus-mode #pv-nav,body.mobile-focus-mode #pv-fab-menu{display:none!important}
+  body.pv-ready #pv-nav{display:flex;position:fixed;left:10px;right:10px;bottom:calc(10px + env(safe-area-inset-bottom));z-index:900;height:64px;align-items:center;
+    background:var(--pv-card);border:1px solid color-mix(in srgb,var(--border-main) 70%,transparent);border-radius:24px;box-shadow:0 10px 30px -8px rgba(20,25,60,.28)}
+  .pv-ni{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;border:0;background:none;font-family:inherit;color:var(--text-dim);font-size:10px;font-weight:700;padding:6px 0;position:relative;-webkit-tap-highlight-color:transparent}
+  .pv-ni span{font-size:19px;line-height:1;filter:grayscale(1);opacity:.7}
+  .pv-ni.on{color:var(--pv-accent)}.pv-ni.on span{filter:none;opacity:1}
+  .pv-ni.on::after{content:'';position:absolute;top:2px;width:18px;height:3px;border-radius:3px;background:var(--pv-accent)}
+  .pv-ni:active{scale:.92;transition:scale .1s}
+  .pv-gap{flex:0 0 72px}
+  #pv-fab{position:absolute;left:50%;top:-22px;margin-left:-29px;width:58px;height:58px;border-radius:50%;border:4px solid var(--bg-page);cursor:pointer;color:#fff;display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(145deg,var(--pv-accent2),var(--pv-accent));box-shadow:0 10px 20px -6px rgba(225,29,72,.6);-webkit-tap-highlight-color:transparent}
+  #pv-fab svg{transition:transform .2s ease}body.pv-fab-open #pv-fab svg{transform:rotate(45deg)}
+  #pv-fab-menu{display:block;position:fixed;inset:0;z-index:890;pointer-events:none;opacity:0;transition:opacity .15s}
+  body.pv-fab-open #pv-fab-menu{opacity:1;pointer-events:auto;background:rgba(10,12,20,.35)}
+  .pv-fa{position:absolute;left:50%;bottom:calc(90px + env(safe-area-inset-bottom));margin-left:-26px;width:52px;height:52px;border-radius:50%;border:0;background:var(--pv-card);color:var(--pv-accent);font-size:21px;box-shadow:0 8px 20px -6px rgba(0,0,0,.35);opacity:0;transform:translateY(20px) scale(.6);transition:transform .2s ease,opacity .2s ease}
+  .pv-fa small{position:absolute;top:-20px;left:50%;transform:translateX(-50%);font-size:10px;font-weight:700;color:#fff;white-space:nowrap}
+  body.pv-fab-open .pv-fa{opacity:1}
+  body.pv-fab-open .pv-fa:nth-child(1){transform:translate(-70px,-22px)}body.pv-fab-open .pv-fa:nth-child(2){transform:translate(0,-62px)}body.pv-fab-open .pv-fa:nth-child(3){transform:translate(70px,-22px)}
+  #pv-sheet{display:block;position:fixed;inset:0;z-index:895;pointer-events:none;opacity:0;transition:opacity .15s}
+  #pv-sheet.open{opacity:1;pointer-events:auto;background:rgba(10,12,20,.4)}
+  .pv-sheet-p{position:absolute;left:0;right:0;bottom:0;background:var(--pv-card);border-radius:26px 26px 0 0;padding:14px 16px calc(100px + env(safe-area-inset-bottom));transform:translateY(100%);transition:transform .22s ease}
+  #pv-sheet.open .pv-sheet-p{transform:none}
+  .pv-sheet-p h4{margin:0 0 12px;font-size:14px;color:var(--text-heading)}
+  .pv-sheet-g{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .pv-sheet-g button{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 4px;border:1px solid var(--border-main);border-radius:16px;background:var(--bg-card2);font-family:inherit;font-size:11px;font-weight:700;color:var(--text-primary)}
+  .pv-sheet-g button span{font-size:22px}.pv-sheet-g button.on{color:var(--pv-accent);border-color:var(--pv-accent)}
+}
 </style>
 </head>
 <body>
@@ -8384,5 +8418,55 @@ function exportToExcel(){
 // ملاحظة: init() الآن يُستدعى من startSession() بعد نجاح تسجيل الدخول، غير أوتوماتيك عند تحميل الصفحة
 </script>
 
+
+<div id="pv-fab-menu" onclick="pvFab(false)">
+  <button class="pv-fa" onclick="event.stopPropagation();pvAct('share')"><small>مشاركة</small>📤</button>
+  <button class="pv-fa" onclick="event.stopPropagation();pvAct('search')"><small>بحث</small>🔍</button>
+  <button class="pv-fa" onclick="event.stopPropagation();pvAct('export')"><small>تصدير</small>📥</button>
+</div>
+<div id="pv-sheet" onclick="pvSheet(false)"><div class="pv-sheet-p" onclick="event.stopPropagation()"><h4>المزيد</h4><div class="pv-sheet-g" id="pv-sheet-g"></div></div></div>
+<nav id="pv-nav"></nav>
+<script>
+(function(){
+  const SHORT={dashboard:'الرئيسية',debt:'المديونية',tracking:'الحركة',geomap:'الخريطة',coverage:'التغطية',clientcard:'العميل',charts:'الرسوم',quality:'الجودة',performance:'الأداء',similar:'متشابهة'};
+  // التنقل
+  function allowed(){
+    if(typeof currentUser==='undefined'||!currentUser) return [];
+    if(currentUser.role==='إدارة') return TAB_DEFS.map(x=>x.id);
+    return (currentUser.tabs&&currentUser.tabs.length)?currentUser.tabs:['dashboard'];
+  }
+  function icon(id){const b=document.getElementById('tabbtn-'+id); return b?b.textContent.trim().split(' ')[0]:'•';}
+  function build(){
+    const nav=document.getElementById('pv-nav'), al=allowed();
+    if(!al.length){document.body.classList.remove('pv-ready');return;}
+    document.body.classList.add('pv-ready');
+    const ids=TAB_DEFS.map(x=>x.id).filter(id=>al.includes(id));
+    const main=ids.slice(0,4), more=ids.slice(4);
+    const btn=id=>`<button class="pv-ni" data-t="${id}" onclick="switchTab('${id}')"><span>${icon(id)}</span>${SHORT[id]||id}</button>`;
+    nav.innerHTML=main.slice(0,2).map(btn).join('')+'<div class="pv-gap"></div>'+main.slice(2).map(btn).join('')
+      +(more.length?'<button class="pv-ni" data-t="more" onclick="pvSheet(true)"><span>☰</span>المزيد</button>':'')
+      +'<button id="pv-fab" onclick="pvFab()" aria-label="إجراءات سريعة"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>';
+    document.getElementById('pv-sheet-g').innerHTML=more.map(id=>{const d=TAB_DEFS.find(x=>x.id===id);return `<button data-t="${id}" onclick="pvSheet(false);switchTab('${id}')"><span>${icon(id)}</span>${d.label}</button>`;}).join('');
+    mark();
+  }
+  function mark(){
+    const al=allowed(), main=TAB_DEFS.map(x=>x.id).filter(id=>al.includes(id)).slice(0,4);
+    document.querySelectorAll('#pv-nav .pv-ni').forEach(b=>{const k=b.dataset.t; b.classList.toggle('on',k==='more'?!main.includes(currentTab):k===currentTab);});
+    document.querySelectorAll('#pv-sheet-g button').forEach(b=>b.classList.toggle('on',b.dataset.t===currentTab));
+  }
+  const _s=switchTab; switchTab=function(n){_s(n);mark();pvFab(false);};
+  const _r=applyRoleRestrictions; applyRoleRestrictions=function(){const r=_r.apply(this,arguments);build();return r;};
+  window.pvFab=function(v){document.body.classList.toggle('pv-fab-open',v===undefined?!document.body.classList.contains('pv-fab-open'):v);};
+  window.pvSheet=function(v){document.getElementById('pv-sheet').classList.toggle('open',v);};
+  window.pvAct=function(a){
+    pvFab(false);
+    if(a==='share'){shareKPISummary();return;}
+    if(currentTab!=='dashboard') switchTab('dashboard');
+    if(a==='export'){exportToExcel();return;}
+    setTimeout(()=>{const s=document.getElementById('search-box'); if(s){s.scrollIntoView({block:'center'});s.focus();}},60);
+  };
+  build();
+})();
+</script>
 </body>
 </html>
