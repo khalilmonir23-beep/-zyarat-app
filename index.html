@@ -136,7 +136,7 @@ body{font-family:'Cairo',-apple-system,BlinkMacSystemFont,'SF Pro Display','Sego
     var(--bg-page)
     repeating-linear-gradient(45deg, color-mix(in srgb, var(--text-primary) 4%, transparent) 0, color-mix(in srgb, var(--text-primary) 4%, transparent) 1px, transparent 1px, transparent 26px),
     repeating-linear-gradient(-45deg, color-mix(in srgb, var(--text-primary) 4%, transparent) 0, color-mix(in srgb, var(--text-primary) 4%, transparent) 1px, transparent 1px, transparent 26px);
-  color:var(--text-primary);min-height:100vh;transition:background .2s,color .2s;overflow-x:hidden;-webkit-tap-highlight-color:transparent}
+  color:var(--text-primary);min-height:100vh;transition:background .2s,color .2s;overflow-x:hidden;overflow-x:clip;-webkit-tap-highlight-color:transparent}
 @media (prefers-reduced-motion: no-preference){
   /* كرة إضاءة خفيفة خلف المحتوى بتتحرك شوية مع كل تبديل تاب — إحساس عمق (parallax) بسيط */
   body::before{
@@ -524,6 +524,7 @@ body.density-compact .report-card{padding:10px}
 .login-error{display:none;background:var(--acc-no-bg);color:var(--acc-no-text);font-size:12px;padding:8px 10px;border-radius:8px;margin-top:12px}
 .logout-btn{font-size:11px;padding:6px 12px;border-radius:8px;background:var(--bg-card2);color:var(--text-dim);border:1px solid var(--border-main);cursor:pointer;flex:none}
 .logout-btn:hover{color:var(--red)}
+.header > .logout-btn{order:9}
 
 /* MOBILE RESPONSIVE */
 @media (max-width:640px){
@@ -629,9 +630,10 @@ body.density-compact .report-card{padding:10px}
   /* هيدر وفلاتر عايمة (كارت أبيض بحواف مدوّرة بمسافة من حواف الشاشة) بدل الشريط الملاصق للحواف،
      وبرضو أصغر حجمًا على الموبايل — مع مراعاة النوتش/الديناميك آيلاند */
   .header{
-    position:sticky; top:calc(8px + env(safe-area-inset-top)); z-index:50;
-    margin:calc(8px + env(safe-area-inset-top)) 10px 0;
-    padding:10px 14px;
+    position:fixed; top:calc(6px + env(safe-area-inset-top)); left:8px; right:8px; z-index:50;
+    margin:0;
+    padding:7px 12px;
+    gap:6px 10px;
     border-radius:16px;
     background:color-mix(in srgb, var(--bg-header) 92%, transparent);
     -webkit-backdrop-filter:saturate(180%) blur(18px);
@@ -639,9 +641,16 @@ body.density-compact .report-card{padding:10px}
     border:1px solid var(--border-main);
     box-shadow:0 4px 18px rgba(0,0,0,.08);
   }
+  /* مساحة للهيدر الثابت — تُضبط بالجافاسكربت حسب ارتفاعه الفعلي (syncHeaderSpace) */
+  body{padding-top:var(--hdr-space, 0px)}
+  .header > .logout-btn{order:0; margin-right:auto}
+  .header-stats{gap:8px !important}
+  .header .theme-toggle{width:28px;height:28px;font-size:12.5px}
+  .header .hs .v{font-size:13px}
+  .header .hs .l{font-size:8px}
   .filters{
-    margin:8px 10px 0;
-    padding:10px 14px;
+    margin:6px 8px 0;
+    padding:7px 10px;
     border-radius:16px;
     background:color-mix(in srgb, var(--bg-header) 94%, transparent);
     -webkit-backdrop-filter:blur(14px);
@@ -650,6 +659,10 @@ body.density-compact .report-card{padding:10px}
     box-shadow:0 2px 10px rgba(0,0,0,.05);
   }
 
+  .filters{gap:5px 8px}
+  .filter-group{gap:2px}
+  .filter-group label{font-size:10px}
+  .filter-group select, .filter-group input{font-size:12.5px;padding:5px 8px;min-height:32px;height:32px}
   /* شريط التابات يكون Bottom Navigation Bar ثابت تحت مثل تطبيقات الموبايل، غير شريط عادي تحت الفلاتر */
   .tab-bar{
     position:fixed; left:0; right:0; bottom:0; z-index:60;
@@ -754,6 +767,7 @@ body.density-compact .report-card{padding:10px}
     <h1>ملخص الزيارات الميدانية</h1>
     <p>تحليل دقة الزيارات وأداء الفريق</p>
   </div>
+    <button class="logout-btn" id="logout-btn" onclick="doLogout()" style="display:none">🚪 <span id="current-user-label"></span></button>
   <div class="header-stats">
     <div class="hs"><div class="v" id="hs-total">0</div><div class="l">إجمالي الزيارات</div></div>
     <div class="hs"><div class="v" style="color:var(--green)" id="hs-acc">0</div><div class="l">زيارات دقيقة</div></div>
@@ -769,7 +783,6 @@ body.density-compact .report-card{padding:10px}
     <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="تبديل الوضع الليلي">🌙</button>
     <button class="theme-toggle" id="help-toggle" onclick="openHelpModal()" title="مساعدة">❓</button>
     <span id="sync-indicator" style="font-size:10.5px;color:var(--text-dim);white-space:nowrap"></span>
-    <button class="logout-btn" id="logout-btn" onclick="doLogout()" style="display:none">🚪 <span id="current-user-label"></span></button>
   </div>
 </div>
 
@@ -888,7 +901,7 @@ body.density-compact .report-card{padding:10px}
   <div class="kpi blue kpi-clickable" id="k-total-card" onclick="showTotalVisitsModal()"><div class="kpi-icon" data-icon="clipboard"></div><div class="kpi-val" id="k-total">0</div><div class="kpi-label">إجمالي الزيارات</div><div class="kpi-sub" id="k-total-clients">0 عميل</div><div class="kpi-tap-hint">اضغط لعرض الأسماء 👆</div></div>
   <div class="kpi green kpi-clickable" id="k-acc-card" onclick="showAccurateVisitsModal()"><div class="kpi-icon" data-icon="checkCircle"></div><div class="kpi-val" id="k-acc">0</div><div class="kpi-label">زيارات دقيقة</div><div class="kpi-sub" id="k-acc-pct">0%</div><div class="kpi-tap-hint">اضغط لعرض الأسماء 👆</div></div>
   <div class="kpi red kpi-clickable" id="k-inacc-card" onclick="showInaccurateVisitsModal()"><div class="kpi-icon" data-icon="xCircle"></div><div class="kpi-val" id="k-inacc">0</div><div class="kpi-label">زيارات غير دقيقة</div><div class="kpi-sub" id="k-inacc-pct">0%</div><div class="kpi-tap-hint">اضغط لعرض الأسماء 👆</div></div>
-  <div class="kpi orange kpi-clickable" id="k-orders-card" onclick="showOrdersModal()"><div class="kpi-icon" data-icon="package"></div><div class="kpi-val" id="k-orders">0</div><div class="kpi-label">إجمالي الطلبيات</div><div class="kpi-sub" id="k-orders-val">0 د.ع</div><div class="kpi-sub qty-kpi-line" id="k-orders-qty">0 كمية</div><div class="kpi-tap-hint">اضغط لعرض الأسماء 👆</div></div>
+  <div class="kpi orange kpi-clickable" id="k-orders-card" onclick="showOrdersModal()"><div class="kpi-icon" data-icon="package"></div><div class="kpi-val" id="k-orders">0</div><div class="kpi-label">إجمالي الطلبيات</div><div class="kpi-sub" id="k-orders-val">0 د.ع</div><div class="kpi-sub" id="k-orders-qty">0 كمية</div><div class="kpi-tap-hint">اضغط لعرض الأسماء 👆</div></div>
   <div class="kpi purple kpi-clickable" id="k-collect-card" onclick="showCollectModal()"><div class="kpi-icon" data-icon="coins"></div><div class="kpi-val" id="k-collect">0</div><div class="kpi-label">إجمالي التحصيل</div><div class="kpi-sub" id="k-collect-val">0 د.ع</div><div class="kpi-tap-hint">اضغط لعرض الأسماء 👆</div></div>
   <div class="kpi teal kpi-clickable" id="k-unvisited-card" onclick="showUnvisitedClientsModal()"><div class="kpi-icon" data-icon="userX"></div><div class="kpi-val" id="k-unvisited">0</div><div class="kpi-label">عملاء لم تتم زيارتهم (الشهر)</div><div class="kpi-sub" id="k-unvisited-pct">من 0 عميل</div><div class="kpi-tap-hint">اضغط لعرض الأسماء 👆</div></div>
   <div class="kpi red kpi-clickable" id="k-shortvisits-card" onclick="showShortVisitsModal()"><div class="kpi-icon" data-icon="clock"></div><div class="kpi-val" id="k-shortvisits">0</div><div class="kpi-label">زيارات أقل من 5 دقائق</div><div class="kpi-tap-hint">اضغط لعرض الأسماء 👆</div></div>
@@ -2057,7 +2070,7 @@ async function doLogin(){
       }
 
       const match = result.user;
-      try{ sessionStorage.setItem('visits_dashboard_user', JSON.stringify(match)); }catch(e){}
+      saveSession(match);
       startSession(match);
       break;
     }catch(err){
@@ -2072,9 +2085,57 @@ async function doLogin(){
   if(loginBtn){ loginBtn.disabled = false; loginBtn.textContent = 'دخول'; }
 }
 
+// 📌 الهيدر ثابت على الموبايل (position:fixed) — نحجز له مساحة فوق المحتوى بنفس ارتفاعه الفعلي
+function syncHeaderSpace(){
+  const h = document.querySelector('.header');
+  if(!h) return;
+  const mobile = window.matchMedia('(max-width:640px)').matches;
+  const hh = mobile ? h.offsetHeight : 0;
+  document.body.style.setProperty('--hdr-space', hh ? `calc(${hh}px + 12px + env(safe-area-inset-top))` : '0px');
+}
+(function initHeaderSpace(){
+  const run = ()=>{
+    syncHeaderSpace();
+    const h = document.querySelector('.header');
+    if(h && 'ResizeObserver' in window) new ResizeObserver(syncHeaderSpace).observe(h);
+    window.addEventListener('resize', syncHeaderSpace);
+    window.addEventListener('orientationchange', syncHeaderSpace);
+    if(document.fonts && document.fonts.ready) document.fonts.ready.then(syncHeaderSpace);
+  };
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run); else run();
+})();
+
+// 🔐 حفظ الدخول على الجهاز (30 يوم) حتى لا يكتب المندوب اليوزر والباسورد كل مرة — يُمسح بزر الخروج
+const SESSION_KEY = 'visits_dashboard_user';
+const SESSION_TTL_MS = 30*24*60*60*1000;
+function saveSession(user){
+  try{
+    const safe = {};
+    Object.keys(user||{}).forEach(k=>{ if(!/pass|pwd|password|كلمة/i.test(k)) safe[k] = user[k]; });
+    localStorage.setItem(SESSION_KEY, JSON.stringify({ u: safe, t: Date.now() }));
+  }catch(e){}
+}
+function loadSession(){
+  try{
+    let raw = localStorage.getItem(SESSION_KEY);
+    if(raw){
+      const obj = JSON.parse(raw);
+      if(obj && obj.u && obj.t && (Date.now() - obj.t) < SESSION_TTL_MS) return obj.u;
+      localStorage.removeItem(SESSION_KEY);
+      return null;
+    }
+    raw = sessionStorage.getItem(SESSION_KEY); // توافق مع الجلسات القديمة المحفوظة قبل التحديث
+    return raw ? JSON.parse(raw) : null;
+  }catch(e){ return null; }
+}
+function clearSession(){
+  try{ localStorage.removeItem(SESSION_KEY); }catch(e){}
+  try{ sessionStorage.removeItem(SESSION_KEY); }catch(e){}
+}
+
 function doLogout(){
   stopHeartbeat();
-  try{ sessionStorage.removeItem('visits_dashboard_user'); }catch(e){}
+  clearSession();
   location.reload();
 }
 
@@ -2239,11 +2300,8 @@ function startSession(user){
 }
 
 (function checkExistingSession(){
-  let saved = null;
-  try{ saved = sessionStorage.getItem('visits_dashboard_user'); }catch(e){}
-  if(!saved) return;
+  const user = loadSession();
   try{
-    const user = JSON.parse(saved);
     if(user && user.username) startSession(user);
   }catch(e){}
 })();
@@ -3668,6 +3726,25 @@ function applyPerfColor(elId, pct, higherIsWorse){
   else if(effectivePct >= 50) el.classList.add('perf-warn');
   else el.classList.add('perf-bad');
 }
+// نطاق بيانات الطلبيات: المحصل يرى طلبيات الفرع كله (مثل المشرف) رغم أن بقية اللوحة مقفولة على زياراته هو فقط؛
+// نفس الفلاتر الحالية بالضبط ما عدا فلتر "الشخص"
+function ordersScopeRows(){
+  if(!(currentUser && currentUser.role === 'محصل')) return filtered;
+  const branch = document.getElementById('f-branch').value;
+  const type = document.getElementById('f-type').value;
+  const year = document.getElementById('f-year').value;
+  const month = document.getElementById('f-month').value;
+  const acc = document.getElementById('f-acc').value;
+  return DATA.filter(r=>{
+    if(branch && r.الفرع !== branch) return false;
+    if(type && r.نوع_الشخص !== type) return false;
+    if(year && String(r.year) !== String(year)) return false;
+    if(month && r.month != +month) return false;
+    if(selectedDay && r.day != selectedDay) return false;
+    if(acc && r.accuracy !== acc) return false;
+    return true;
+  });
+}
 function updateKPIs(){
   const total = filtered.length;
   const accCount = filtered.filter(r=>r.accuracy==='دقيقة').length;
@@ -3687,11 +3764,13 @@ function updateKPIs(){
   document.getElementById('k-acc-pct').textContent = total ? Math.round(accCount/total*100)+'%' : '0%';
   document.getElementById('k-inacc-pct').textContent = total ? Math.round(inaccCount/total*100)+'%' : '0%';
   applyPerfColor('k-acc-card', total ? Math.round(accCount/total*100) : null);
-  animateKpiNumber('k-orders', ordersArr.length);
-  document.getElementById('k-orders-val').textContent = isValueHiddenRole()
-    ? ordersVal.toLocaleString('en-US') + ' باله'
-    : ordersVal.toLocaleString('en-US') + ' د.ع';
-  document.getElementById('k-orders-qty').textContent = ordersQty.toLocaleString('en-US') + ' كمية';
+  // كارت الطلبيات استثناء: القيمة والكمية معًا يظهران لكل الأدوار، والمحصل يرى طلبيات الفرع
+  const ordScope = ordersScopeRows().filter(r=>r['قيمة ف الطلبية'] !== '' && r['قيمة ف الطلبية'] !== null);
+  const ordScopeVal = ordScope.reduce((s,r)=>s+(+r['قيمة ف الطلبية']||0),0);
+  const ordScopeQty = ordScope.reduce((s,r)=>s+(+r['الكميه']||0),0);
+  animateKpiNumber('k-orders', ordScope.length);
+  document.getElementById('k-orders-val').textContent = ordScopeVal.toLocaleString('en-US') + ' د.ع';
+  document.getElementById('k-orders-qty').textContent = ordScopeQty.toLocaleString('en-US') + ' كمية';
   animateKpiNumber('k-collect', collectArr.length);
   document.getElementById('k-collect-val').textContent = collectVal.toLocaleString('en-US') + ' د.ع';
 
@@ -3926,12 +4005,13 @@ function showOrdersModal(){
   const listEl = document.getElementById('orders-list');
   const subEl = document.getElementById('orders-modal-sub');
 
-  const ordersArr = filtered.filter(r=>r['قيمة ف الطلبية'] !== '' && r['قيمة ف الطلبية'] !== null && r.العميل);
+  const ordersArr = ordersScopeRows().filter(r=>r['قيمة ف الطلبية'] !== '' && r['قيمة ف الطلبية'] !== null && r.العميل);
   const byClient = {};
   ordersArr.forEach(r=>{
-    if(!byClient[r.العميل]) byClient[r.العميل] = { orders:0, qty:0 };
+    if(!byClient[r.العميل]) byClient[r.العميل] = { orders:0, qty:0, val:0 };
     byClient[r.العميل].orders++;
     byClient[r.العميل].qty += (+r['الكميه'] || 0);
+    byClient[r.العميل].val += (+r['قيمة ف الطلبية'] || 0);
   });
   const rows = Object.keys(byClient).map(name => ({ name, ...byClient[name] })).sort((a,b)=>b.qty - a.qty);
 
@@ -3944,12 +4024,13 @@ function showOrdersModal(){
         <span class="item-badges">
           <span class="item-badge">${row.orders.toLocaleString('en-US')} طلبية</span>
           <span class="item-badge">${row.qty.toLocaleString('en-US')} كمية</span>
+          <span class="item-badge">${row.val.toLocaleString('en-US')} د.ع</span>
         </span>
       </div>`).join('');
   }
-  subEl.textContent = `${rows.length.toLocaleString('en-US')} عميل ضمن الفلتر الحالي`;
+  subEl.textContent = `${rows.length.toLocaleString('en-US')} عميل ضمن الفلتر الحالي` + ((currentUser && currentUser.role==='محصل') ? ' — طلبيات الفرع' : '');
   MODAL_EXPORT = {
-    rows: rows.map(r=>({'العميل':r.name,'عدد الطلبيات':r.orders,'الكمية':r.qty})),
+    rows: rows.map(r=>({'العميل':r.name,'عدد الطلبيات':r.orders,'الكمية':r.qty,'قيمة الطلبيات':r.val})),
     filename: 'إجمالي_الطلبيات', sheet: 'الطلبيات'
   };
   openOverlay('orders-overlay');
