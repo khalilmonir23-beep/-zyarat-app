@@ -2124,8 +2124,11 @@ function loadSession(){
       localStorage.removeItem(SESSION_KEY);
       return null;
     }
-    raw = sessionStorage.getItem(SESSION_KEY); // توافق مع الجلسات القديمة المحفوظة قبل التحديث
-    return raw ? JSON.parse(raw) : null;
+    raw = sessionStorage.getItem(SESSION_KEY); // جلسة قديمة محفوظة قبل التحديث — ننقلها للحفظ الدائم حتى لا تضيع عند إغلاق التطبيق
+    if(!raw) return null;
+    const old = JSON.parse(raw);
+    if(old && old.username) saveSession(old);
+    return old;
   }catch(e){ return null; }
 }
 function clearSession(){
