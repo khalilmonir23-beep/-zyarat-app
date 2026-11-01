@@ -2189,9 +2189,9 @@ function syncHeaderSpace(){
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run); else run();
 })();
 
-// 🔐 حفظ الدخول على الجهاز (30 يوم) حتى لا يكتب المندوب اليوزر والباسورد كل مرة — يُمسح بزر الخروج
+// 🔐 حفظ الدخول على الجهاز (90 يوم متجددة) حتى لا يكتب المندوب اليوزر والباسورد كل مرة — يُمسح بزر الخروج
 const SESSION_KEY = 'visits_dashboard_user';
-const SESSION_TTL_MS = 30*24*60*60*1000;
+const SESSION_TTL_MS = 90*24*60*60*1000; // يتجدد تلقائيًا مع كل فتح للتطبيق، فيفضل مسجّل دخول طالما بيستخدمه خلال 90 يوم
 function saveSession(user){
   try{
     const safe = {};
@@ -2389,8 +2389,13 @@ function startSession(user){
 (function checkExistingSession(){
   const user = loadSession();
   try{
-    if(user && user.username) startSession(user);
+    if(user && user.username){
+      startSession(user);
+      saveSession(user); // تجديد المدة مع كل فتح — الجلسة ما تنتهيش طالما المستخدم بيفتح التطبيق
+    }
   }catch(e){}
+  // نطلب من المتصفح يثبّت التخزين حتى لا يمسح الدخول المحفوظ تلقائيًا عند امتلاء مساحة الجهاز
+  try{ if(navigator.storage && navigator.storage.persist) navigator.storage.persist(); }catch(e){}
 })();
 
 /* ---------- THEME ---------- */
