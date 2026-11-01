@@ -1352,7 +1352,6 @@ body.dark{--pv-card:var(--bg-card)}
       <select id="geo-region"><option value="">كل المناطق</option></select>
     </div>
     <button class="admin-btn primary" style="width:auto;padding:9px 20px;background:linear-gradient(135deg,#c9a227,#e0b34d)" onclick="openGeoPerfMapFull()">⛶ فتح الخريطة كاملة</button>
-    <button class="admin-btn primary" style="width:auto;padding:9px 20px" id="heatmap-toggle-btn" onclick="toggleHeatmap()">🔥 خريطة حرارية</button>
   </div>
   <div style="padding:6px 30px 14px;font-size:12px;color:var(--text-dim)">الخريطة تتبع فلتر "الشخص" وفلاتر السنة/الشهر/الفرع الذي فوق الصفحة تلقائيًا (على مستوى الشهر). 🟢 زيارة دقيقة + طلبية · 🟡 زيارة دقيقة بدون طلبية · 🔴 زيارة غير دقيقة · ⚪ عميل بدون أي زيارة إطلاقًا.</div>
   <div id="geo-perf-info" style="padding:0 30px 14px;font-size:13px;font-weight:700;color:var(--text-heading)"></div>
@@ -1413,10 +1412,6 @@ body.dark{--pv-card:var(--bg-card)}
       </div>
     </div>
 
-    <div class="report-card" style="padding:16px;margin:0 30px 20px">
-      <div style="font-size:13px;font-weight:700;margin-bottom:8px">📈 قيمة طلبيات العميل عبر الزمن</div>
-      <canvas id="cc-order-history-chart" height="80"></canvas>
-    </div>
 
     <div class="cc-legend" style="display:flex;align-items:center">
       <span><i style="background:#1e8e5a"></i> الموقع المسجّل الأساسي للعميل</span>
@@ -1450,8 +1445,6 @@ body.dark{--pv-card:var(--bg-card)}
 
 <!-- TAB: CHARTS -->
 <div class="tab-content" id="tab-charts">
-  <button class="map-btn-big" onclick="openClusterMap()">🗺️ خريطة عنقودية لكل زيارات الفلتر الحالي (أخضر = دقيقة / أحمر = غير دقيقة)</button>
-  <button class="map-btn-big" style="background:linear-gradient(135deg,#e30b0b,#c0392b);margin-right:6px" onclick="openHeatmap()">🔥 خريطة حرارية للزيارات غير الدقيقة فقط</button>
 
   <div class="chart-row">
     <div class="chart-card">
@@ -1462,13 +1455,8 @@ body.dark{--pv-card:var(--bg-card)}
           <button data-metric="accuracy" onclick="setLeaderboardMetric('accuracy')">نسبة الدقة</button>
         </div>
         <button class="mini-export-btn" style="float:left" onclick="exportChartPNG('chart-leaderboard','لوحة_الصدارة')">📷 PNG</button>
-        <button class="mini-export-btn" style="float:left;margin-left:6px" id="leaderboard-3d-btn" onclick="toggleLeaderboard3D()">🎲 عرض 3D</button>
       </h4>
       <div class="chart-wrap"><canvas id="chart-leaderboard"></canvas></div>
-      <div id="leaderboard-3d-wrap" style="display:none">
-        <div id="leaderboard-3d-canvas" style="height:320px;border-radius:12px;overflow:hidden;background:linear-gradient(160deg,#1a1f2e,#2a3350);touch-action:none"></div>
-        <div style="text-align:center;font-size:11px;color:var(--text-dim);margin-top:6px">🖱️ اسحب لتدوير الرسم — نفس بيانات لوحة الصدارة فوق</div>
-      </div>
     </div>
     <div class="chart-card">
       <h4>📈 اتجاه الأداء عبر الزمن (يوميًا)
@@ -1634,20 +1622,20 @@ body.dark{--pv-card:var(--bg-card)}
     <div class="report-header"><h4>مقارنة الفروع</h4><span class="badge" id="scorecard-badge">0</span><button class="mini-export-btn" style="margin-right:auto" onclick="exportReport('scorecard')">📤 تصدير</button></div>
     <div class="report-scroll"><table class="report-table" id="scorecard-table">
       <thead><tr><th>الفرع</th><th style="text-align:center">عدد الزيارات</th><th style="text-align:center">نسبة الدقة</th>
-      <th style="text-align:center">معدل التحويل</th><th style="text-align:center">قيمة التحصيل</th><th style="text-align:center">نسبة الإلغاء</th></tr></thead>
+      <th style="text-align:center">قيمة التحصيل</th><th style="text-align:center">نسبة الإلغاء</th></tr></thead>
       <tbody id="scorecard-tbody"></tbody>
     </table></div>
   </div>
 
-  <div class="section-title">🏅 درجة الثقة ومعدل التحويل لكل مسؤول</div>
-  <div class="section-sub">درجة الثقة = نسبة الزيارات الدقيقة. معدل التحويل = نسبة الزيارات التي تحوّلت لطلبية فعلية.</div>
+  <div class="section-title">🏅 درجة الثقة لكل مسؤول</div>
+  <div class="section-sub">درجة الثقة = نسبة الزيارات الدقيقة.</div>
   <div class="report-card">
     <div class="report-header"><h4>جدول الأداء الكامل</h4><span class="badge" id="perf-badge">0</span><button class="mini-export-btn" style="margin-right:auto" onclick="exportReport('perf')">📤 تصدير</button></div>
     <div class="report-scroll"><table class="report-table" id="perf-table">
       <thead><tr><th>#</th><th>الشخص</th><th>النوع</th><th style="text-align:center">إجمالي الزيارات</th>
-      <th style="text-align:center">درجة الثقة</th><th style="text-align:center">معدل التحويل</th>
+      <th style="text-align:center">درجة الثقة</th>
       <th style="text-align:center" id="th-order-5">متوسط الطلبية</th><th style="text-align:center" class="qty-col">متوسط الكمية</th><th style="text-align:center">متوسط التحصيل</th>
-      <th style="text-align:center">نطاق الحركة (كم)</th><th style="text-align:center" title="نسبة الدقة 45% + معدل التحويل (نسبة الزيارات التي فيها طلبية فعلية) 35% + (100 - نسبة الإلغاء) 20%">الدرجة الإجمالية ⓘ</th></tr></thead>
+      <th style="text-align:center">نطاق الحركة (كم)</th><th style="text-align:center" title="نسبة الدقة 70% + (100 - نسبة الإلغاء) 30%">الدرجة الإجمالية ⓘ</th></tr></thead>
       <tbody id="perf-tbody"></tbody>
     </table></div>
   </div>
@@ -1660,7 +1648,6 @@ body.dark{--pv-card:var(--bg-card)}
       <select id="cmp-branch" onchange="renderCompareChart()" style="margin-right:8px"></select>
       <select id="cmp-metric" onchange="renderCompareChart()">
         <option value="trust">درجة الثقة %</option>
-        <option value="conversion">معدل التحويل %</option>
         <option value="total">عدد الزيارات</option>
         <option value="avgCollect">متوسط التحصيل</option>
         <option value="score">الدرجة الإجمالية</option>
@@ -1737,28 +1724,6 @@ body.dark{--pv-card:var(--bg-card)}
       </select>
     </div>
     <button class="btn-reset" onclick="resetDebtFilters()">↺ إعادة ضبط فلاتر المديونية</button>
-  </div>
-
-  <!-- أولوياتي اليوم: خلاصة سريعة تجمع المتجاوز + قرب التجاوز + عملاء لم تتم زيارتهم، حتى مايحتاجش يدور في كل قسم لوحده -->
-  <div class="report-card" id="debt-priorities-card" style="padding:16px">
-    <div style="font-weight:800;font-size:15px;margin-bottom:12px">🎯 أولوياتي اليوم</div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px">
-      <div>
-        <div style="font-size:12px;font-weight:700;color:var(--red);margin-bottom:6px">🔴 عملاء متجاوزين (الأكبر قيمة)</div>
-        <div id="priority-overdue-list" style="font-size:13px"></div>
-        <span class="day-dup-toggle" id="priority-overdue-toggle" style="display:none;cursor:pointer;color:var(--accent);margin-top:4px" onclick="togglePriorityList('overdue')">عرض الكل ⌄</span>
-      </div>
-      <div>
-        <div style="font-size:12px;font-weight:700;color:var(--orange);margin-bottom:6px">⏳ شارفوا على الدخول في التجاوز</div>
-        <div id="priority-nearoverdue-list" style="font-size:13px"></div>
-        <span class="day-dup-toggle" id="priority-near-toggle" style="display:none;cursor:pointer;color:var(--accent);margin-top:4px" onclick="togglePriorityList('near')">عرض الكل ⌄</span>
-      </div>
-      <div>
-        <div style="font-size:12px;font-weight:700;color:#00897b;margin-bottom:6px">🚫 لم تتم زيارتهم الشهر ده</div>
-        <div id="priority-unvisited-list" style="font-size:13px"></div>
-        <span class="day-dup-toggle" id="priority-unvisited-toggle" style="display:none;cursor:pointer;color:var(--accent);margin-top:4px" onclick="togglePriorityList('unvisited')">عرض الكل ⌄</span>
-      </div>
-    </div>
   </div>
 
   <!-- مقارنة الأسبوع الذي فات: محفوظة محليًا على المتصفح (localStorage)، تظهر تلقائي بعد أسبوع من الاستخدام -->
@@ -1859,30 +1824,6 @@ body.dark{--pv-card:var(--bg-card)}
       <thead><tr><th>العميل</th><th style="text-align:center">كود العميل</th><th>الفرع</th><th>المندوب</th><th style="text-align:center">تاريخ الفاتورة</th><th style="text-align:center">أيام السماح</th><th style="text-align:center">أيام متبقية</th><th style="text-align:center">المديونية</th></tr></thead>
       <tbody id="debt-nearoverdue-tbody"></tbody>
     </table></div>
-  </div>
-
-  <!-- مؤشرات مالية إضافية: متوسط عمر الفواتير المفتوحة، تركّز المخاطر، كفاءة المندوب المالية -->
-  <div class="section-title">📐 مؤشرات مالية إضافية</div>
-  <div class="report-card" style="padding:16px">
-    <div class="kpi-mini-row">
-      <div class="kpi-mini">
-        <div class="v" id="debt-avg-open-age">0</div>
-        <div class="l" title="متوسط عدد الأيام منذ تاريخ إصدار الفواتير المفتوحة حاليًا ضمن الفلتر — تقريب لسرعة التحصيل (لا يوجد تاريخ سداد فعلي مسجَّل لحساب معدل دوران دقيق)">متوسط عمر الفواتير المفتوحة حاليًا (يوم) ⓘ</div>
-      </div>
-      <div class="kpi-mini">
-        <div class="v" id="debt-risk-concentration">0%</div>
-        <div class="l" title="نسبة مديونية أكبر عميل مفرد من إجمالي مديونية النطاق الحالي — نسبة عالية تعني اعتمادًا كبيرًا على عميل واحد">تركّز المخاطر ⓘ</div>
-      </div>
-    </div>
-    <div class="sub" style="margin-top:6px">"متوسط عمر الفواتير المفتوحة" تقريب لسرعة التحصيل الفعلية — شيت المديونية يعرض فقط الفواتير غير المسدَّدة حاليًا، فلا تتوفر بيانات كافية لحساب "معدل الدوران" الدقيق (تاريخ السداد الفعلي غير مسجَّل).</div>
-    <div id="debt-risk-concentration-detail" style="margin-top:8px;font-size:12.5px;color:var(--text-dim)"></div>
-    <div id="debt-rep-efficiency-section" style="margin-top:14px">
-      <div style="font-weight:700;font-size:13px;margin-bottom:8px">💹 كفاءة كل مندوب المالية (قيمة المبيعات ÷ المديونية المتجاوزة الناتجة عنه)</div>
-      <div class="report-scroll"><table class="report-table" id="debt-rep-efficiency-table">
-        <thead><tr><th>المندوب</th><th style="text-align:center">قيمة المبيعات</th><th style="text-align:center">المديونية المتجاوزة</th><th style="text-align:center">مؤشر الكفاءة</th></tr></thead>
-        <tbody id="debt-rep-efficiency-tbody"></tbody>
-      </table></div>
-    </div>
   </div>
 
 </div><!-- end tab-debt -->
@@ -2064,7 +2005,7 @@ const TAB_HELP = {
   clientcard:  {icon:'🪪', text:'ملف كامل لعميل واحد بالاسم: كل زياراته السابقة، موقعه، وتاريخ تعامله.'},
   charts:      {icon:'📊', text:'رسوم بيانية تلخّص الاتجاهات العامة للزيارات والمبيعات عبر الزمن.'},
   quality:     {icon:'🧪', text:'تقارير لرصد المشكلات: زيارات قصيرة جدًا، انخفاض مفاجئ في النشاط، وعملاء تقل طلبياتهم فجأة.'},
-  performance: {icon:'🏅', text:'تقييم شامل لكل شخص يجمع الدقة ومعدل التحويل ونسبة الإلغاء في درجة واحدة، مع اقتراح خط سير أمثل للزيارات.'},
+  performance: {icon:'🏅', text:'تقييم شامل لكل شخص يجمع الدقة ونسبة الإلغاء في درجة واحدة، مع اقتراح خط سير أمثل للزيارات.'},
   similar:     {icon:'📍', text:'يكشف العملاء المسجَّلين بإحداثيات متقاربة جدًا، للتحقق من عدم تكرار العميل نفسه بأكثر من اسم.'}
 };
 
@@ -5073,110 +5014,6 @@ function getLeaderboardData(){
   return {labels, values, metricLabel};
 }
 
-// ============ Three.js عند الطلب فقط (مش محمّل افتراضيًا حتى ما يبطّئش تحميل اللوحة اليومية) ============
-let threeJSLoadPromise = null;
-function loadThreeJS(){
-  if(window.THREE) return Promise.resolve();
-  if(threeJSLoadPromise) return threeJSLoadPromise;
-  threeJSLoadPromise = new Promise((resolve, reject)=>{
-    const s = document.createElement('script');
-    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
-    s.onload = resolve;
-    s.onerror = reject;
-    document.head.appendChild(s);
-  });
-  return threeJSLoadPromise;
-}
-
-// تدوير أي مشهد Three.js بالسحب (فأرة أو إصبع) — مشترك بين لوحة الصدارة 3D والكرة الأرضية 3D
-function attachDragRotate(container, group){
-  let dragging = false, lastX = 0, lastY = 0;
-  const onDown = (x,y)=>{ dragging = true; lastX = x; lastY = y; };
-  const onMove = (x,y)=>{
-    if(!dragging) return;
-    group.rotation.y += (x - lastX) * 0.008;
-    group.rotation.x = Math.max(-0.5, Math.min(0.5, group.rotation.x + (y - lastY) * 0.008));
-    lastX = x; lastY = y;
-  };
-  const onUp = ()=>{ dragging = false; };
-  container.addEventListener('mousedown', e=>onDown(e.clientX, e.clientY));
-  window.addEventListener('mousemove', e=>onMove(e.clientX, e.clientY));
-  window.addEventListener('mouseup', onUp);
-  container.addEventListener('touchstart', e=>{ const t=e.touches[0]; onDown(t.clientX, t.clientY); }, {passive:true});
-  container.addEventListener('touchmove', e=>{ const t=e.touches[0]; onMove(t.clientX, t.clientY); }, {passive:true});
-  container.addEventListener('touchend', onUp);
-  return ()=>dragging;
-}
-
-// ============ لوحة الصدارة كرسم 3D قابل للتدوير (بديل تقديمي للشارت العادي فوق، بنفس البيانات بالظبط) ============
-let leaderboard3DState = null;
-function toggleLeaderboard3D(){
-  const wrap = document.getElementById('leaderboard-3d-wrap');
-  if(wrap.style.display !== 'none'){ wrap.style.display = 'none'; return; }
-  wrap.style.display = 'block';
-  loadThreeJS().then(renderLeaderboard3D).catch(()=>{
-    document.getElementById('leaderboard-3d-canvas').innerHTML = '<div class="no-data" style="color:#fff">تعذر تحميل عرض الـ3D — تأكد من الاتصال بالإنترنت</div>';
-  });
-}
-
-function renderLeaderboard3D(){
-  const container = document.getElementById('leaderboard-3d-canvas');
-  container.innerHTML = '';
-  container.style.position = 'relative';
-  const {labels, values} = getLeaderboardData();
-  if(!values.length){ container.innerHTML = '<div class="no-data" style="color:#fff">مفيش بيانات كافية لعرضها ضمن الفلتر الحالي</div>'; return; }
-
-  const width = container.clientWidth, height = container.clientHeight || 320;
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(45, width/height, 0.1, 100);
-  camera.position.set(0, 6, 14);
-  camera.lookAt(0, 1, 0);
-
-  const renderer = new THREE.WebGLRenderer({antialias:true, alpha:true});
-  renderer.setSize(width, height);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-  container.appendChild(renderer.domElement);
-
-  scene.add(new THREE.AmbientLight(0xffffff, 0.65));
-  const dirLight = new THREE.DirectionalLight(0xffffff, 0.85);
-  dirLight.position.set(5, 10, 7);
-  scene.add(dirLight);
-
-  const group = new THREE.Group();
-  scene.add(group);
-
-  const maxVal = Math.max(...values, 1);
-  const barWidth = 0.9, gap = 0.5;
-  const n = values.length;
-  const totalWidth = n * (barWidth + gap);
-  const palette = ['#f1c40f','#c0c0c0','#cd7f32']; // ذهبي/فضي/برونزي لأول 3 مراتب
-
-  values.forEach((v,i)=>{
-    const h = (v / maxVal) * 5 + 0.25;
-    const geo = new THREE.BoxGeometry(barWidth, h, barWidth);
-    const mat = new THREE.MeshStandardMaterial({color: palette[i] || '#1d4fa3', metalness:0.3, roughness:0.4});
-    const bar = new THREE.Mesh(geo, mat);
-    bar.position.x = -totalWidth/2 + i*(barWidth+gap) + barWidth/2;
-    bar.position.y = h/2;
-    group.add(bar);
-  });
-
-  const isDragging = attachDragRotate(container, group);
-
-  const legend = document.createElement('div');
-  legend.style.cssText = 'position:absolute;bottom:6px;right:8px;left:8px;display:flex;gap:6px;overflow-x:auto;font-size:10px;color:#fff';
-  legend.innerHTML = labels.map((l,i)=>`<span style="white-space:nowrap;background:rgba(255,255,255,.12);padding:3px 7px;border-radius:8px">${i+1}. ${esc(l)} (${values[i].toLocaleString('en-US')})</span>`).join('');
-  container.appendChild(legend);
-
-  if(leaderboard3DState) cancelAnimationFrame(leaderboard3DState.raf);
-  function animate(){
-    const raf = requestAnimationFrame(animate);
-    leaderboard3DState = {raf, renderer};
-    if(!isDragging() && !prefersReducedMotion()) group.rotation.y += 0.003;
-    renderer.render(scene, camera);
-  }
-  animate();
-}
 
 function renderLeaderboardChart(){
   if(typeof Chart === 'undefined') return;
@@ -5198,7 +5035,6 @@ function renderLeaderboardChart(){
       }
     }
   });
-  if(document.getElementById('leaderboard-3d-wrap').style.display !== 'none') renderLeaderboard3D();
 }
 
 let trendChartInstance = null;
@@ -5253,69 +5089,7 @@ function exportChartPNG(canvasId, fileName){
   link.click();
 }
 
-/* ---------- CLUSTER MAP ---------- */
-function openClusterMap(){
-  const points = filtered.filter(r=>r.lat_visit!=null && r.lat_visit!=='').map(r=>({
-    lat:r.lat_visit, lng:r.lng_visit, acc:r.accuracy,
-    name:(r.العميل||'').replace(/'/g,''), person:(r['الشخص اللي قام بالزياره']||'').replace(/'/g,''), date:r['تاريخ الزيارة']||''
-  }));
-  if(points.length===0){ alert('لا توجد نقاط بإحداثيات صالحة ضمن الفلتر الحالي'); return; }
-  const pointsJson = JSON.stringify(points);
-  const html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>خريطة عنقودية</title>'
-    + '<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>'
-    + '<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"><\/script>'
-    + '<style>body{margin:0}#map{height:100vh;background:#e8eaf0}.legend{position:absolute;bottom:20px;right:20px;background:#fff;padding:10px 14px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.25);font-family:Arial;font-size:13px;z-index:1000}.legend div{display:flex;align-items:center;gap:6px;margin:3px 0}.legend span{display:inline-block;width:16px;height:16px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.3)}</style>'
-    + '</head><body><div id="map"></div>'
-    + '<div class="legend"><div><span style="background:#1e8e5a"></span> زيارة دقيقة</div><div><span style="background:#e30b0b"></span> زيارة غير دقيقة</div><div><span style="background:#8e8e8e"></span> بدون إحداثيات</div></div>'
-    + '<script>'
-    + 'var pts = ' + pointsJson + ';'
-    + 'var map = L.map("map", {preferCanvas:true});'
-    + 'var _clean=L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}",{attribution:"Tiles &copy; Esri",maxZoom:19,maxNativeZoom:16});'
-    + 'var _detailed=L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"&copy; OpenStreetMap contributors",subdomains:"abc",maxZoom:19});'
-    + 'var _satellite=L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{attribution:"Tiles &copy; Esri",maxZoom:19,maxNativeZoom:17});'
-    + '_clean.addTo(map);'
-    + 'L.control.layers({"خريطة واضحة":_clean,"خريطة تفصيلية":_detailed,"قمر صناعي":_satellite}, null, {position:"topleft"}).addTo(map);'
-    + 'var bounds = [];'
-    + 'var zIdx = 0;'
-    + 'pts.forEach(function(p){'
-    + '  var color = p.acc==="دقيقة" ? "#1e8e5a" : (p.acc==="غير دقيقة" ? "#e30b0b" : "#8e8e8e");'
-    + '  var pane = p.acc==="غير دقيقة" ? 400 : 300;'
-    + '  var m = L.circleMarker([p.lat,p.lng], {radius:9, color:"#ffffff", weight:2.5, fillColor:color, fillOpacity:0.95});'
-    + '  m.setStyle({renderer:L.canvas()});'
-    + '  m.bindPopup("<b>"+p.name+"</b><br>"+p.person+"<br>"+p.date);'
-    + '  m.addTo(map);'
-    + '  bounds.push([p.lat,p.lng]);'
-    + '});'
-    + 'if(bounds.length) map.fitBounds(bounds, {padding:[30,30]});'
-    + '<\/script></body></html>';
 
-  openMapWindow(html);
-}
-
-function openHeatmap(){
-  const points = filtered.filter(r=>r.accuracy==='غير دقيقة' && r.lat_visit!=null && r.lat_visit!=='').map(r=>[r.lat_visit, r.lng_visit, 0.6]);
-  if(points.length===0){ alert('لا توجد زيارات غير دقيقة ضمن الفلتر الحالي'); return; }
-  const pointsJson = JSON.stringify(points);
-  const html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>خريطة حرارية</title>'
-    + '<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>'
-    + '<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"><\/script>'
-    + '<script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"><\/script>'
-    + '<style>body{margin:0}#map{height:100vh}.badge2{position:absolute;top:16px;right:16px;background:#fff;padding:8px 14px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.25);font-family:Arial;font-size:13px;z-index:1000;font-weight:700;color:#c0392b}</style>'
-    + '</head><body><div id="map"></div><div class="badge2">🔥 ' + points.length + ' زيارة غير دقيقة</div>'
-    + '<script>'
-    + 'var pts = ' + pointsJson + ';'
-    + 'var map = L.map("map");'
-    + 'var _clean=L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}",{attribution:"Tiles &copy; Esri",maxZoom:19,maxNativeZoom:16});'
-    + 'var _detailed=L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"&copy; OpenStreetMap contributors",subdomains:"abc",maxZoom:19});'
-    + 'var _satellite=L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{attribution:"Tiles &copy; Esri",maxZoom:19,maxNativeZoom:17});'
-    + '_clean.addTo(map);'
-    + 'L.control.layers({"خريطة واضحة":_clean,"خريطة تفصيلية":_detailed,"قمر صناعي":_satellite}, null, {position:"topleft"}).addTo(map);'
-    + 'L.heatLayer(pts, {radius:22, blur:20, maxZoom:14, gradient:{0.2:"#1d4fa3",0.5:"#f39c12",0.8:"#e74c3c",1:"#c0392b"}}).addTo(map);'
-    + 'var bounds = pts.map(function(p){return [p[0],p[1]];});'
-    + 'map.fitBounds(bounds, {padding:[30,30]});'
-    + '<\/script></body></html>';
-  openMapWindow(html);
-}
 
 /* ---------- CLIENT CARD (فحص كل مواقع زيارات عميل واحد) ---------- */
 let clientCardMap = null;
@@ -5441,9 +5215,6 @@ function selectClientCard(name){
     debtLinkEl.style.display = 'none';
   }
 
-  // رسم قيمة الطلبيات عبر الزمن — يوضح هل نشاط العميل في نمو أو تراجع بصريًا
-  renderClientOrderHistoryChart(visits);
-
   let html = '';
   visits.forEach(r=>{
     const distText = (r.distance_m!=='' && r.distance_m!=null) ? Math.round(r.distance_m)+' م' : '-';
@@ -5546,38 +5317,6 @@ function selectClientCard(name){
   autoLabelTables();
 }
 
-let ccOrderHistoryChartInstance = null;
-// رسم قيمة/كمية طلبيات العميل مرتبة بالتاريخ — يوضح بصريًا هل نشاطه في نمو أو تراجع
-function renderClientOrderHistoryChart(visits){
-  const canvas = document.getElementById('cc-order-history-chart');
-  if(!canvas || typeof Chart === 'undefined') return;
-  const withOrders = visits.filter(r=>orderRawValue(r) > 0);
-  if(ccOrderHistoryChartInstance) ccOrderHistoryChartInstance.destroy();
-  if(!withOrders.length){
-    canvas.getContext('2d').clearRect(0,0,canvas.width,canvas.height);
-    return;
-  }
-  const colors = themeColors();
-  ccOrderHistoryChartInstance = new Chart(canvas.getContext('2d'), {
-    type: 'line',
-    data: {
-      labels: withOrders.map(r=>r['تاريخ الزيارة']||''),
-      datasets: [{
-        label: orderColumnLabel(),
-        data: withOrders.map(r=>orderRawValue(r)),
-        borderColor: '#1d4fa3', backgroundColor: 'rgba(29,79,163,.12)', fill: true, tension: 0.25
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: { legend: { display: false } },
-      scales: {
-        x: { ticks: { color: colors.text, maxRotation: 45, minRotation: 45 }, grid: { display: false } },
-        y: { ticks: { color: colors.text, callback: v => (+v).toLocaleString('en-US') }, grid: { color: colors.grid } }
-      }
-    }
-  });
-}
 
 // مشاركة كارت العميل كصورة (نفس أسلوب مشاركة الملخص الشخصي)، بتلخيص أهم أرقامه في صورة واحدة
 async function shareClientCard(){
@@ -6462,7 +6201,6 @@ function renderScorecard(){
   let rows = Object.entries(byBranch).map(([br,g])=>({
     branch:br, total:g.total,
     accPct: g.total ? Math.round(g.acc/g.total*100) : 0,
-    convPct: g.total ? Math.round(g.ordersCount/g.total*100) : 0,
     collectVal: g.collectVal,
     cancelPct: g.total ? Math.round(g.cancel/g.total*100) : 0
   })).sort((a,b)=>b.total-a.total);
@@ -6474,12 +6212,11 @@ function renderScorecard(){
     html += `<tr><td style="color:var(--accent);font-weight:700">${esc(r.branch)}</td>
     <td style="text-align:center">${r.total}</td>
     <td style="text-align:center"><span class="pill ${accCls}">${r.accPct}%</span></td>
-    <td style="text-align:center">${r.convPct}%</td>
     <td style="text-align:center" class="money">${r.collectVal.toLocaleString('en-US')}</td>
     <td style="text-align:center">${r.cancelPct}%</td></tr>`;
   });
-  document.getElementById('scorecard-tbody').innerHTML = html || '<tr><td colspan="6" class="no-data">لا توجد بيانات</td></tr>';
-  EXPORT_DATA.scorecard = rows.map(r=>({'الفرع':r.branch,'عدد الزيارات':r.total,'نسبة الدقة %':r.accPct,'معدل التحويل %':r.convPct,'قيمة التحصيل':r.collectVal,'نسبة الإلغاء %':r.cancelPct}));
+  document.getElementById('scorecard-tbody').innerHTML = html || '<tr><td colspan="5" class="no-data">لا توجد بيانات</td></tr>';
+  EXPORT_DATA.scorecard = rows.map(r=>({'الفرع':r.branch,'عدد الزيارات':r.total,'نسبة الدقة %':r.accPct,'قيمة التحصيل':r.collectVal,'نسبة الإلغاء %':r.cancelPct}));
 }
 
 function renderPerfTable(){
@@ -6508,7 +6245,6 @@ function renderPerfTable(){
   let rows = Object.entries(byPerson).map(([p,g])=>({
     person:p, type:g.type, total:g.total,
     trust: g.total ? Math.round(g.acc/g.total*100) : 0,
-    conversion: g.total ? Math.round(g.ordersCount/g.total*100) : 0,
     cancelPct: g.total ? Math.round(g.cancel/g.total*100) : 0,
     avgOrder: g.ordersCount ? Math.round(g.ordersVal/g.ordersCount) : 0,
     avgOrderQty: g.ordersCount ? Math.round(g.ordersQty/g.ordersCount) : 0,
@@ -6516,9 +6252,9 @@ function renderPerfTable(){
     spread: spreadKm(g.points)
   }));
 
-  // الدرجة الإجمالية (0-100): درجة الثقة 45% + معدل التحويل 35% + (100 - نسبة الإلغاء) 20%
+  // الدرجة الإجمالية (0-100): درجة الثقة 70% + (100 - نسبة الإلغاء) 30%
   rows.forEach(r=>{
-    r.score = Math.round(r.trust*0.45 + r.conversion*0.35 + (100-r.cancelPct)*0.20);
+    r.score = Math.round(r.trust*0.70 + (100-r.cancelPct)*0.30);
   });
   rows.sort((a,b)=>b.score-a.score);
 
@@ -6534,17 +6270,16 @@ function renderPerfTable(){
     html += `<tr><td style="text-align:center;font-weight:700">${medal}</td><td>${esc(r.person)}</td><td><span class="type-badge tb-${r.type}">${esc(r.type)||'-'}</span></td>
     <td style="text-align:center">${r.total}</td>
     <td style="text-align:center"><span class="pill ${trustClass}">${r.trust}%</span></td>
-    <td style="text-align:center">${r.conversion}%</td>
     <td style="text-align:center" class="money">${r.avgOrder ? r.avgOrder.toLocaleString('en-US') : '-'}</td>
     <td style="text-align:center" class="money qty-col">${r.avgOrderQty ? r.avgOrderQty.toLocaleString('en-US') : '-'}</td>
     <td style="text-align:center" class="money">${r.avgCollect ? r.avgCollect.toLocaleString('en-US') : '-'}</td>
     <td style="text-align:center" class="${spreadClass}">${spreadText}</td>
     <td style="text-align:center"><span class="pill ${scoreClass}">${r.score}</span></td></tr>`;
   });
-  document.getElementById('perf-tbody').innerHTML = html || '<tr><td colspan="11" class="no-data">لا توجد بيانات</td></tr>';
+  document.getElementById('perf-tbody').innerHTML = html || '<tr><td colspan="10" class="no-data">لا توجد بيانات</td></tr>';
   EXPORT_DATA.perf = rows.map((r,idx)=>({
     'الترتيب':idx+1,'الشخص':r.person,'النوع':r.type||'','إجمالي الزيارات':r.total,'درجة الثقة %':r.trust,
-    'معدل التحويل %':r.conversion,[isValueHiddenRole()?'متوسط الكمية':'متوسط الطلبية']:r.avgOrder,
+    [isValueHiddenRole()?'متوسط الكمية':'متوسط الطلبية']:r.avgOrder,
     ...(isValueHiddenRole() ? {} : {'متوسط الكمية': r.avgOrderQty}),
     'متوسط التحصيل':r.avgCollect,
     'نطاق الحركة (كم)': r.spread==null ? '' : r.spread.toFixed(1),
@@ -6876,33 +6611,6 @@ function openCompareDaysMap(){
 /* ---------- DAILY TRACKING TAB ---------- */
 /* ---------- GEO PERFORMANCE MAP TAB (خريطة أداء المندوب الجغرافي مدمجة داخل الصفحة) ---------- */
 let geoPerfMap = null;
-let heatmapActive = false;
-let leafletHeatLoadPromise = null;
-function loadLeafletHeat(){
-  if(window.L && L.heatLayer) return Promise.resolve();
-  if(leafletHeatLoadPromise) return leafletHeatLoadPromise;
-  leafletHeatLoadPromise = new Promise((resolve, reject)=>{
-    const s = document.createElement('script');
-    s.src = 'https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js';
-    s.onload = resolve;
-    s.onerror = reject;
-    document.head.appendChild(s);
-  });
-  return leafletHeatLoadPromise;
-}
-function toggleHeatmap(){
-  heatmapActive = !heatmapActive;
-  const btn = document.getElementById('heatmap-toggle-btn');
-  if(btn) btn.style.outline = heatmapActive ? '3px solid var(--accent)' : 'none';
-  if(heatmapActive){
-    loadLeafletHeat().then(renderGeoPerfMap).catch(()=>{
-      heatmapActive = false;
-      alert('تعذر تحميل الخريطة الحرارية — تأكد من الاتصال بالإنترنت');
-    });
-  } else {
-    renderGeoPerfMap();
-  }
-}
 
 function ensureGeoPerfMap(){
   if(!geoPerfMap){
@@ -7087,11 +6795,6 @@ function renderGeoPerfMap(){
 
   // نقاط العملاء — إما كخريطة حرارية (كثافة) أو كنقط فردية ملوّنة بالحالة، حسب وضع "🔥 خريطة حرارية"
   const colors = {green:'#1e8e5a', yellow:'#e0b83a', red:'#c0392b', gray:'#95a5a6'};
-  if(heatmapActive && window.L && L.heatLayer){
-    payload.forEach(p=> bounds.push([p.lat,p.lng]));
-    const heatPoints = payload.map(p=>[p.lat, p.lng, p.status==='gray' ? 0.35 : 0.85]);
-    L.heatLayer(heatPoints, {radius:28, blur:22, maxZoom:17}).addTo(layerGroup);
-  } else {
     payload.forEach((p,idx)=>{
       bounds.push([p.lat,p.lng]);
       const m = L.circleMarker([p.lat,p.lng], {radius:8, color:'#fff', weight:1.5, fillColor:colors[p.status], fillOpacity:0.9, className:'geo-marker geo-marker-'+p.status}).addTo(layerGroup);
@@ -7104,7 +6807,6 @@ function renderGeoPerfMap(){
         if(el) el.style.animationDelay = Math.min(idx * 25, 900) + 'ms';
       }
     });
-  }
   if(bounds.length) map.fitBounds(bounds, {padding:[30,30]});
   setTimeout(()=>map.invalidateSize(), 60);
   const zNow = map.getZoom();
@@ -7720,65 +7422,6 @@ function renderDebtTrendComparison(){
   box.innerHTML = renderRow('مقارنة بالأسبوع الذي فات', weekCompare) + renderRow('مقارنة بنفس اليوم الشهر الذي فات', monthCompare) +
     `<div style="font-size:10.5px;color:var(--text-dim)">محفوظة على هذا الجهاز/المتصفح فقط</div>`;
 }
-// حالة أقسام "أولوياتي اليوم": البيانات الكاملة لكل قايمة + هل هي متوسّعة (عرض الكل) ولا مطوية (أول 5 فقط)
-const PRIORITY_LISTS = {overdue:[], near:[], unvisited:[]};
-const PRIORITY_EXPANDED = {overdue:false, near:false, unvisited:false};
-const PRIORITY_CAP = 5;
-const PRIORITY_EXPANDED_CAP = 50; // سقف أقصى حتى في وضع "عرض الكل" — حتى القايمة متطولش جدًا (مثل عملاء "لم تتم زيارتهم" الذين يمكن أن يصلوا إلى المئات)
-
-function priorityRowHtml(kind, item){
-  if(kind === 'overdue'){
-    return `<div style="padding:4px 0;display:flex;justify-content:space-between;gap:8px">
-      <span>${esc(item.name)}</span>
-      <span style="text-align:left;white-space:nowrap">
-        <b style="color:var(--red)">${item.sum.toLocaleString('en-US')}</b>
-        <span style="color:var(--text-dim);font-size:11px"> • ${item.maxOverdueDays > 0 ? item.maxOverdueDays + ' يوم' : 'اليوم'}</span>
-      </span></div>`;
-  }
-  if(kind === 'near'){
-    return `<div style="padding:4px 0;display:flex;justify-content:space-between;gap:8px">
-      <span>${esc(item.name)}</span>
-      <span style="text-align:left;white-space:nowrap">
-        <b style="color:var(--orange)">${item.remaining===0?'اليوم':item.remaining+' يوم'}</b>
-        <span style="color:var(--text-dim);font-size:11px"> • ${item.sum.toLocaleString('en-US')}</span>
-      </span></div>`;
-  }
-  // unvisited
-  return `<div style="padding:4px 0">${esc(item.name)}${item.grade?` <span style="color:var(--text-dim);font-size:11px">(${esc(item.grade)})</span>`:''}</div>`;
-}
-
-const PRIORITY_EMPTY_MSG = {overdue:'لا يوجد عملاء متجاوزين 🎉', near:'لا توجد فواتير قريبة من التجاوز 👍', unvisited:'كل العملاء اتزاروا 🎉'};
-const PRIORITY_LIST_EL = {overdue:'priority-overdue-list', near:'priority-nearoverdue-list', unvisited:'priority-unvisited-list'};
-const PRIORITY_TOGGLE_EL = {overdue:'priority-overdue-toggle', near:'priority-near-toggle', unvisited:'priority-unvisited-toggle'};
-
-function renderPriorityList(kind){
-  const data = PRIORITY_LISTS[kind];
-  const listEl = document.getElementById(PRIORITY_LIST_EL[kind]);
-  const toggleEl = document.getElementById(PRIORITY_TOGGLE_EL[kind]);
-  if(!data.length){
-    listEl.innerHTML = `<div style="color:var(--text-dim)">${PRIORITY_EMPTY_MSG[kind]}</div>`;
-    toggleEl.style.display = 'none';
-    return;
-  }
-  const expanded = PRIORITY_EXPANDED[kind];
-  const shown = expanded ? data.slice(0, PRIORITY_EXPANDED_CAP) : data.slice(0, PRIORITY_CAP);
-  listEl.innerHTML = shown.map(item => priorityRowHtml(kind, item)).join('') +
-    (expanded && data.length > PRIORITY_EXPANDED_CAP
-      ? `<div style="color:var(--text-dim);font-size:11.5px;margin-top:6px">+${data.length - PRIORITY_EXPANDED_CAP} عميل تاني — شوف الجدول/الكارت التفصيلي بالأسفل لعرض الكل</div>`
-      : '');
-  if(data.length > PRIORITY_CAP){
-    toggleEl.style.display = 'inline-block';
-    toggleEl.textContent = expanded ? `إخفاء ⌃` : `عرض الكل (${data.length}) ⌄`;
-  } else {
-    toggleEl.style.display = 'none';
-  }
-}
-
-function togglePriorityList(kind){
-  PRIORITY_EXPANDED[kind] = !PRIORITY_EXPANDED[kind];
-  renderPriorityList(kind);
-}
-
 function resetDebtFilters(){
   document.getElementById('debt-f-status').value = '';
   document.getElementById('debt-f-grade').value = '';
@@ -7871,33 +7514,6 @@ function renderDebtReport(){
   const overduePct = count ? Math.round(overdueCount/count*100) : 0;
   const avgAge = count ? Math.round(rows.reduce((s,r)=>s+(+r['عمر الفاتوره']||0),0)/count) : 0;
 
-  // 🎯 أولوياتي اليوم — ملخص سريع يجمع عملاء متجاوزين + فواتير ستدخل التجاوز + عملاء لم تتم زيارتهم الشهر ده
-  // كل قايمة تُحفظ كاملة في PRIORITY_LISTS وتتعرض أول 5 فقط افتراضيًا، مع زرار "عرض الكل" يفتح الباقي و"إخفاء" يرجعها 5
-  {
-    const byOverdueClient = {};
-    overdueRows.forEach(r=>{
-      const key = (r['كود العميل']||'') + '|' + (r['اسم العميل']||'');
-      if(!byOverdueClient[key]) byOverdueClient[key] = {name:r['اسم العميل'], sum:0, maxOverdueDays:0};
-      byOverdueClient[key].sum += (+r.المديونيه||0);
-      const liveAge = daysSinceDate(r.التاريخ);
-      const overdueDays = liveAge==null ? 0 : liveAge - (+r['عدد  ايام السماح']||0);
-      if(overdueDays > byOverdueClient[key].maxOverdueDays) byOverdueClient[key].maxOverdueDays = overdueDays;
-    });
-    PRIORITY_LISTS.overdue = Object.values(byOverdueClient).sort((a,b)=>b.sum-a.sum);
-
-    PRIORITY_LISTS.near = notOverdueRows.map(r=>{
-      const liveAge = daysSinceDate(r.التاريخ);
-      const remaining = liveAge==null ? null : (+r['عدد  ايام السماح']||0) - liveAge;
-      return {name:r['اسم العميل'], remaining, sum:(+r.المديونيه||0)};
-    }).filter(r => r.remaining!=null && r.remaining >= 0 && r.remaining <= 4)
-      .sort((a,b)=>a.remaining-b.remaining);
-
-    PRIORITY_LISTS.unvisited = (UNVISITED_CLIENTS_LIST || []).slice();
-
-    renderPriorityList('overdue');
-    renderPriorityList('near');
-    renderPriorityList('unvisited');
-  }
 
   document.getElementById('debt-k-total').textContent = total.toLocaleString('en-US');
   document.getElementById('debt-k-count').textContent = count.toLocaleString('en-US');
@@ -8147,51 +7763,6 @@ function renderDebtReport(){
     'أيام السماح': r['عدد  ايام السماح'], 'الحالة': r.نوع, 'المحصل': r.المحصل, 'المديونية': r.المديونيه
   }));
 
-  // 📐 مؤشرات مالية إضافية
-  {
-    // متوسط عمر الفواتير المفتوحة حاليًا (تقريب لسرعة التحصيل، نظرًا لعدم توفر تاريخ السداد الفعلي)
-    const ages = rows.map(r=>daysSinceDate(r.التاريخ)).filter(a=>a!=null);
-    document.getElementById('debt-avg-open-age').textContent = ages.length ? Math.round(ages.reduce((s,a)=>s+a,0)/ages.length) : 0;
-
-    // تركّز المخاطر: أكبر عميل مفرد من إجمالي مديونية النطاق الحالي
-    const byClientRisk = {};
-    rows.forEach(r=>{
-      const key = (r['كود العميل']||'')+'|'+(r['اسم العميل']||'');
-      byClientRisk[key] = (byClientRisk[key]||0) + (+r.المديونيه||0);
-    });
-    const riskEntries = Object.entries(byClientRisk).sort((a,b)=>b[1]-a[1]);
-    const riskConcPct = total && riskEntries.length ? Math.round(riskEntries[0][1]/total*100) : 0;
-    document.getElementById('debt-risk-concentration').textContent = riskConcPct + '%';
-    document.getElementById('debt-risk-concentration').style.color = riskConcPct >= 50 ? 'var(--red)' : riskConcPct >= 25 ? 'var(--orange)' : 'var(--green)';
-    const topRiskName = riskEntries.length ? riskEntries[0][0].split('|')[1] : '';
-    document.getElementById('debt-risk-concentration-detail').textContent = topRiskName
-      ? `أكبر عميل ضمن النطاق الحالي: ${topRiskName} — ${riskEntries[0][1].toLocaleString('en-US')} د.ع`
-      : '';
-
-    // كفاءة المندوب المالية = قيمة مبيعاته ÷ المديونية المتجاوزة الناتجة عنه (كلما زاد الرقم كان أفضل)
-    const showRepEfficiency = (role === 'إدارة' || role === 'مشرف');
-    document.getElementById('debt-rep-efficiency-section').style.display = showRepEfficiency ? '' : 'none';
-    if(showRepEfficiency){
-      const salesByRep = {};
-      DATA.forEach(v=>{
-        const p = v['الشخص اللي قام بالزياره'];
-        if(!p) return;
-        const val = orderRawValue(v);
-        if(val) salesByRep[p] = (salesByRep[p]||0) + val;
-      });
-      const effRows = repRows.map(r=>{
-        const sales = salesByRep[r.person] || 0;
-        const eff = r.overdueVal > 0 ? (sales / r.overdueVal) : (sales > 0 ? Infinity : 0);
-        return {person:r.person, sales, overdueVal:r.overdueVal, eff};
-      }).sort((a,b)=>b.eff-a.eff);
-      document.getElementById('debt-rep-efficiency-tbody').innerHTML = effRows.map(r=>`
-        <tr><td>${esc(r.person)}</td>
-        <td style="text-align:center">${r.sales.toLocaleString('en-US')}</td>
-        <td style="text-align:center;color:var(--red)">${r.overdueVal.toLocaleString('en-US')}</td>
-        <td style="text-align:center;font-weight:700">${r.eff===Infinity ? '∞' : r.eff.toFixed(1)}</td></tr>`
-      ).join('') || '<tr><td colspan="4" style="text-align:center;color:var(--text-dim)">لا توجد بيانات ضمن الفلتر الحالي</td></tr>';
-    }
-  }
 }
 
 // dataRows: [{label, count, overdueVal, sum, clientsCount}] — يرسم عمودين لكل عنصر (إجمالي المديونية + المتجاوز)
