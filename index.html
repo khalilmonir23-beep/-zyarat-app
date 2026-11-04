@@ -215,6 +215,20 @@ select:focus,input:focus{outline:none;border-color:var(--accent)}
 .btn-reset{background:linear-gradient(135deg,#e74c3c,#c0392b);color:#fff;border:none;border-radius:8px;padding:9px 18px;font-size:13px;font-weight:600;cursor:pointer;margin-top:18px}
 .btn-reset:hover{opacity:.9}
 .filter-info{margin-right:auto;margin-top:18px;font-size:12px;color:var(--text-dim);background:var(--bg-card2);padding:6px 14px;border-radius:20px;border:1px solid var(--border-input)}
+#fg-range,#range-panel{display:none}
+@media (min-width:900px){
+  body.role-admin:not(.tab-debt) #fg-range{display:flex}
+  body.role-admin:not(.tab-debt) #range-panel.open{display:flex}
+}
+#range-toggle{border-style:dashed;color:var(--text-dim)}
+#range-toggle.active{background:var(--bg-groupRow);color:var(--text-groupRow);border:1px solid var(--accent);font-weight:600}
+#range-panel{flex-basis:100%;order:99;flex-wrap:wrap;gap:12px;align-items:flex-end;background:var(--bg-groupRow);border:1px solid var(--border-input);border-radius:10px;padding:10px 14px}
+#range-panel .rg{display:flex;flex-direction:column;gap:4px}
+#range-panel label{font-size:11px;color:var(--text-groupRow);font-weight:600}
+#range-panel .range-chip{padding:6px 12px;font-size:12px;border-color:var(--accent);color:var(--text-groupRow);background:var(--bg-card)}
+#range-panel .range-apply{background:var(--accent);color:#fff;border:none;font-weight:600}
+#range-error{color:var(--red);font-size:12px;align-self:center}
+.filter-group select:disabled{opacity:.45;cursor:not-allowed}
 .day-dup-note{margin:0 30px 12px;background:var(--acc-no-bg);border:1px solid var(--red);border-radius:10px;overflow:hidden}
 .day-dup-header{display:flex;align-items:center;justify-content:space-between;padding:9px 16px;cursor:pointer;font-size:12.5px;color:var(--acc-no-text);gap:12px}
 .day-dup-summary-text{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -986,8 +1000,26 @@ body.dark{--pv-card:var(--bg-card)}
       <option value="بدون إحداثيات">بدون إحداثيات</option>
     </select>
   </div>
+  <div class="filter-group" id="fg-range">
+    <label>الفترة (إدارة)</label>
+    <button type="button" id="range-toggle" onclick="toggleRangePanel()">📅 فترة محددة</button>
+  </div>
   <button class="btn-reset" onclick="resetFilters()">↺ إعادة ضبط</button>
   <div class="filter-info" id="filter-info">0 نتيجة</div>
+  <div id="range-panel">
+    <div class="rg"><label>من</label><input type="date" id="range-from" onchange="setRangeError('')"></div>
+    <div class="rg"><label>إلى</label><input type="date" id="range-to" onchange="setRangeError('')"></div>
+    <div class="rg"><label>اختصارات</label>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <button type="button" class="range-chip" onclick="rangePreset('last7')">آخر 7 أيام</button>
+        <button type="button" class="range-chip" onclick="rangePreset('last30')">آخر 30 يوم</button>
+        <button type="button" class="range-chip" onclick="rangePreset('lastMonth')">الشهر الماضي</button>
+      </div>
+    </div>
+    <div class="rg"><label>&nbsp;</label><button type="button" class="range-apply" onclick="applyDateRange()">تطبيق</button></div>
+    <div class="rg"><label>&nbsp;</label><button type="button" onclick="clearDateRange()">✕ مسح الفترة والعودة للقديم</button></div>
+    <div id="range-error"></div>
+  </div>
 </div>
 
 <!-- ملحوظة تظهر فقط لما تفلتر على يوم واحد محدد، إذا يوجد عميل اتزار أكتر من مرة نفس اليوم -->
@@ -2111,6 +2143,8 @@ let displayed = [];
 let currentPage = 1;
 const PAGE_SIZE = 50;
 let selectedDay = null;
+let DATE_RANGE = null; // فلتر فترة من/إلى (إدارة + حاسوب فقط): {from,to,fromStr,toStr} أرقام بصيغة YYYYMMDD
+let RANGE_PREV = null; // اختيارات السنة/الشهر/اليوم قبل تفعيل الفترة، لنرجعها عند المسح
 let searchTerm = '';
 let currentTab = 'dashboard';
 // عدّادات التنبيهات الحرجة المجمّعة في جرس الإشعارات العام بالهيدر (تتحدث مع كل تغيير فلتر)
@@ -3115,6 +3149,7 @@ function showProcessingSkeleton(){
 }
 
 function resetAndRebuild(){
+  clearDateRange(true, true);
   document.getElementById('f-branch').innerHTML = '<option value="">الكل</option>';
   document.getElementById('f-person').innerHTML = '<option value="">الكل</option>';
   document.getElementById('f-year').innerHTML = '<option value="">الكل</option>';
@@ -3286,6 +3321,7 @@ function applyRoleRestrictions(){
   }
 
   if(role === 'إدارة'){
+    if(DATE_RANGE){ applyFilters(); return true; } // فترة من/إلى مفعّلة: ما نفرضش أحدث شهر فوقها
     // الإدارة ما تنقفلش على شهر معيّن (تقدر تشوف كل الفترات وقت ما تريد)، فقط افتراضيًا نعرض أحدث شهر فقط
     // بدل كل السنة دفعة وحدة، حتى أول تحميل للصفحة يكون أسرع — وتقدر ترجع لـ"الكل" بضغطة وحدة من الفلتر
     const withMonthAdmin = DATA.filter(r=>r.month);
@@ -3772,6 +3808,61 @@ function updateNotificationBell(){
     </div>`).join('') : '<div class="notif-empty">مفيش تنبيهات حرجة دلوقتي 🎉</div>';
 }
 
+/* ---------- فلتر فترة من/إلى: للإدارة وعلى الحاسوب فقط (لا يُحفظ ولا يظهر على الموبايل) ---------- */
+function rowDateKey(r){ const y=+r.year, m=+r.month, d=+r.day; return (y&&m&&d) ? y*10000+m*100+d : 0; }
+function inDateRange(r){ if(!DATE_RANGE) return true; const k=rowDateKey(r); return k>=DATE_RANGE.from && k<=DATE_RANGE.to; }
+function dateStrToKey(str){ const p=(str||'').split('-'); return p.length===3 ? (+p[0])*10000+(+p[1])*100+(+p[2]) : 0; }
+function toggleRangePanel(){ document.getElementById('range-panel').classList.toggle('open'); }
+function setRangeError(t){ const el=document.getElementById('range-error'); if(el) el.textContent=t||''; }
+function updateRangeUi(){
+  const btn=document.getElementById('range-toggle'); if(!btn) return;
+  if(DATE_RANGE){ btn.classList.add('active'); btn.textContent='📅 من '+DATE_RANGE.fromStr+' إلى '+DATE_RANGE.toStr; }
+  else { btn.classList.remove('active'); btn.textContent='📅 فترة محددة'; }
+}
+function rangePreset(kind){
+  let mx=0; DATA.forEach(r=>{ const k=rowDateKey(r); if(k>mx) mx=k; });
+  if(!mx){ setRangeError('لا توجد بيانات بتواريخ'); return; }
+  const y=Math.floor(mx/10000), m=Math.floor(mx/100)%100, d=mx%100; // نحسب من آخر تاريخ موجود فعليًا في البيانات
+  let start, end=new Date(Date.UTC(y,m-1,d));
+  if(kind==='last7') start=new Date(end.getTime()-6*86400000);
+  else if(kind==='last30') start=new Date(end.getTime()-29*86400000);
+  else { start=new Date(Date.UTC(y,m-2,1)); end=new Date(Date.UTC(y,m-1,0)); }
+  document.getElementById('range-from').value=start.toISOString().slice(0,10);
+  document.getElementById('range-to').value=end.toISOString().slice(0,10);
+  applyDateRange();
+}
+function applyDateRange(){
+  const f=document.getElementById('range-from').value, t=document.getElementById('range-to').value;
+  if(!f || !t){ setRangeError('اختر تاريخ البداية والنهاية'); return; }
+  const fk=dateStrToKey(f), tk=dateStrToKey(t);
+  if(fk>tk){ setRangeError('تاريخ البداية بعد تاريخ النهاية'); return; }
+  setRangeError('');
+  const yf=document.getElementById('f-year'), mf=document.getElementById('f-month');
+  if(!DATE_RANGE) RANGE_PREV={ year:yf.value, month:mf.value, day:selectedDay };
+  DATE_RANGE={ from:fk, to:tk, fromStr:f, toStr:t };
+  yf.value=''; mf.value=''; yf.disabled=true; mf.disabled=true;
+  selectedDay=null; populateDaySelect();
+  updateRangeUi();
+  renderCoverageReport2();
+  applyFilters();
+}
+function clearDateRange(quiet, discard){
+  if(!DATE_RANGE){ updateRangeUi(); return; }
+  DATE_RANGE=null;
+  const prev=(!discard && RANGE_PREV) || {}; RANGE_PREV=null;
+  const yf=document.getElementById('f-year'), mf=document.getElementById('f-month');
+  yf.disabled=false; mf.disabled=false;
+  const setIf=(el,v)=>{ el.value = (v && [...el.options].some(o=>o.value===String(v))) ? String(v) : ''; };
+  setIf(yf,prev.year); setIf(mf,prev.month);
+  selectedDay = prev.day ? +prev.day : null;
+  populateDaySelect();
+  setRangeError('');
+  if(discard){ document.getElementById('range-from').value=''; document.getElementById('range-to').value=''; }
+  updateRangeUi();
+  if(!quiet){ renderCoverageReport2(); applyFilters(); }
+}
+window.matchMedia('(max-width:899px)').addEventListener('change', e=>{ if(e.matches && DATE_RANGE) clearDateRange(); });
+
 function applyFilters(){
   const branch = document.getElementById('f-branch').value;
   const type = document.getElementById('f-type').value;
@@ -3787,12 +3878,13 @@ function applyFilters(){
     if(year && String(r.year) !== String(year)) return false;
     if(month && r.month != +month) return false;
     if(selectedDay && r.day != selectedDay) return false;
+    if(DATE_RANGE && !inDateRange(r)) return false;
     if(acc && r.accuracy !== acc) return false;
     return true;
   });
 
   currentPage = 1;
-  document.getElementById('filter-info').textContent = filtered.length.toLocaleString('en-US') + ' نتيجة';
+  document.getElementById('filter-info').textContent = filtered.length.toLocaleString('en-US') + ' نتيجة' + (DATE_RANGE ? ' · من '+DATE_RANGE.fromStr+' إلى '+DATE_RANGE.toStr : '');
   updateKPIs();
   renderPivots();
   renderTable();
@@ -3835,6 +3927,7 @@ function ordersScopeRows(){
     if(year && String(r.year) !== String(year)) return false;
     if(month && r.month != +month) return false;
     if(selectedDay && r.day != selectedDay) return false;
+    if(DATE_RANGE && !inDateRange(r)) return false;
     if(acc && r.accuracy !== acc) return false;
     return true;
   });
@@ -3932,6 +4025,7 @@ function updateExtraKPIs(){
     if(person && r['الشخص اللي قام بالزياره'] !== person) return false;
     if(year && String(r.year) !== String(year)) return false;
     if(month && r.month != +month) return false;
+    if(DATE_RANGE && !inDateRange(r)) return false;
     return true;
   });
   // "لم تتم زيارته" هنا معناها: مفيش أي زيارة دقيقة له ضمن النطاق (الزيارة غير الدقيقة ماتحسبش "تمت زيارته")
@@ -4284,6 +4378,7 @@ function updateRouteKPI(){
     if(person && r['الشخص اللي قام بالزياره'] !== person) return false;
     if(year && String(r.year) !== String(year)) return false;
     if(month && r.month != +month) return false;
+    if(DATE_RANGE && !inDateRange(r)) return false;
     return true;
   });
 
@@ -4415,7 +4510,9 @@ function fillShareCardFields(){
   const branchName = branchSel.value || ((currentUser && currentUser.branch && currentUser.branch !== 'كل الفروع') ? currentUser.branch : 'كل الفروع');
 
   let periodText = 'كل الفترة';
-  if(monthSel.value){
+  if(DATE_RANGE){
+    periodText = 'من ' + DATE_RANGE.fromStr + ' إلى ' + DATE_RANGE.toStr;
+  } else if(monthSel.value){
     const monthLabel = MONTH_NAMES[monthSel.value] || monthSel.options[monthSel.selectedIndex].textContent;
     periodText = monthLabel + (yearSel.value ? ' ' + yearSel.value : '');
     if(selectedDay){ periodText += ' - يوم ' + selectedDay; }
@@ -4841,6 +4938,7 @@ function changePage(dir){
 }
 
 function resetFilters(){
+  clearDateRange(true, true); // إعادة الضبط تلغي فترة من/إلى وترجّع النظام القديم
   // اليوزر المقيّد بفرع واحد يفضل فرعه محدد حتى بعد إعادة الضبط
   document.getElementById('f-branch').value = (currentUser && currentUser.branch !== 'كل الفروع') ? currentUser.branch : '';
   document.getElementById('f-type').value = '';
@@ -4900,6 +4998,7 @@ function switchTab(name){
   document.getElementById('tab-'+name).classList.add('active');
   document.getElementById('tabbtn-'+name).classList.add('active');
   currentTab = name;
+  document.body.classList.toggle('tab-debt', name==='debt');
   updateBreadcrumb(name);
   document.getElementById('nav-drawer-overlay').classList.remove('open');
   haptic(8);
@@ -5555,7 +5654,7 @@ function renderCoverageReport2(){
 
   if(!month){
     document.getElementById('coverage2-badge').textContent = '0';
-    document.getElementById('coverage2-tbody').innerHTML = '<tr><td colspan="7" class="no-data">لازم تختار شهر محدد من الفلاتر فوق الصفحة حتى يظهر التقرير</td></tr>';
+    document.getElementById('coverage2-tbody').innerHTML = ('<tr><td colspan="7" class="no-data">' + (DATE_RANGE ? 'التقرير ده شهري — امسح الفترة المحددة واختر شهر حتى يظهر' : 'لازم تختار شهر محدد من الفلاتر فوق الصفحة حتى يظهر التقرير') + '</td></tr>');
     EXPORT_DATA.coverage2 = [];
     return;
   }
@@ -5651,6 +5750,7 @@ function openCoverageGapsMap(){
   const visitsInPeriod = DATA.filter(r=>{
     if(year && String(r.year)!==String(year)) return false;
     if(month && String(r.month)!==String(month)) return false;
+    if(DATE_RANGE && !inDateRange(r)) return false;
     return true;
   });
   const visitedSet = new Set();
@@ -6749,6 +6849,7 @@ function computeGeoAllClientsWithStatus(){
     if(r['الشخص اللي قام بالزياره']!==person) return false;
     if(year && String(r.year)!==String(year)) return false;
     if(month && String(r.month)!==String(month)) return false;
+    if(DATE_RANGE && !inDateRange(r)) return false;
     return true;
   });
   const clientsScope = CLIENTS.filter(c=> c.المندوب===person && c.المندوب!=='حذف' && c.lat_client!=='' && c.lat_client!=null);
@@ -6801,9 +6902,10 @@ function computeGeoPerfPayload(){
     if(r['الشخص اللي قام بالزياره']!==person) return false;
     if(year && String(r.year)!==String(year)) return false;
     if(month && String(r.month)!==String(month)) return false;
+    if(DATE_RANGE && !inDateRange(r)) return false;
     return true;
   });
-  const periodLabel = (year?year:'كل السنوات') + (month?(' - شهر '+month):' - كل الشهور') + (region?(' - منطقة '+region):'')
+  const periodLabel = (DATE_RANGE ? ('من '+DATE_RANGE.fromStr+' إلى '+DATE_RANGE.toStr) : ((year?year:'كل السنوات') + (month?(' - شهر '+month):' - كل الشهور'))) + (region?(' - منطقة '+region):'')
     + (visitStatusFilter==='visited' ? ' - تمت زيارته' : visitStatusFilter==='unvisited' ? ' - لم تتم زيارته' : '');
 
   let clientsScope = CLIENTS.filter(c=> c.المندوب===person && c.المندوب!=='حذف' && c.lat_client!=='' && c.lat_client!=null);
