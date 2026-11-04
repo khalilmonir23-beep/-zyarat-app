@@ -3738,6 +3738,8 @@ document.addEventListener('click', e=>{
 
 function goToAlert(fn){
   document.getElementById('notif-bell-panel').classList.remove('open');
+  // عناصر الجرس تُفتح دائمًا داخل لوحة القيادة فقط — لو المستخدم في أي تاب تاني ننقله للوحة القيادة أولًا
+  if(currentTab !== 'dashboard') switchTab('dashboard');
   window[fn]();
 }
 
